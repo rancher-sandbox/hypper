@@ -24,6 +24,9 @@ all: build
 .PHONY: build
 build: lint $(BINDIR)/$(BINNAME)
 
+# Rebuild the buinary if any of these files change
+SRC := $(shell find . -type f -name '*.go' -print) go.mod go.sum
+
 $(BINDIR)/$(BINNAME): $(SRC)
 	GO111MODULE=on go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME) ./cmd/hypper
 
@@ -48,4 +51,5 @@ fmt:
 
 .PHONY: clean
 clean:
-	rm -Rfv $(CURDIR)/bin
+	rm $(BINDIR)/$(BINNAME)
+	rmdir $(BINDIR)

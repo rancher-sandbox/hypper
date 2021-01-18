@@ -3,24 +3,33 @@ package main
 import (
 	"io"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"helm.sh/helm/v3/pkg/action"
 )
 
-var globalUsage = `A package manager built on Helm charts and Helm itself.
+var globalUsage = `Usage: hypper command
+
+A package manager built on Helm charts and Helm itself.
 `
 
-func newRootCmd(actionConfig *action.Configuration, out io.Writer, args []string) (*cobra.Command, error) {
+func newRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:          "hypper",
 		Short:        "A package manager built on Helm charts and Helm itself",
 		Long:         globalUsage,
-		SilenceUsage: true,
+		SilenceUsage: false,
 	}
 
-	cmd.AddCommand(
-	// List of newCommandCmd from files
-	)
+	flags := cmd.PersistentFlags()
+	settings.AddFlags(flags)
 
+	cmd.AddCommand(
+	// list of newsubcommandcmd from files
+	)
+	flags.Parse(args)
+
+	if settings.NoColors {
+		color.NoColor = true // disable colorized output
+	}
 	return cmd, nil
 }
