@@ -5,23 +5,28 @@ import (
 	"log"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/spf13/cobra"
-	"helm.sh/helm/v3/pkg/action"
 )
 
 var settings = cli.New()
 
+var red = color.New(color.FgRed).SprintFunc()
+var yellow = color.New(color.FgYellow).SprintFunc()
+var blue = color.New(color.FgBlue).SprintFunc()
+var magenta = color.New(color.FgMagenta).SprintFunc()
+
 func debug(format string, v ...interface{}) {
 	if settings.Debug {
-		format = fmt.Sprintf("[debug] %s\n", format)
+		format = fmt.Sprintf("[debug] %s\n", magenta(format))
 		log.Output(2, fmt.Sprintf(format, v...))
 	}
 }
 
 func main() {
-	actionConfig := new(action.Configuration)
-	cmd, err := newRootCmd(actionConfig, os.Stdout, os.Args[1:])
+
+	cmd, err := newRootCmd(os.Stdout, os.Args[1:])
 	if err != nil {
 		debug("%v", err)
 		os.Exit(1)
