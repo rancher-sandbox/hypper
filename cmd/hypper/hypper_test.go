@@ -6,23 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudfoundry/bosh-cli/release"
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
-	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/time"
 )
 
-// TODO: questionable code, remove or test
-func testTimestamper() time.Time { return time.Unix(242085845, 0).UTC() }
-
-// TODO: questionable code, remove or test
-func init() {
-	action.Timestamper = testTimestamper
-}
-
-// TODO: questionable code, remove or test
 func runTestCmd(t *testing.T, tests []cmdTestCase) {
 	t.Helper()
 	for _, tt := range tests {
@@ -83,10 +71,7 @@ func resetEnv() func() {
 type cmdTestCase struct {
 	name      string
 	cmd       string
-	golden    string
 	wantError bool
-	// Rels are the available releases at the start of the test.
-	rels []*release.Release
 	// Number of repeats (in case a feature was previously flaky and the test checks
 	// it's now stably producing identical results). 0 means test is run exactly once.
 	repeat int
