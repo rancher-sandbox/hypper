@@ -18,8 +18,7 @@ type EnvSettings struct {
 func New() *EnvSettings {
 	env := &EnvSettings{}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
-	env.NoColors, _ = strconv.ParseBool(os.Getenv("HYPPER_COLORS"))
-
+	env.NoColors, _ = strconv.ParseBool(os.Getenv("HYPPER_NOCOLORS"))
 	return env
 }
 
