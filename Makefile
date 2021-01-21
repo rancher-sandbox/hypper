@@ -9,6 +9,14 @@ GIT_SHA    = $(shell git rev-parse --short HEAD)
 GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
 GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
 
+# go option
+PKG        := ./...
+TAGS       :=
+TESTS      := .
+TESTFLAGS  :=
+LDFLAGS    := -w -s
+GOFLAGS    :=
+
 ifdef VERSION
 	BINARY_VERSION = $(VERSION)
 endif
@@ -35,8 +43,21 @@ install: build
 	@install "$(BINDIR)/$(BINNAME)" "$(INSTALL_PATH)/$(BINNAME)"
 
 .PHONY: test
-test: lint
-	ginkgo ./...
+test: lint build
+test: TESTFLAGS += -race -v
+test: test-unit
+
+.PHONY: test-unit
+test-unit:
+	@echo
+	@echo "==> Running unit tests <=="
+	GO111MODULE=on go test $(GOFLAGS) -run $(TESTS) $(PKG) $(TESTFLAGS)
+
+.PHONY: coverage
+coverage:
+	@echo
+	@echo "==> Running coverage tests <=="
+	@ ./scripts/coverage.sh
 
 .PHONY: lint
 lint: fmt vet
