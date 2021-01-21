@@ -27,7 +27,7 @@ func TestEnvSettings(t *testing.T) {
 		},
 		{
 			name:     "with flags set",
-			args:     "--debug --nocolor",
+			args:     "--debug --no-colors",
 			debug:    true,
 			noColors: true,
 		},
@@ -39,7 +39,7 @@ func TestEnvSettings(t *testing.T) {
 		},
 		{
 			name:     "with args and envvars set",
-			args:     "--debug --nocolor",
+			args:     "--debug --no-colors",
 			envvars:  map[string]string{"HYPPER_DEBUG": "false", "HYPPER_NOCOLORS": "false"},
 			debug:    true,
 			noColors: true,
@@ -58,7 +58,10 @@ func TestEnvSettings(t *testing.T) {
 
 			settings := New()
 			settings.AddFlags(flags)
-			flags.Parse(strings.Split(tt.args, " "))
+			err := flags.Parse(strings.Split(tt.args, " "))
+			if err != nil {
+				t.Errorf("failed while parsing flags for %s", tt.args)
+			}
 
 			if settings.Debug != tt.debug {
 				t.Errorf("expected debug %t, got %t", tt.debug, settings.Debug)
