@@ -8,6 +8,63 @@ import (
 	"github.com/spf13/pflag"
 )
 
+func TestEmojis(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "plain string",
+			input:    "this is a plain string",
+			expected: "this is a plain string",
+		},
+		{
+			name:     "plain utf-8 string",
+			input:    "\u2000-\u3300",
+			expected: "\u2000-\u3300",
+		},
+		{
+			name:     "pure emoji string",
+			input:    ":pizza::beer:",
+			expected: "",
+		},
+		{
+			name:     "mixed string",
+			input:    ":pizza: beer",
+			expected: " beer",
+		},
+		{
+			name:     "weird edge cases",
+			input:    ":pizza: :beer: :pizza beer:",
+			expected: "  :pizza beer:",
+		},
+		{
+			name:     "double colon",
+			input:    ":: test",
+			expected: ":: test",
+		},
+		{
+			name:     "double colon emoji mixup",
+			input:    "::pizza::",
+			expected: "::",
+		},
+		{
+			name:     "do not touch native utf-8 inside colons",
+			input:    ":\u2000-\u3300:",
+			expected: ":\u2000-\u3300:",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := RemoveEmojiFromString(tt.input)
+			if tt.expected != s {
+				t.Errorf("expected %s got %s", tt.expected, s)
+			}
+		})
+	}
+}
+
 func TestEnvSettings(t *testing.T) {
 	tests := []struct {
 		name string
@@ -19,30 +76,35 @@ func TestEnvSettings(t *testing.T) {
 		// expected values
 		debug    bool
 		noColors bool
+		noEmojis bool
 	}{
 		{
 			name:     "defaults",
 			debug:    false,
 			noColors: false,
+			noEmojis: false,
 		},
 		{
 			name:     "with flags set",
-			args:     "--debug --no-colors",
+			args:     "--debug --no-colors --no-emojis",
 			debug:    true,
 			noColors: true,
+			noEmojis: true,
 		},
 		{
 			name:     "with envvars set",
-			envvars:  map[string]string{"HYPPER_DEBUG": "true", "HYPPER_NOCOLORS": "true"},
+			envvars:  map[string]string{"HYPPER_DEBUG": "true", "HYPPER_NOCOLORS": "true", "HYPPER_NOEMOJIS": "true"},
 			debug:    true,
 			noColors: true,
+			noEmojis: true,
 		},
 		{
 			name:     "with args and envvars set",
-			args:     "--debug --no-colors",
-			envvars:  map[string]string{"HYPPER_DEBUG": "false", "HYPPER_NOCOLORS": "false"},
+			args:     "--debug --no-colors --no-emojis",
+			envvars:  map[string]string{"HYPPER_DEBUG": "true", "HYPPER_NOCOLORS": "true", "HYPPER_NOEMOJIS": "true"},
 			debug:    true,
 			noColors: true,
+			noEmojis: true,
 		},
 	}
 
