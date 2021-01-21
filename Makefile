@@ -32,7 +32,7 @@ all: build
 .PHONY: build
 build: lint $(BINDIR)/$(BINNAME)
 
-# Rebuild the buinary if any of these files change
+# Rebuild the binary if any of these files change
 SRC := $(shell find . -type f -name '*.go' -print) go.mod go.sum
 
 $(BINDIR)/$(BINNAME): $(SRC)

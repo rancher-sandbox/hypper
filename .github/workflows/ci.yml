@@ -1,0 +1,36 @@
+name: CI
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache Go modules
+        # not supported on windows with gh actions at the moment
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Setup Go for Building
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.13.7'
+      - name: Build Hypper
+        run: make build
+      - name: Test Hypper
+        run: make test
+      - name: Show Coverage of Hypper
+        run: make coverage
