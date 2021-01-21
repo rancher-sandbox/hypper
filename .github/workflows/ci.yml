@@ -27,7 +27,7 @@ jobs:
       - name: Setup Go for Building
         uses: actions/setup-go@v2
         with:
-          go-version: '^1.13.7'
+          go-version: '^1.15.7'
       - name: Build Hypper
         run: make build
       - name: Test Hypper
