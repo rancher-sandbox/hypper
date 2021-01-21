@@ -26,7 +26,7 @@ func New() *EnvSettings {
 // AddFlags binds flags to the given flagset.
 func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVarP(&s.Debug, "debug", "d", s.Debug, "enable verbose output")
-	fs.BoolVarP(&s.NoColors, "no-colors", "n", s.NoColors, "disable colors")
+	fs.BoolVar(&s.NoColors, "no-colors", s.NoColors, "disable colors")
 }
 
 // EnvVars gives you a string map of the environment variables
