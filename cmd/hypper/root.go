@@ -31,7 +31,7 @@ func newRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 	)
 	err := flags.Parse(args)
 	if err != nil {
-		log.Output(2, fmt.Sprintf("failed while parsing flags for %s", args))
+		_ = log.Output(2, fmt.Sprintf("failed while parsing flags for %s", args))
 		os.Exit(1)
 	}
 

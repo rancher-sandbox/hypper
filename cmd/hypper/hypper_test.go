@@ -3,14 +3,13 @@ package main
 import (
 	"bytes"
 	"os"
-	"strings"
-	"testing"
 
-	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
 )
 
+//TODO re-enable when subcommands present
+/*
 func runTestCmd(t *testing.T, tests []cmdTestCase) {
 	t.Helper()
 	for _, tt := range tests {
@@ -27,6 +26,7 @@ func runTestCmd(t *testing.T, tests []cmdTestCase) {
 		}
 	}
 }
+*/
 
 func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 
@@ -55,6 +55,8 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 	return c, result, err
 }
 
+//TODO re-enable when subcommands present
+/*
 func resetEnv() func() {
 	origEnv := os.Environ()
 	return func() {
@@ -66,8 +68,11 @@ func resetEnv() func() {
 		settings = cli.New()
 	}
 }
+*/
 
+//TODO re-enable when subcommands present
 // cmdTestCase describes a test case that works with releases.
+/*
 type cmdTestCase struct {
 	name      string
 	cmd       string
@@ -76,3 +81,4 @@ type cmdTestCase struct {
 	// it's now stably producing identical results). 0 means test is run exactly once.
 	repeat int
 }
+*/

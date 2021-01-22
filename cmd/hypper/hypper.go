@@ -13,15 +13,13 @@ import (
 
 var settings = cli.New()
 
-var red = color.New(color.FgRed).SprintFunc()
-var yellow = color.New(color.FgYellow).SprintFunc()
 var blue = color.New(color.FgBlue).SprintFunc()
 var magenta = color.New(color.FgMagenta).SprintFunc()
 
 func debug(format string, v ...interface{}) {
 	if settings.Debug {
 		format = fmt.Sprintf("[debug] %s\n", magenta(format))
-		log.Output(2, fmt.Sprintf(format, v...))
+		_ = log.Output(2, fmt.Sprintf(format, v...))
 	}
 }
 
