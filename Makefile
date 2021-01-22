@@ -49,15 +49,13 @@ test: test-unit
 
 .PHONY: test-unit
 test-unit:
-	@echo
 	@echo "==> Running unit tests <=="
 	GO111MODULE=on go test $(GOFLAGS) -run $(TESTS) $(PKG) $(TESTFLAGS)
 
 .PHONY: coverage
 coverage:
-	@echo
 	@echo "==> Running coverage tests <=="
-	@ ./scripts/coverage.sh
+	GO111MODULE=on go test $(GOFLAGS) -run $(TESTS) $(PKG) -coverprofile=coverage.out --covermode=atomic
 
 .PHONY: lint
 lint: fmt vet
