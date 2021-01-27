@@ -23,6 +23,12 @@ func debug(format string, v ...interface{}) {
 	}
 }
 
+func warning(format string, v ...interface{}) {
+	// TODO missing colors
+	format = fmt.Sprintf("WARNING: %s\n", format)
+	fmt.Fprintf(os.Stderr, format, v...)
+}
+
 func esPrintf(format string, v ...interface{}) string {
 	if settings.NoEmojis {
 		return fmt.Sprintf(cli.RemoveEmojiFromString(format), v...)
