@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/mattfarina/log"
 	"github.com/spf13/pflag"
 	helmCli "helm.sh/helm/v3/pkg/cli"
 )
@@ -19,7 +20,7 @@ type EnvSettings struct {
 }
 
 // New is a constructor of EnvSettings
-func New() *EnvSettings {
+func New(logger log.Logger) *EnvSettings {
 	env := &EnvSettings{}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.NoColors, _ = strconv.ParseBool(os.Getenv("HYPPER_NOCOLORS"))

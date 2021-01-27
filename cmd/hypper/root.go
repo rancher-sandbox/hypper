@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"io"
-	"log"
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/mattfarina/log"
 	"github.com/spf13/cobra"
 	helmAction "helm.sh/helm/v3/pkg/action"
 )
@@ -16,7 +14,7 @@ var globalUsage = `Usage: hypper command
 A package manager built on Helm charts and Helm itself.
 `
 
-func newRootCmd(actionConfig *helmAction.Configuration, out io.Writer, args []string) (*cobra.Command, error) {
+func newRootCmd(actionConfig *helmAction.Configuration, logger log.Logger, args []string) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:          "hypper",
 		Short:        "A package manager built on Helm charts and Helm itself",
@@ -28,11 +26,12 @@ func newRootCmd(actionConfig *helmAction.Configuration, out io.Writer, args []st
 	settings.AddFlags(flags)
 
 	cmd.AddCommand(
-		newInstallCmd(actionConfig, out),
+		newInstallCmd(actionConfig, logger),
 	)
 	err := flags.Parse(args)
+
 	if err != nil {
-		_ = log.Output(2, fmt.Sprintf("failed while parsing flags for %s", args))
+		log.Errorf("failed while parsing flags for %s", args)
 		os.Exit(1)
 	}
 

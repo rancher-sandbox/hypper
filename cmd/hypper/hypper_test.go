@@ -3,7 +3,10 @@ package main
 import (
 	"bytes"
 	"os"
+	//"strings"
+	//"testing"
 
+	//"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
 	helmAction "helm.sh/helm/v3/pkg/action"
@@ -31,15 +34,15 @@ func runTestCmd(t *testing.T, tests []cmdTestCase) {
 
 func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 
+	buf := new(bytes.Buffer)
 	args, err := shellwords.Parse(cmd)
+	actionConfig := new(helmAction.Configuration)
 
 	if err != nil {
 		return nil, "", err
 	}
 
-	actionConfig := new(helmAction.Configuration)
-	buf := new(bytes.Buffer)
-	root, err := newRootCmd(actionConfig, buf, args)
+	root, err := newRootCmd(actionConfig, logger, args)
 	if err != nil {
 		return nil, "", err
 	}
@@ -67,7 +70,7 @@ func resetEnv() func() {
 			kv := strings.SplitN(pair, "=", 2)
 			os.Setenv(kv[0], kv[1])
 		}
-		settings = cli.New()
+		settings = cli.New(logger)
 	}
 }
 */
