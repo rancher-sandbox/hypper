@@ -7,13 +7,15 @@ import (
 	"strconv"
 
 	"github.com/spf13/pflag"
+	helmCli "helm.sh/helm/v3/pkg/cli"
 )
 
 // EnvSettings describes all of the environment settings.
 type EnvSettings struct {
-	Debug    bool
-	NoColors bool
-	NoEmojis bool
+	HelmSettings *helmCli.EnvSettings
+	Debug        bool
+	NoColors     bool
+	NoEmojis     bool
 }
 
 // New is a constructor of EnvSettings
@@ -22,6 +24,7 @@ func New() *EnvSettings {
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.NoColors, _ = strconv.ParseBool(os.Getenv("HYPPER_NOCOLORS"))
 	env.NoEmojis, _ = strconv.ParseBool(os.Getenv("HYPPER_NOEMOJIS"))
+	env.HelmSettings = helmCli.New()
 	return env
 }
 
