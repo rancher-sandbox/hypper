@@ -9,6 +9,7 @@ import (
 	"github.com/kyokomi/emoji/v2"
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/spf13/cobra"
+	helmAction "helm.sh/helm/v3/pkg/action"
 )
 
 var settings = cli.New()
@@ -44,8 +45,8 @@ func esPrint(s string) string {
 }
 
 func main() {
-
-	cmd, err := newRootCmd(os.Stdout, os.Args[1:])
+	actionConfig := new(helmAction.Configuration)
+	cmd, err := newRootCmd(actionConfig, os.Stdout, os.Args[1:])
 	if err != nil {
 		debug("%v", err)
 		os.Exit(1)

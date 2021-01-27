@@ -6,6 +6,7 @@ import (
 
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
+	helmAction "helm.sh/helm/v3/pkg/action"
 )
 
 //TODO re-enable when subcommands present
@@ -36,8 +37,9 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 		return nil, "", err
 	}
 
+	actionConfig := new(helmAction.Configuration)
 	buf := new(bytes.Buffer)
-	root, err := newRootCmd(buf, args)
+	root, err := newRootCmd(actionConfig, buf, args)
 	if err != nil {
 		return nil, "", err
 	}

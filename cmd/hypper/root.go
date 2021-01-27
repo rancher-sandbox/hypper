@@ -8,6 +8,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	helmAction "helm.sh/helm/v3/pkg/action"
 )
 
 var globalUsage = `Usage: hypper command
@@ -15,7 +16,7 @@ var globalUsage = `Usage: hypper command
 A package manager built on Helm charts and Helm itself.
 `
 
-func newRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
+func newRootCmd(actionConfig *helmAction.Configuration, out io.Writer, args []string) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:          "hypper",
 		Short:        "A package manager built on Helm charts and Helm itself",
@@ -27,7 +28,7 @@ func newRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 	settings.AddFlags(flags)
 
 	cmd.AddCommand(
-	// list of newsubcommandcmd from files
+		newInstallCmd(actionConfig, out),
 	)
 	err := flags.Parse(args)
 	if err != nil {
