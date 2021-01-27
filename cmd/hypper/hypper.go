@@ -20,7 +20,6 @@ import (
 
 var settings = cli.New()
 
-var blue = color.New(color.FgBlue).SprintFunc()
 var magenta = color.New(color.FgMagenta).SprintFunc()
 
 func debug(format string, v ...interface{}) {
