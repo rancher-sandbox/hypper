@@ -1,15 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
-	"github.com/kyokomi/emoji/v2"
 	"github.com/mattfarina/hypper/pkg/cli"
+	"github.com/mattfarina/hypper/pkg/eyecandy"
+	"github.com/mattfarina/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	helmAction "helm.sh/helm/v3/pkg/action"
@@ -18,48 +16,24 @@ import (
 	"helm.sh/helm/v3/pkg/storage/driver"
 )
 
-var settings = cli.New()
-
-var magenta = color.New(color.FgMagenta).SprintFunc()
-
-func debug(format string, v ...interface{}) {
-	if settings.Debug {
-		format = fmt.Sprintf("[debug] %s\n", magenta(format))
-		_ = log.Output(2, fmt.Sprintf(format, v...))
-	}
-}
-
-func warning(format string, v ...interface{}) {
-	// TODO missing colors
-	format = fmt.Sprintf("WARNING: %s\n", format)
-	fmt.Fprintf(os.Stderr, format, v...)
-}
-
-func esPrintf(format string, v ...interface{}) string {
-	if settings.NoEmojis {
-		return fmt.Sprintf(cli.RemoveEmojiFromString(format), v...)
-	}
-	return emoji.Sprintf(format, v...)
-}
-
-func esPrint(s string) string {
-	if settings.NoEmojis {
-		return fmt.Sprint(cli.RemoveEmojiFromString(s))
-	}
-	return emoji.Sprint(s)
-}
+var logger = log.NewStandard()
+var settings = cli.New(logger)
 
 func main() {
 	actionConfig := new(helmAction.Configuration)
-	cmd, err := newRootCmd(actionConfig, os.Stdout, os.Args[1:])
+	cmd, err := newRootCmd(actionConfig, logger, os.Args[1:])
+	if settings.Debug {
+		logger.Level = log.DebugLevel
+	}
+
 	if err != nil {
-		debug("%v", err)
+		logger.Debug(eycandy.Magenta("%v"), err)
 		os.Exit(1)
 	}
 
 	cobra.OnInitialize(func() {
 		helmDriver := os.Getenv("HELM_DRIVER")
-		if err := actionConfig.Init(settings.HelmSettings.RESTClientGetter(), settings.HelmSettings.Namespace(), helmDriver, debug); err != nil {
+		if err := actionConfig.Init(settings.HelmSettings.RESTClientGetter(), settings.HelmSettings.Namespace(), helmDriver, logger.Debugf); err != nil {
 			log.Fatal(err)
 		}
 		if helmDriver == "memory" {
@@ -68,7 +42,7 @@ func main() {
 	})
 
 	if err := cmd.Execute(); err != nil {
-		debug("%+v", err)
+		logger.Debug(eycandy.Magenta("%v"), err)
 		os.Exit(1)
 	}
 }

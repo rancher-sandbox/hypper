@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"io"
+	"os"
 
+	"github.com/mattfarina/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
@@ -19,7 +20,7 @@ import (
 
 var installDesc = `install a helm chart by wrapping helm calls (for now)`
 
-func newInstallCmd(actionConfig *helmAction.Configuration, out io.Writer) *cobra.Command {
+func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *cobra.Command {
 	client := helmAction.NewInstall(actionConfig)
 	valuesOpts := &values.Options{}
 	cmd := &cobra.Command{
@@ -29,27 +30,28 @@ func newInstallCmd(actionConfig *helmAction.Configuration, out io.Writer) *cobra
 		Args:  require.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			// TODO use output package for formatting:
-			_, _ = out.Write([]byte(esPrintf(":cruise_ship: Installing %s…", args[0])))
+			logger.Infof("Installing %s…", args[0])
 			// TODO decide how to use returned rel:
-			_, err := runInstall(args, client, valuesOpts, out)
+			_, err := runInstall(args, client, valuesOpts, logger)
 			if err != nil {
 				return err
 			}
-			_, _ = out.Write([]byte(esPrint(":goal: Done!\n")))
+			// TODO use output package for formatting:
+			logger.Info("Done!")
 			return nil
 		},
 	}
 	return cmd
 }
 
-func runInstall(args []string, client *helmAction.Install, valueOpts *values.Options, out io.Writer) (*release.Release, error) {
-	var helmSettings = helmCli.New()
+func runInstall(args []string, client *helmAction.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
+	helmSettings := helmCli.New()
 	fmt.Println(client.Version)
 
 	// TODO add hypper specific code here
 
 	if client.Version == "" && client.Devel {
-		debug("setting version to >0.0.0-0")
+		logger.Debug("setting version to >0.0.0-0")
 		client.Version = ">0.0.0-0"
 	}
 
@@ -64,7 +66,7 @@ func runInstall(args []string, client *helmAction.Install, valueOpts *values.Opt
 		return nil, err
 	}
 
-	debug("CHART PATH: %s\n", cp)
+	logger.Debugf("CHART PATH: %s\n", cp)
 
 	p := getter.All(helmSettings)
 	vals, err := valueOpts.MergeValues(p)
@@ -83,7 +85,7 @@ func runInstall(args []string, client *helmAction.Install, valueOpts *values.Opt
 	}
 
 	if chartRequested.Metadata.Deprecated {
-		warning("This chart is deprecated")
+		logger.Warn("This chart is deprecated")
 	}
 
 	if req := chartRequested.Metadata.Dependencies; req != nil {
@@ -93,7 +95,7 @@ func runInstall(args []string, client *helmAction.Install, valueOpts *values.Opt
 		if err := helmAction.CheckDependencies(chartRequested, req); err != nil {
 			if client.DependencyUpdate {
 				man := &downloader.Manager{
-					Out:              out,
+					Out:              os.Stdout,
 					ChartPath:        cp,
 					Keyring:          client.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
