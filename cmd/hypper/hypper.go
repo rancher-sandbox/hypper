@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mattfarina/hypper/cmd/eyecandy"
 	"github.com/mattfarina/hypper/pkg/cli"
+	"github.com/mattfarina/hypper/pkg/eyecandy"
 	"github.com/mattfarina/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
