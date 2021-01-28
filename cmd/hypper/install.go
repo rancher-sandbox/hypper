@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mattfarina/hypper/pkg/eyecandy"
 	"github.com/mattfarina/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -29,15 +30,13 @@ func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *c
 		Long:  installDesc,
 		Args:  require.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
-			// TODO use output package for formatting:
-			logger.Infof("Installing %s…", args[0])
+			logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing %s…", args[0]))
 			// TODO decide how to use returned rel:
 			_, err := runInstall(args, client, valuesOpts, logger)
 			if err != nil {
 				return err
 			}
-			// TODO use output package for formatting:
-			logger.Info("Done!")
+			logger.Info(eyecandy.ESPrint(settings.NoEmojis, "Done! :clapping_hands:"))
 			return nil
 		},
 	}

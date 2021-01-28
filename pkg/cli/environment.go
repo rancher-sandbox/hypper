@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 
 	"github.com/mattfarina/log"
@@ -43,9 +42,4 @@ func (s *EnvSettings) EnvVars() map[string]string {
 		"HYPPER_NOCOLORS": fmt.Sprint(s.NoColors),
 		"HYPPER_NOEMOJIS": fmt.Sprint(s.NoEmojis),
 	}
-}
-
-func RemoveEmojiFromString(s string) string {
-	re := regexp.MustCompile(`:[a-zA-Z0-9-_+]+?:`)
-	return re.ReplaceAllString(s, "")
 }
