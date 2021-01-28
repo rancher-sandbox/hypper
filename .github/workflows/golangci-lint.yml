@@ -10,6 +10,9 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+    # enabling debug for golangci to find issues
+    env:
+      GL_DEBUG: loader,gocritic
     steps:
       - uses: actions/checkout@v2
       - name: golangci-lint
@@ -17,3 +20,4 @@ jobs:
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
           version: v1.35
+          args: -v
