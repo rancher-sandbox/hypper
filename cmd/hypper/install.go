@@ -36,7 +36,6 @@ func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *c
 			if err != nil {
 				return err
 			}
-			// TODO use output package for formatting:
 			logger.Info(eyecandy.ESPrint(settings.NoEmojis, "Done! :clapping_hands:"))
 			return nil
 		},
