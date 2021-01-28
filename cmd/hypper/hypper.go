@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if err != nil {
-		logger.Debug(eycandy.Magenta("%v"), err)
+		logger.Debug(eyecandy.Magenta("%v"), err)
 		os.Exit(1)
 	}
 
@@ -42,7 +42,7 @@ func main() {
 	})
 
 	if err := cmd.Execute(); err != nil {
-		logger.Debug(eycandy.Magenta("%v"), err)
+		logger.Debug(eyecandy.Magenta("%v"), err)
 		os.Exit(1)
 	}
 }

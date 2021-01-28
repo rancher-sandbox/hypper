@@ -1,4 +1,4 @@
-package eycandy
+package eyecandy
 
 import (
 	"github.com/fatih/color"
