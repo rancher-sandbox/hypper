@@ -27,3 +27,11 @@ func TestRootCmd(t *testing.T) {
 		})
 	}
 }
+
+func TestUnknownSubCmd(t *testing.T) {
+	_, _, err := executeCommandStdinC("foobar")
+
+	if err == nil || err.Error() != `unknown command "foobar" for "hypper"` {
+		t.Errorf("Expect unknown command error, got %q", err)
+	}
+}
