@@ -29,16 +29,21 @@ func newRootCmd(actionConfig *helmAction.Configuration, logger log.Logger, args 
 
 	cmd.AddCommand(
 		newInstallCmd(actionConfig, logger),
+		newUninstallCmd(actionConfig, logger),
 	)
+
+	flags.ParseErrorsWhitelist.UnknownFlags = true
 	err := flags.Parse(args)
 
 	if err != nil && !errors.Is(err, pflag.ErrHelp) {
 		log.Errorf("failed while parsing flags for %s: %s", args, err)
+
 		os.Exit(1)
 	}
 
 	if settings.NoColors {
 		color.NoColor = true // disable colorized output
 	}
+
 	return cmd, nil
 }

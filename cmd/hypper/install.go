@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/mattfarina/hypper/pkg/eyecandy"
@@ -45,8 +44,6 @@ func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *c
 
 func runInstall(args []string, client *helmAction.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
 	helmSettings := helmCli.New()
-	fmt.Println(client.Version)
-
 	// TODO add hypper specific code here
 
 	if client.Version == "" && client.Devel {
