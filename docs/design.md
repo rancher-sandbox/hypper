@@ -57,6 +57,13 @@ This is the same layout as Helm itself.
 
 The following outline the initial major intentions of hypper.
 
+### Build Upon Helm
+
+Helm provides much of the functionality we need. There are some areas we want
+to deviate from it. Where Hypper can, it will leverage what Helm already does.
+This includes repositories, charts, and how storage occurs for charts (unless we
+create a new adapter).
+
 ### Modern Terminal UI
 
 Colors and icons are often present in modern terminals. Sometimes referred to
@@ -65,7 +72,7 @@ important things.
 
 ### Optional Dependencies
 
-In Helm there are two ways to handle dependencies.
+In Helm, with Hypper is built on, there are two ways to handle dependencies.
 
 1. Explicitly declare other charts as dependencies. This will cause those charts
    to be installed. When the templates are rendered they happen in the same
@@ -74,17 +81,19 @@ In Helm there are two ways to handle dependencies.
    example, install PostreSQL with one chart and then pass connection information
    into another chart using a Secret or values that generate a Secret.
 
-Hypper intends to add a 3rd form of dependency via an optional dependency. For
-example, you are developing something that requires a prometheus CRD. You can
-depend on a chart that provides that CRD but does not provide prometheus. The
-CRD chart or your chart can declare an optional dependency on a chart that
-installs Prometheus. When using hypper to install your chart you will be asked
-about installing the optional dependencies. In development you can choose not
-to install the dependencies while in production you can choose to install them.
+Hypper will support both of these types of dependencies an add a 3rd form of
+dependency via an optional dependency. For example, you are developing something
+that requires a prometheus CRD. You can depend on a chart that provides that CRD
+but does not provide prometheus. The CRD chart or your chart can declare an
+optional dependency on a chart that installs Prometheus. When using hypper to
+install your chart you will be asked about installing the optional dependencies.
+In development you can choose not to install the dependencies while in production
+you can choose to install them.
 
 The optional dependency handling will extend to all commands.
 
-Optional dependencies will be specified using Helm chart annotations.
+Optional dependencies will be specified using Helm chart annotations. This
+enables the representation to be stored in the existing Helm chart structure.
 
 ### Shared Dependencies
 
@@ -121,6 +130,10 @@ One notable disadvantage to using an OCI registry for storing charts is a lack o
 an `index.yaml` file. This file has metadata enabling some functionality that
 can't be duplicated with an OCI registry due to APIs not existing (e.g., search).
 To restore these features we are looking to put an index into an OCI registry.
+
+Hypper will enable you to store the `index.yaml` file in an OCI registry in a
+similar manner to an image or a chart. You will then be able to use it with
+normal repo commands (e.g., `helm repo add test oci://ghcr.io/mattfarina/repoexample`).
 
 ### Name As Chart Identifier
 
