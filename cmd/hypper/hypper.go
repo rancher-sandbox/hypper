@@ -27,8 +27,11 @@ func main() {
 	if settings.Debug {
 		logger.Level = log.DebugLevel
 	}
-	if settings.Trace {
+	if settings.Verbose {
 		logger.Level = log.TraceLevel
+
+		// When verbose is enabled then debug is also enabled
+		settings.Debug = true
 	}
 
 	if err != nil {

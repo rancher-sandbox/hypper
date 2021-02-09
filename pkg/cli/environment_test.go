@@ -19,6 +19,7 @@ func TestEnvSettings(t *testing.T) {
 
 		// expected values
 		debug    bool
+		verbose  bool
 		noColors bool
 		noEmojis bool
 	}{
@@ -32,6 +33,15 @@ func TestEnvSettings(t *testing.T) {
 			name:     "with flags set",
 			args:     "--debug --no-colors --no-emojis",
 			debug:    true,
+			verbose:  false,
+			noColors: true,
+			noEmojis: true,
+		},
+		{
+			name:     "with flags and verbose set",
+			args:     "--verbose --no-colors --no-emojis",
+			debug:    false,
+			verbose:  true,
 			noColors: true,
 			noEmojis: true,
 		},
@@ -39,6 +49,7 @@ func TestEnvSettings(t *testing.T) {
 			name:     "with envvars set",
 			envvars:  map[string]string{"HYPPER_DEBUG": "true", "HYPPER_NOCOLORS": "true", "HYPPER_NOEMOJIS": "true"},
 			debug:    true,
+			verbose:  false,
 			noColors: true,
 			noEmojis: true,
 		},
@@ -47,6 +58,7 @@ func TestEnvSettings(t *testing.T) {
 			args:     "--debug --no-colors --no-emojis",
 			envvars:  map[string]string{"HYPPER_DEBUG": "true", "HYPPER_NOCOLORS": "true", "HYPPER_NOEMOJIS": "true"},
 			debug:    true,
+			verbose:  false,
 			noColors: true,
 			noEmojis: true,
 		},
@@ -70,7 +82,11 @@ func TestEnvSettings(t *testing.T) {
 			}
 
 			if settings.Debug != tt.debug {
-				t.Errorf("expected debug %t, got %t", tt.debug, settings.Debug)
+				t.Errorf("on test %q expected debug %t, got %t", tt.name, tt.debug, settings.Debug)
+			}
+
+			if settings.Verbose != tt.verbose {
+				t.Errorf("on test %q expected verbose %t, got %t", tt.name, tt.verbose, settings.Verbose)
 			}
 		})
 	}
