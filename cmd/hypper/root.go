@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/mattfarina/log"
+	"github.com/mattfarina/log-go"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	helmAction "helm.sh/helm/v3/pkg/action"
 )
 
@@ -30,8 +32,8 @@ func newRootCmd(actionConfig *helmAction.Configuration, logger log.Logger, args 
 	)
 	err := flags.Parse(args)
 
-	if err != nil {
-		log.Errorf("failed while parsing flags for %s", args)
+	if err != nil && !errors.Is(err, pflag.ErrHelp) {
+		log.Errorf("failed while parsing flags for %s: %s", args, err)
 		os.Exit(1)
 	}
 

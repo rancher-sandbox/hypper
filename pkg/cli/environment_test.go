@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mattfarina/log"
+	"github.com/mattfarina/log-go"
 	"github.com/spf13/pflag"
 )
 

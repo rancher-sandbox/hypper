@@ -7,7 +7,8 @@ import (
 
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattfarina/hypper/pkg/eyecandy"
-	"github.com/mattfarina/log"
+	"github.com/mattfarina/log-go"
+	logcli "github.com/mattfarina/log-go/impl/cli"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	helmAction "helm.sh/helm/v3/pkg/action"
@@ -16,14 +17,18 @@ import (
 	"helm.sh/helm/v3/pkg/storage/driver"
 )
 
-var logger = log.NewStandard()
+var logger = logcli.NewStandard()
 var settings = cli.New(logger)
 
 func main() {
+	log.Current = logger
 	actionConfig := new(helmAction.Configuration)
 	cmd, err := newRootCmd(actionConfig, logger, os.Args[1:])
 	if settings.Debug {
 		logger.Level = log.DebugLevel
+	}
+	if settings.Trace {
+		logger.Level = log.TraceLevel
 	}
 
 	if err != nil {
