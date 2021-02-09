@@ -11,6 +11,32 @@ func TestEmojis(t *testing.T) {
 		expected string
 	}{
 		{
+			name:     "check if emoticons are output properly",
+			input:    ":beer:",
+			expected: "\U0001f37a",
+		},
+		{
+			name:     "check if emoticons are output properly",
+			input:    "\U0001f37a",
+			expected: "\U0001f37a",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := ESPrint(false, tt.input)
+			if tt.expected != s {
+				t.Errorf("expected %s got %s", tt.expected, s)
+			}
+		})
+	}
+}
+func TestRemovalOfEmojis(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
 			name:     "plain string",
 			input:    "this is a plain string",
 			expected: "this is a plain string",
