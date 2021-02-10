@@ -19,5 +19,9 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
-          version: v1.35
-          args: -v
+          version: v1.36
+
+          # Setting the timeout to the default. In the GH Action it is running
+          # for just 30s and timing out. Helm itself takes 45s to run in CircleCI
+          # This restores the default timeout.
+          args: -v --timeout 1m0s
