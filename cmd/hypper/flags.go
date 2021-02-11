@@ -17,20 +17,17 @@ limitations under the License.
 package main
 
 import (
-	"flag"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 
 	"helm.sh/helm/v3/pkg/cli/output"
-	"helm.sh/helm/v3/pkg/postrender"
+
+	"github.com/mattfarina/log-go"
 )
 
 const outputFlag = "output"
-const postRenderFlag = "post-renderer"
 
 // bindOutputFlag will add the output flag to the given command and bind the
 // value to the given format pointer
@@ -77,29 +74,5 @@ func (o *outputValue) Set(s string) error {
 		return err
 	}
 	*o = outputValue(outfmt)
-	return nil
-}
-
-type postRenderer struct {
-	renderer *postrender.PostRenderer
-}
-
-func (p postRenderer) String() string {
-	return "exec"
-}
-
-func (p postRenderer) Type() string {
-	return "postrenderer"
-}
-
-func (p postRenderer) Set(s string) error {
-	if s == "" {
-		return nil
-	}
-	pr, err := postrender.NewExec(s)
-	if err != nil {
-		return err
-	}
-	*p.renderer = pr
 	return nil
 }
