@@ -65,7 +65,9 @@ func runTestActionCmd(t *testing.T, tests []cmdTestCase) {
 
 			store := storageFixture()
 			for _, rel := range tt.rels {
-				_ = store.Create(rel)
+				if err := store.Create(rel); err != nil {
+					t.Fatal(err)
+				}
 			}
 			_, out, err := executeActionCommandC(store, tt.cmd)
 			if (err != nil) != tt.wantError {
