@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mattfarina/log-go"
 	"github.com/spf13/pflag"
 )
 
@@ -74,7 +73,7 @@ func TestEnvSettings(t *testing.T) {
 
 			flags := pflag.NewFlagSet("testing", pflag.ContinueOnError)
 
-			settings := New(log.NewStandard())
+			settings := New()
 			settings.AddFlags(flags)
 			err := flags.Parse(strings.Split(tt.args, " "))
 			if err != nil {
@@ -96,7 +95,7 @@ func resetEnv() func() {
 	origEnv := os.Environ()
 
 	// ensure any local envvars do not hose us
-	for e := range New(log.NewStandard()).EnvVars() {
+	for e := range New().EnvVars() {
 		os.Unsetenv(e)
 	}
 

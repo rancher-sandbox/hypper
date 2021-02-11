@@ -17,11 +17,11 @@ import (
 	"helm.sh/helm/v3/pkg/storage/driver"
 )
 
-var logger = logcli.NewStandard()
-var settings = cli.New(logger)
+var settings = cli.New()
 
 func main() {
-	log.Current = logger
+	logger := logcli.NewStandard()
+
 	actionConfig := new(helmAction.Configuration)
 	cmd, err := newRootCmd(actionConfig, logger, os.Args[1:])
 	if settings.Debug {

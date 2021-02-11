@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/mattfarina/log-go"
 	"github.com/spf13/pflag"
 	helmCli "helm.sh/helm/v3/pkg/cli"
 )
@@ -20,7 +19,7 @@ type EnvSettings struct {
 }
 
 // New is a constructor of EnvSettings
-func New(logger log.Logger) *EnvSettings {
+func New() *EnvSettings {
 	env := &EnvSettings{}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
