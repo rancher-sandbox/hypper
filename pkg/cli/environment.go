@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/mattfarina/log-go"
 	"github.com/spf13/pflag"
 	helmCli "helm.sh/helm/v3/pkg/cli"
 )
