@@ -32,7 +32,7 @@ func New() *EnvSettings {
 // AddFlags binds flags to the given flagset.
 func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVarP(&s.Debug, "debug", "d", s.Debug, "enable debug output")
-	fs.BoolVarP(&s.Verbose, "verbose", "v", s.Verbose, "enable verbose output (more verbose than debug)")
+	fs.BoolVar(&s.Verbose, "verbose", s.Verbose, "enable verbose output (more verbose than debug)")
 	fs.BoolVar(&s.NoColors, "no-colors", s.NoColors, "disable colors")
 	fs.BoolVar(&s.NoEmojis, "no-emojis", s.NoEmojis, "disable emojis")
 }

@@ -443,6 +443,8 @@ github.com/mattfarina/log-go v0.1.0 h1:4hRXohIiGsw/x/+fJ4rwCbb77OjSTHd8Ll311xjoH
 github.com/mattfarina/log-go v0.1.0/go.mod h1:x7MYYu+oSRHzamt1LAABoiNEjb/j0wq4tVHvVSr0Pzw=
 github.com/mattfarina/log-go v0.2.0 h1:orVMo7+cdbFTu6CnmCOJpiu/W/vxU3R3EVfXgMVuubs=
 github.com/mattfarina/log-go v0.2.0/go.mod h1:DR90efNkJ4SIpYIHmBh81wDp3DhC3vsfYNhY3K0XKgg=
+github.com/mattfarina/log-go v0.3.0 h1:HwkLRvZ4Zlz+kT9bLnyTYdOin3H50IChKK6QSMDWXNk=
+github.com/mattfarina/log-go v0.3.0/go.mod h1:DR90efNkJ4SIpYIHmBh81wDp3DhC3vsfYNhY3K0XKgg=
 github.com/mattfarina/pkg v0.0.0-20151113151254-a5dff5fc5aff h1:XcTh+bFRGmHQQ191scQBVjzByFQkLjsZ6+7RqHoX3Hw=
 github.com/mattn/go-colorable v0.0.9 h1:UVL0vNpWh04HeJXV0KLcaT7r06gOH2l4OW6ddYRUIY4=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
