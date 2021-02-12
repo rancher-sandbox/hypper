@@ -122,7 +122,7 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 	}
 
 	if mem, ok := store.Driver.(*driver.Memory); ok {
-		mem.SetNamespace(settings.HelmSettings.Namespace())
+		mem.SetNamespace(settings.Namespace())
 	}
 	c, err := root.ExecuteC()
 	result := buf.String()

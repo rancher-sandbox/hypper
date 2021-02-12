@@ -13,8 +13,15 @@ Flags:
       --timeout duration     time to wait for any individual Kubernetes operation (like Jobs for hooks) (default 5m0s)
 
 Global Flags:
-  -d, --debug       enable debug output
-      --no-colors   disable colors
-      --no-emojis   disable emojis
-      --verbose     enable verbose output (more verbose than debug)
+      --debug                       enable verbose output
+      --kube-apiserver string       the address and the port for the Kubernetes API server
+      --kube-as-group stringArray   group to impersonate for the operation, this flag can be repeated to specify multiple groups.
+      --kube-as-user string         username to impersonate for the operation
+      --kube-ca-file string         the certificate authority file for the Kubernetes API server connection
+      --kube-context string         name of the kubeconfig context to use
+      --kube-token string           bearer token used for authentication
+      --kubeconfig string           path to the kubeconfig file
+  -n, --namespace string            namespace scope for this request
+      --no-colors                   disable colors
+      --no-emojis                   disable emojis
 

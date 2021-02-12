@@ -50,7 +50,7 @@ func newListCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command {
 		Args:    require.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if client.AllNamespaces {
-				if err := cfg.Init(settings.HelmSettings.RESTClientGetter(), "", os.Getenv("HELM_DRIVER"), logger.Debugf); err != nil {
+				if err := cfg.Init(settings.RESTClientGetter(), "", os.Getenv("HELM_DRIVER"), logger.Debugf); err != nil {
 					return err
 				}
 			}
