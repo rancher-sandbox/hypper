@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Masterminds/log-go"
 	"github.com/mattfarina/hypper/internal/test"
-	"github.com/mattfarina/log-go"
 	"helm.sh/helm/v3/pkg/chartutil"
 	kubefake "helm.sh/helm/v3/pkg/kube/fake"
 	"helm.sh/helm/v3/pkg/release"
@@ -18,8 +18,8 @@ import (
 
 	stdlog "log"
 
+	logStd "github.com/Masterminds/log-go/impl/std"
 	"github.com/mattfarina/hypper/pkg/cli"
-	logStd "github.com/mattfarina/log-go/impl/std"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
 	helmAction "helm.sh/helm/v3/pkg/action"

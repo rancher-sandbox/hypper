@@ -4,8 +4,8 @@ import (
 	"errors"
 	"os"
 
+	"github.com/Masterminds/log-go"
 	"github.com/fatih/color"
-	"github.com/mattfarina/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	helmAction "helm.sh/helm/v3/pkg/action"
