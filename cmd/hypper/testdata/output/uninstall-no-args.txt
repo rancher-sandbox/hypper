@@ -16,5 +16,5 @@ Global Flags:
   -d, --debug       enable debug output
       --no-colors   disable colors
       --no-emojis   disable emojis
-  -v, --verbose     enable verbose output (more verbose than debug)
+      --verbose     enable verbose output (more verbose than debug)
 
