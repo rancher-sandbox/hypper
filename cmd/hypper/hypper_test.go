@@ -18,7 +18,7 @@ import (
 
 	stdlog "log"
 
-	logStd "github.com/Masterminds/log-go/impl/std"
+	std "github.com/Masterminds/log-go/impl/std"
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
@@ -94,8 +94,6 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 		return nil, "", err
 	}
 
-	buf := new(bytes.Buffer)
-
 	actionConfig := &helmAction.Configuration{
 		Releases:     store,
 		KubeClient:   &kubefake.PrintingKubeClient{Out: ioutil.Discard},
@@ -104,8 +102,9 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 	}
 
 	// Create our own stdlog with our own buf to consume in impl/std as cobra needs a buf later on
+	buf := new(bytes.Buffer)
 	mylog := stdlog.New(buf, "", 0)
-	log.Current = logStd.New(mylog)
+	log.Current = std.New(mylog)
 
 	root, err := newRootCmd(actionConfig, log.Current, args)
 	if err != nil {
@@ -160,7 +159,6 @@ func resetEnv() func() {
 
 func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 
-	buf := new(bytes.Buffer)
 	args, err := shellwords.Parse(cmd)
 	actionConfig := new(helmAction.Configuration)
 
@@ -169,8 +167,9 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 	}
 
 	// Create our own stdlog with our own buf to consume in impl/std as cobra needs a buf later on
+	buf := new(bytes.Buffer)
 	mylog := stdlog.New(buf, "", 0)
-	log.Current = logStd.New(mylog)
+	log.Current = std.New(mylog)
 
 	root, err := newRootCmd(actionConfig, log.Current, args)
 	if err != nil {
