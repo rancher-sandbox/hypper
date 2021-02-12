@@ -31,6 +31,7 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/mattfarina/log-go"
+	logio "github.com/mattfarina/log-go/io"
 )
 
 var listHelp = `
@@ -60,6 +61,9 @@ func newListCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command {
 				return err
 			}
 
+			// Get an io.Writer compliant logger instance at the info level.
+			wInfo := logio.NewWriter(logger, log.InfoLevel)
+
 			if client.Short {
 
 				names := make([]string, 0)
@@ -71,10 +75,16 @@ func newListCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command {
 
 				switch outputFlag.Value.String() {
 				case "json":
-					output.EncodeJSON(os.Stdout, names)
+					err = output.EncodeJSON(wInfo, names)
+					if err != nil {
+						logger.Error(err)
+					}
 					return nil
 				case "yaml":
-					output.EncodeYAML(os.Stdout, names)
+					err = output.EncodeYAML(wInfo, names)
+					if err != nil {
+						logger.Error(err)
+					}
 					return nil
 				case "table":
 					for _, res := range results {
@@ -82,11 +92,11 @@ func newListCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command {
 					}
 					return nil
 				default:
-					return outfmt.Write(os.Stdout, newReleaseListWriter(results, client.TimeFormat))
+					return outfmt.Write(wInfo, newReleaseListWriter(results, client.TimeFormat))
 				}
 			}
 
-			return outfmt.Write(os.Stdout, newReleaseListWriter(results, client.TimeFormat))
+			return outfmt.Write(wInfo, newReleaseListWriter(results, client.TimeFormat))
 		},
 	}
 
@@ -160,13 +170,13 @@ func (r *releaseListWriter) WriteTable(out io.Writer) error {
 	for _, r := range r.releases {
 		table.AddRow(r.Name, r.Namespace, r.Revision, r.Updated, r.Status, r.Chart, r.AppVersion)
 	}
-	return output.EncodeTable(os.Stdout, table)
+	return output.EncodeTable(out, table)
 }
 
 func (r *releaseListWriter) WriteJSON(out io.Writer) error {
-	return output.EncodeJSON(os.Stdout, r.releases)
+	return output.EncodeJSON(out, r.releases)
 }
 
 func (r *releaseListWriter) WriteYAML(out io.Writer) error {
-	return output.EncodeYAML(os.Stdout, r.releases)
+	return output.EncodeYAML(out, r.releases)
 }
