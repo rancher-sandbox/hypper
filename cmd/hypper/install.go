@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/Masterminds/log-go"
 	"github.com/mattfarina/hypper/pkg/eyecandy"
-	"github.com/mattfarina/log-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"

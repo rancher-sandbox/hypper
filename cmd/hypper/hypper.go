@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Masterminds/log-go"
+	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattfarina/hypper/pkg/eyecandy"
-	"github.com/mattfarina/log-go"
-	logcli "github.com/mattfarina/log-go/impl/cli"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	helmAction "helm.sh/helm/v3/pkg/action"
