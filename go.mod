@@ -3,10 +3,10 @@ module github.com/mattfarina/hypper
 go 1.15
 
 require (
+	github.com/Masterminds/log-go v0.4.0
 	github.com/fatih/color v1.10.0
 	github.com/gosuri/uitable v0.0.4
 	github.com/kyokomi/emoji/v2 v2.2.8
-	github.com/Masterminds/log-go v0.4.0
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.1

@@ -24,7 +24,7 @@ import (
 
 	"helm.sh/helm/v3/pkg/cli/output"
 
-	"github.com/mattfarina/log-go"
+	"github.com/Masterminds/log-go"
 )
 
 const outputFlag = "output"

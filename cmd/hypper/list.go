@@ -30,8 +30,8 @@ import (
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/release"
 
-	"github.com/mattfarina/log-go"
-	logio "github.com/mattfarina/log-go/io"
+	"github.com/Masterminds/log-go"
+	logio "github.com/Masterminds/log-go/io"
 )
 
 var listHelp = `
