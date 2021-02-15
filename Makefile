@@ -40,7 +40,7 @@ build: lint $(BINDIR)/$(BINNAME)
 SRC := $(shell find . -type f -name '*.go' -print) go.mod go.sum
 
 $(BINDIR)/$(BINNAME): $(SRC)
-	go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME)${GOEXE} ./cmd/hypper
+	go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME) ./cmd/hypper
 
 .PHONY: install
 install: build
