@@ -1,5 +1,9 @@
 BINDIR	:= $(CURDIR)/bin
-BINNAME	?= hypper
+ifeq ($(OS),Windows_NT)
+	BINNAME	?= "hypper.exe"
+else
+	BINNAME	?= "hypper"
+endif
 INSTALL_PATH ?= /usr/local/bin
 
 SHELL      = /usr/bin/env bash
@@ -36,7 +40,7 @@ build: lint $(BINDIR)/$(BINNAME)
 SRC := $(shell find . -type f -name '*.go' -print) go.mod go.sum
 
 $(BINDIR)/$(BINNAME): $(SRC)
-	GO111MODULE=on go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME) ./cmd/hypper
+	go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME) ./cmd/hypper
 
 .PHONY: install
 install: build
@@ -50,12 +54,17 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	@echo "==> Running unit tests <=="
-	GO111MODULE=on go test $(GOFLAGS) -run $(TESTS) $(PKG) $(TESTFLAGS)
+	go test $(GOFLAGS) -run $(TESTS) $(PKG) $(TESTFLAGS)
+
+.PHONY: test-style
+test-style:
+	@echo "==> Checking style <=="
+	golangci-lint run
 
 .PHONY: coverage
 coverage:
 	@echo "==> Running coverage tests <=="
-	GO111MODULE=on go test $(GOFLAGS) -run $(TESTS) $(PKG) -coverprofile=coverage.out --covermode=atomic
+	go test $(GOFLAGS) -run $(TESTS) $(PKG) -coverprofile=coverage.out --covermode=atomic
 
 .PHONY: lint
 lint: fmt vet
