@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/log-go"
-	"github.com/mattfarina/hypper/pkg/eyecandy"
+	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
 	helmAction "helm.sh/helm/v3/pkg/action"

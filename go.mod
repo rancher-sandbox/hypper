@@ -1,4 +1,4 @@
-module github.com/mattfarina/hypper
+module github.com/rancher-sandbox/hypper
 
 go 1.15
 
