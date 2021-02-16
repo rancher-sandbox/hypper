@@ -1,1 +1,1 @@
-[INFO]    ["hummingbird","iguana","rocket","starlord"]
+["hummingbird","iguana","rocket","starlord"]

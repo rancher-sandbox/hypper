@@ -16,9 +16,7 @@ import (
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"helm.sh/helm/v3/pkg/time"
 
-	stdlog "log"
-
-	std "github.com/Masterminds/log-go/impl/std"
+	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
@@ -101,18 +99,20 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 		Log:          func(format string, v ...interface{}) {},
 	}
 
-	// Create our own stdlog with our own buf to consume in impl/std as cobra needs a buf later on
+	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 	buf := new(bytes.Buffer)
-	mylog := stdlog.New(buf, "", 0)
-	log.Current = std.New(mylog)
+	logger := logcli.NewStandard()
+	logger.InfoOut = buf
+	logger.ErrorOut = buf
+	log.Current = logger
 
 	root, err := newRootCmd(actionConfig, log.Current, args)
 	if err != nil {
 		return nil, "", err
 	}
 
-	root.SetOut(buf)
-	root.SetErr(buf)
+	root.SetOut(logger.InfoOut)
+	root.SetErr(logger.ErrorOut)
 	root.SetArgs(args)
 
 	oldStdin := os.Stdin
@@ -166,18 +166,20 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 		return nil, "", err
 	}
 
-	// Create our own stdlog with our own buf to consume in impl/std as cobra needs a buf later on
+	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 	buf := new(bytes.Buffer)
-	mylog := stdlog.New(buf, "", 0)
-	log.Current = std.New(mylog)
+	logger := logcli.NewStandard()
+	logger.InfoOut = buf
+	logger.ErrorOut = buf
+	log.Current = logger
 
 	root, err := newRootCmd(actionConfig, log.Current, args)
 	if err != nil {
 		return nil, "", err
 	}
 
-	root.SetOut(buf)
-	root.SetErr(buf)
+	root.SetOut(logger.InfoOut)
+	root.SetErr(logger.ErrorOut)
 	root.SetArgs(args)
 
 	oldStdin := os.Stdin

@@ -1,4 +1,4 @@
-[INFO]    hummingbird
-[INFO]    iguana
-[INFO]    rocket
-[INFO]    starlord
+hummingbird
+iguana
+rocket
+starlord
