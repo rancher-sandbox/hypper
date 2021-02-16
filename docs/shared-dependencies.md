@@ -9,13 +9,20 @@ useful for software running as system services.
 
 ## Use Case
 
-As someone installing an application, I would like to install shared dependencies
-if they are not present.
+As a cluster administrator, I would like to install a cluster level application
+that has shared system dependencies. If one of the share dependencies is
+already installed than the installed one should be used. Shared dependencies
+should only be installed if not present already.
+
+_Note: system level or cluster level used in this document are not a formal
+Kubernetes or Rancher construct. It's an idea that cluster administrators need
+to install some things at the cluster level where there will be just one
+instance in the cluster._
 
 ### Prometheus Example
 
 Consider the case where cluster operators want to have a single instance of
-Prometheus running as a system wide service. There should only be one instance
+Prometheus running as a system service. There should only be one instance
 running in the cluster and all (or most) applications that need prometheus
 would use this single instance.
 
