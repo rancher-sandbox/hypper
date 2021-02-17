@@ -30,6 +30,7 @@ func newRootCmd(actionConfig *helmAction.Configuration, logger log.Logger, args 
 	cmd.AddCommand(
 		newInstallCmd(actionConfig, logger),
 		newUninstallCmd(actionConfig, logger),
+		newListCmd(actionConfig, logger),
 	)
 
 	flags.ParseErrorsWhitelist.UnknownFlags = true

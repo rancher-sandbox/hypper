@@ -1,10 +1,6 @@
 package main
 
 import (
-	"os"
-
-	"github.com/Masterminds/log-go"
-	"github.com/mattfarina/hypper/pkg/eyecandy"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
@@ -16,6 +12,10 @@ import (
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
+
+	"github.com/Masterminds/log-go"
+	logio "github.com/Masterminds/log-go/io"
+	"github.com/mattfarina/hypper/pkg/eyecandy"
 )
 
 var installDesc = `install a helm chart by wrapping helm calls (for now)`
@@ -45,6 +45,9 @@ func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *c
 func runInstall(args []string, client *helmAction.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
 	helmSettings := helmCli.New()
 	// TODO add hypper specific code here
+
+	// Get an io.Writer compliant logger instance at the info level.
+	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
 	if client.Version == "" && client.Devel {
 		logger.Debug("setting version to >0.0.0-0")
@@ -91,7 +94,7 @@ func runInstall(args []string, client *helmAction.Install, valueOpts *values.Opt
 		if err := helmAction.CheckDependencies(chartRequested, req); err != nil {
 			if client.DependencyUpdate {
 				man := &downloader.Manager{
-					Out:              os.Stdout,
+					Out:              wInfo,
 					ChartPath:        cp,
 					Keyring:          client.ChartPathOptions.Keyring,
 					SkipUpdate:       false,

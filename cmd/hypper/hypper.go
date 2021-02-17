@@ -21,9 +21,10 @@ var settings = cli.New()
 
 func main() {
 	logger := logcli.NewStandard()
+	log.Current = logger
 
 	actionConfig := new(helmAction.Configuration)
-	cmd, err := newRootCmd(actionConfig, logger, os.Args[1:])
+	cmd, err := newRootCmd(actionConfig, log.Current, os.Args[1:])
 	if settings.Debug {
 		logger.Level = log.DebugLevel
 	}
@@ -41,7 +42,7 @@ func main() {
 
 	cobra.OnInitialize(func() {
 		helmDriver := os.Getenv("HELM_DRIVER")
-		if err := actionConfig.Init(settings.HelmSettings.RESTClientGetter(), settings.HelmSettings.Namespace(), helmDriver, logger.Debugf); err != nil {
+		if err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, logger.Debugf); err != nil {
 			log.Fatal(err)
 		}
 		if helmDriver == "memory" {
@@ -90,5 +91,5 @@ func loadReleasesInMemory(actionConfig *helmAction.Configuration) {
 		}
 	}
 	// Must reset namespace to the proper one
-	mem.SetNamespace(settings.HelmSettings.Namespace())
+	mem.SetNamespace(settings.Namespace())
 }
