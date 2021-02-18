@@ -1,14 +1,43 @@
 package action
 
 import (
-	"fmt"
+	"strings"
 
-	helmAction "helm.sh/helm/v3/pkg/action"
+	"github.com/pkg/errors"
+
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
-func RunInstall(action *helmAction.Configuration, client *helmAction.Install, args []string) error {
+// Install is a composite type of Helm's Install type
+type Install struct {
+	*action.Install
+}
 
-	fmt.Println("there is no logic yet")
-	fmt.Println(args[0])
+// NewInstall creates a new Install object with the given configuration,
+// by wrapping action.NewInstall
+func NewInstall(cfg *Configuration) *Install {
+	return &Install{
+		action.NewInstall(cfg.Configuration),
+	}
+}
+
+// CheckDependencies checks the dependencies for a chart.
+func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
+	var missing []string
+
+OUTER:
+	for _, r := range reqs {
+		for _, d := range ch.Dependencies() {
+			if d.Name() == r.Name {
+				continue OUTER
+			}
+		}
+		missing = append(missing, r.Name)
+	}
+
+	if len(missing) > 0 {
+		return errors.Errorf("found in Chart.yaml, but missing in charts/ directory: %s", strings.Join(missing, ", "))
+	}
 	return nil
 }
