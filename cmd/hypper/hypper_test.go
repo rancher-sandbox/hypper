@@ -93,11 +93,14 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 		return nil, "", err
 	}
 
-	actionConfig := &helmAction.Configuration{
+	helmActionConfig := helmAction.Configuration{
 		Releases:     store,
 		KubeClient:   &kubefake.PrintingKubeClient{Out: ioutil.Discard},
 		Capabilities: chartutil.DefaultCapabilities,
 		Log:          func(format string, v ...interface{}) {},
+	}
+	actionConfig := &action.Configuration{
+		Configuration: &helmActionConfig,
 	}
 
 	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
