@@ -12,6 +12,7 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+	helmAction "helm.sh/helm/v3/pkg/action"
 	kubefake "helm.sh/helm/v3/pkg/kube/fake"
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage/driver"
@@ -23,7 +24,11 @@ func main() {
 	logger := logcli.NewStandard()
 	log.Current = logger
 
-	actionConfig := new(action.Configuration)
+	helmActionConfig := new(helmAction.Configuration)
+	actionConfig := &action.Configuration{
+		Configuration: helmActionConfig,
+	}
+
 	cmd, err := newRootCmd(actionConfig, log.Current, os.Args[1:])
 	if settings.Debug {
 		logger.Level = log.DebugLevel
@@ -42,7 +47,7 @@ func main() {
 
 	cobra.OnInitialize(func() {
 		helmDriver := os.Getenv("HELM_DRIVER")
-		if err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, logger.Debugf); err != nil {
+		if err := actionConfig.Configuration.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, logger.Debugf); err != nil {
 			log.Fatal(err)
 		}
 		if helmDriver == "memory" {
