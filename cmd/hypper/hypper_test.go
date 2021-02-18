@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/Masterminds/log-go"
-	"github.com/mattfarina/hypper/internal/test"
+	"github.com/rancher-sandbox/hypper/internal/test"
 	"helm.sh/helm/v3/pkg/chartutil"
 	kubefake "helm.sh/helm/v3/pkg/kube/fake"
 	"helm.sh/helm/v3/pkg/release"
@@ -17,8 +17,8 @@ import (
 	"helm.sh/helm/v3/pkg/time"
 
 	logcli "github.com/Masterminds/log-go/impl/cli"
-	"github.com/mattfarina/hypper/pkg/cli"
 	"github.com/mattn/go-shellwords"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/spf13/cobra"
 	helmAction "helm.sh/helm/v3/pkg/action"
 )

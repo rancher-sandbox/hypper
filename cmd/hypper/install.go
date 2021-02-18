@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/pkg/errors"
+	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
 	helmAction "helm.sh/helm/v3/pkg/action"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
-	"github.com/mattfarina/hypper/pkg/eyecandy"
 )
 
 var installDesc = `install a helm chart by wrapping helm calls (for now)`
