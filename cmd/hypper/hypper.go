@@ -7,11 +7,11 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
+	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	helmAction "helm.sh/helm/v3/pkg/action"
 	kubefake "helm.sh/helm/v3/pkg/kube/fake"
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage/driver"
@@ -23,7 +23,7 @@ func main() {
 	logger := logcli.NewStandard()
 	log.Current = logger
 
-	actionConfig := new(helmAction.Configuration)
+	actionConfig := new(action.Configuration)
 	cmd, err := newRootCmd(actionConfig, log.Current, os.Args[1:])
 	if settings.Debug {
 		logger.Level = log.DebugLevel
@@ -58,7 +58,7 @@ func main() {
 
 // This function loads releases into the memory storage if the
 // environment variable is properly set.
-func loadReleasesInMemory(actionConfig *helmAction.Configuration) {
+func loadReleasesInMemory(actionConfig *action.Configuration) {
 	filePaths := strings.Split(os.Getenv("HELM_MEMORY_DRIVER_DATA"), ":")
 	if len(filePaths) == 0 {
 		return

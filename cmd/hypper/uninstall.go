@@ -4,16 +4,16 @@ import (
 	"time"
 
 	"github.com/Masterminds/log-go"
+	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
-	helmAction "helm.sh/helm/v3/pkg/action"
 )
 
 var uninstallDesc = `remove a helm deployment by wrapping helm calls`
 
-func newUninstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *cobra.Command {
-	client := helmAction.NewUninstall(actionConfig)
+func newUninstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
+	client := action.NewUninstall(actionConfig)
 	cmd := &cobra.Command{
 		Use:   "uninstall [NAME]",
 		Short: "uninstall a deployment",
