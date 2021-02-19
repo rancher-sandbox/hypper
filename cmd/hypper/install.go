@@ -18,7 +18,20 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 )
 
-var installDesc = `install a helm chart by wrapping helm calls (for now)`
+const installDesc = `
+This command installs a chart archive.
+
+The install argument must be a chart reference, a path to a packaged chart,
+a path to an unpacked chart directory or a URL.
+
+There are five different ways you can select the release name and namespace
+where the chart will be installed. By priority order:
+
+1. By the args passed from the CLI: hypper install mymaria example/mariadb -n system
+2. By using hypper.cattle.io annotations in the Chart.yaml
+2. By using catalog.cattle.io annotations in the Chart.yaml
+3. By using the current namespace as configured with the kubeconfig, or the flag --generate-name
+`
 
 func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
 	client := action.NewInstall(actionConfig)
@@ -29,7 +42,6 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 		Long:  installDesc,
 		Args:  require.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
-			logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing %s…", args[0]))
 			// TODO decide how to use returned rel:
 			_, err := runInstall(args, client, valueOpts, logger)
 			if err != nil {

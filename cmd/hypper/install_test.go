@@ -6,14 +6,24 @@ import (
 
 func TestInstallCmd(t *testing.T) {
 	tests := []cmdTestCase{
-		// Install, base case
+		// Install, no chart specified
 		{
-			name: "basic install",
-			cmd:  "install empty testdata/testcharts/empty",
-		},
-		{
-			name:      "install with no chart specified",
+			name:      "install, no chart specified",
 			cmd:       "install",
+			golden:    "output/install-no-chart.txt",
+			wantError: true,
+		},
+		// Install, name and namespace as args
+		{
+			name:   "install, name and ns as args",
+			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n=led",
+			golden: "output/install-name-ns-args.txt",
+		},
+		// Install, no name or annotations specified
+		{
+			name:      "install, with no name or annot specified",
+			cmd:       "install testdata/testcharts/vanilla-helm",
+			golden:    "output/install-no-name-or-annot.txt",
 			wantError: true,
 		},
 	}
