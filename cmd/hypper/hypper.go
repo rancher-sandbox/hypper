@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
+	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
@@ -23,7 +24,11 @@ func main() {
 	logger := logcli.NewStandard()
 	log.Current = logger
 
-	actionConfig := new(helmAction.Configuration)
+	helmActionConfig := new(helmAction.Configuration)
+	actionConfig := &action.Configuration{
+		Configuration: helmActionConfig,
+	}
+
 	cmd, err := newRootCmd(actionConfig, log.Current, os.Args[1:])
 	if settings.Debug {
 		logger.Level = log.DebugLevel
@@ -42,7 +47,7 @@ func main() {
 
 	cobra.OnInitialize(func() {
 		helmDriver := os.Getenv("HELM_DRIVER")
-		if err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, logger.Debugf); err != nil {
+		if err := actionConfig.Configuration.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, logger.Debugf); err != nil {
 			log.Fatal(err)
 		}
 		if helmDriver == "memory" {
@@ -58,7 +63,7 @@ func main() {
 
 // This function loads releases into the memory storage if the
 // environment variable is properly set.
-func loadReleasesInMemory(actionConfig *helmAction.Configuration) {
+func loadReleasesInMemory(actionConfig *action.Configuration) {
 	filePaths := strings.Split(os.Getenv("HELM_MEMORY_DRIVER_DATA"), ":")
 	if len(filePaths) == 0 {
 		return

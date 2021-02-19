@@ -2,10 +2,8 @@ package main
 
 import (
 	"github.com/pkg/errors"
-	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/cmd/helm/require"
-	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	helmCli "helm.sh/helm/v3/pkg/cli"
@@ -16,13 +14,15 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/rancher-sandbox/hypper/pkg/action"
+	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 )
 
 var installDesc = `install a helm chart by wrapping helm calls (for now)`
 
-func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *cobra.Command {
-	client := helmAction.NewInstall(actionConfig)
-	valuesOpts := &values.Options{}
+func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
+	client := action.NewInstall(actionConfig)
+	valueOpts := &values.Options{}
 	cmd := &cobra.Command{
 		Use:   "install [NAME] [CHART]",
 		Short: "install a chart",
@@ -31,7 +31,7 @@ func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *c
 		RunE: func(_ *cobra.Command, args []string) error {
 			logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing %s…", args[0]))
 			// TODO decide how to use returned rel:
-			_, err := runInstall(args, client, valuesOpts, logger)
+			_, err := runInstall(args, client, valueOpts, logger)
 			if err != nil {
 				return err
 			}
@@ -42,9 +42,8 @@ func newInstallCmd(actionConfig *helmAction.Configuration, logger log.Logger) *c
 	return cmd
 }
 
-func runInstall(args []string, client *helmAction.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
+func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
 	helmSettings := helmCli.New()
-	// TODO add hypper specific code here
 
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
@@ -91,7 +90,7 @@ func runInstall(args []string, client *helmAction.Install, valueOpts *values.Opt
 		// If CheckDependencies returns an error, we have unfulfilled dependencies.
 		// As of Helm 2.4.0, this is treated as a stopping condition:
 		// https://github.com/helm/helm/issues/2209
-		if err := helmAction.CheckDependencies(chartRequested, req); err != nil {
+		if err := action.CheckDependencies(chartRequested, req); err != nil {
 			if client.DependencyUpdate {
 				man := &downloader.Manager{
 					Out:              wInfo,
