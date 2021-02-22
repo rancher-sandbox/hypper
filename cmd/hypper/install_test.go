@@ -19,6 +19,24 @@ func TestInstallCmd(t *testing.T) {
 			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n=led",
 			golden: "output/install-name-ns-args.txt",
 		},
+		// Install, hypper annot have priority over fallback annot
+		{
+			name:   "install, hypper annot have priority over fallback annot",
+			cmd:    "install testdata/testcharts/hypper-annot",
+			golden: "output/install-hypper-annot.txt",
+		},
+		// Install, fallback annotations
+		{
+			name:   "install, fallback annotations",
+			cmd:    "install testdata/testcharts/fallback-annot",
+			golden: "output/install-fallback-annot.txt",
+		},
+		// Install, annotations have priority over generate-name
+		{
+			name:   "install, annot have priority over generate-name",
+			cmd:    "install testdata/testcharts/hypper-annot --generate-name",
+			golden: "output/install-hypper-annot.txt",
+		},
 		// Install, no name or annotations specified
 		{
 			name:      "install, with no name or annot specified",
