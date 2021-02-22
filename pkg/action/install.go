@@ -25,23 +25,9 @@ func NewInstall(cfg *Configuration) *Install {
 }
 
 // CheckDependencies checks the dependencies for a chart.
+// by wrapping action.CheckDependencies
 func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
-	var missing []string
-
-OUTER:
-	for _, r := range reqs {
-		for _, d := range ch.Dependencies() {
-			if d.Name() == r.Name {
-				continue OUTER
-			}
-		}
-		missing = append(missing, r.Name)
-	}
-
-	if len(missing) > 0 {
-		return errors.Errorf("found in Chart.yaml, but missing in charts/ directory: %s", strings.Join(missing, ", "))
-	}
-	return nil
+	return action.CheckDependencies(ch, reqs)
 }
 
 // Run executes the installation
