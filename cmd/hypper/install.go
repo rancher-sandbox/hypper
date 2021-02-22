@@ -75,11 +75,10 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		client.Version = ">0.0.0-0"
 	}
 
-	name, chart, err := client.NameAndChart(args)
+	chart, err := client.Chart(args)
 	if err != nil {
 		return nil, err
 	}
-	client.ReleaseName = name
 
 	cp, err := client.ChartPathOptions.LocateChart(chart, helmSettings)
 	if err != nil {
@@ -99,6 +98,14 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	if err != nil {
 		return nil, err
 	}
+
+	client.SetNamespace(chartRequested, helmSettings.Namespace())
+
+	name, err := client.Name(chartRequested, args)
+	if err != nil {
+		return nil, err
+	}
+	client.ReleaseName = name
 
 	if err := checkIfInstallable(chartRequested); err != nil {
 		return nil, err
@@ -137,7 +144,6 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	client.Namespace = helmSettings.Namespace()
 	return client.Run(chartRequested, vals)
 }
 

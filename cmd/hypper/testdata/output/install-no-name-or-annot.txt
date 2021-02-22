@@ -1,4 +1,4 @@
-Error: must either provide a name or specify --generate-name
+Error: must either provide a name, set the correct chart annotations, or specify --generate-name
 Usage:
   hypper install [NAME] [CHART] [flags]
 
