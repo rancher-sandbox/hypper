@@ -3,10 +3,12 @@ package main
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	helmCli "helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
@@ -36,6 +38,8 @@ where the chart will be installed. By priority order:
 func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
 	client := action.NewInstall(actionConfig)
 	valueOpts := &values.Options{}
+	var outfmt output.Format
+
 	cmd := &cobra.Command{
 		Use:   "install [NAME] [CHART]",
 		Short: "install a chart",
@@ -51,7 +55,13 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 			return nil
 		},
 	}
+	addInstallFlags(cmd, cmd.Flags(), client, valueOpts)
+	bindOutputFlag(cmd, &outfmt)
 	return cmd
+}
+
+func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Install, valueOpts *values.Options) {
+	f.BoolVarP(&client.GenerateName, "generate-name", "g", false, "generate the name (and omit the NAME parameter)")
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
