@@ -149,3 +149,11 @@ func (i *Install) Chart(args []string) (string, error) {
 	// len(args) == 1
 	return args[0], nil
 }
+
+// NameAndChart overloads Helm's NameAndChart. It always fails.
+//
+// On Hypper, we need to read the chart annotations to know the correct release name.
+// Therefore, it cannot happen in this function.
+func (i *Install) NameAndChart(args []string) (string, string, error) {
+	return "", "", errors.New("NameAndChart() cannot be used")
+}
