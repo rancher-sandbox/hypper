@@ -49,6 +49,7 @@ install: build
 .PHONY: test
 test: lint build
 test: TESTFLAGS += -race -v
+test: test-style
 test: test-unit
 
 .PHONY: test-unit
