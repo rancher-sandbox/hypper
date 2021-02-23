@@ -49,12 +49,20 @@ install: build
 .PHONY: test
 test: lint build
 test: TESTFLAGS += -race -v
+test: test-style
 test: test-unit
 
 .PHONY: test-unit
 test-unit:
 	@echo "==> Running unit tests <=="
 	go test $(GOFLAGS) -run $(TESTS) $(PKG) $(TESTFLAGS)
+
+# Generate golden files used in unit tests
+.PHONY: gen-test-golden
+gen-test-golden:
+gen-test-golden: PKG = ./cmd/hypper ./pkg/action
+gen-test-golden: TESTFLAGS = -update
+gen-test-golden: test-unit
 
 .PHONY: test-style
 test-style:

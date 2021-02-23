@@ -29,7 +29,7 @@ jobs:
           stable: '!contains(${{ matrix.go }}, "beta") && !contains(${{ matrix.go }}, "rc")'
       - name: Build Hypper
         run: make build
-      - name: Test Hypper
-        run: make test
+      - name: Unit test Hypper
+        run: make test-unit
       - name: Show Coverage of Hypper
         run: make coverage
