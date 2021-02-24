@@ -29,7 +29,7 @@ import (
 
 	"github.com/rancher-sandbox/hypper/internal/helm/pkg/getter"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
-	"helm.sh/helm/v3/pkg/helmpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 
 	"helm.sh/helm/v3/pkg/chart"
 )
@@ -251,7 +251,7 @@ func TestDownloadIndexFile(t *testing.T) {
 		verifyLocalIndex(t, i)
 
 		// Check that charts file is also created
-		idx = filepath.Join(r.CachePath, helmpath.CacheChartsFile(r.Config.Name))
+		idx = filepath.Join(r.CachePath, hypperpath.CacheChartsFile(r.Config.Name))
 		if _, err := os.Stat(idx); err != nil {
 			t.Fatalf("error finding created charts file: %#v", err)
 		}
@@ -309,7 +309,7 @@ func TestDownloadIndexFile(t *testing.T) {
 		verifyLocalIndex(t, i)
 
 		// Check that charts file is also created
-		idx = filepath.Join(r.CachePath, helmpath.CacheChartsFile(r.Config.Name))
+		idx = filepath.Join(r.CachePath, hypperpath.CacheChartsFile(r.Config.Name))
 		if _, err := os.Stat(idx); err != nil {
 			t.Fatalf("error finding created charts file: %#v", err)
 		}

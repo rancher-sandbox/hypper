@@ -24,7 +24,7 @@ import (
 	"github.com/Masterminds/vcs"
 
 	"github.com/rancher-sandbox/hypper/internal/test/ensure"
-	"helm.sh/helm/v3/pkg/helmpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 )
 
 var _ Installer = new(VCSInstaller)
@@ -51,8 +51,8 @@ func (r *testRepo) UpdateVersion(version string) error {
 func TestVCSInstaller(t *testing.T) {
 	defer ensure.HelmHome(t)()
 
-	if err := os.MkdirAll(helmpath.DataPath("plugins"), 0755); err != nil {
-		t.Fatalf("Could not create %s: %s", helmpath.DataPath("plugins"), err)
+	if err := os.MkdirAll(hypperpath.DataPath("plugins"), 0755); err != nil {
+		t.Fatalf("Could not create %s: %s", hypperpath.DataPath("plugins"), err)
 	}
 
 	source := "https://github.com/adamreese/helm-env"
@@ -82,8 +82,8 @@ func TestVCSInstaller(t *testing.T) {
 	if repo.current != "0.1.1" {
 		t.Fatalf("expected version '0.1.1', got %q", repo.current)
 	}
-	if i.Path() != helmpath.DataPath("plugins", "helm-env") {
-		t.Fatalf("expected path '$XDG_CONFIG_HOME/helm/plugins/helm-env', got %q", i.Path())
+	if i.Path() != hypperpath.DataPath("plugins", "helm-env") {
+		t.Fatalf("expected path '$XDG_CONFIG_HOME/hypper/plugins/helm-env', got %q", i.Path())
 	}
 
 	// Install again to test plugin exists error

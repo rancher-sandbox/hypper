@@ -2,8 +2,9 @@ package eyecandy
 
 import (
 	"fmt"
-	"github.com/kyokomi/emoji/v2"
 	"regexp"
+
+	"github.com/kyokomi/emoji/v2"
 )
 
 func ESPrintf(emojisDisabled bool, format string, v ...interface{}) string {

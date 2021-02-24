@@ -18,7 +18,7 @@ package installer // import "helm.sh/helm/v3/pkg/plugin/installer"
 import (
 	"path/filepath"
 
-	"helm.sh/helm/v3/pkg/helmpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 )
 
 type base struct {
@@ -35,5 +35,5 @@ func (b *base) Path() string {
 	if b.Source == "" {
 		return ""
 	}
-	return helmpath.DataPath("plugins", filepath.Base(b.Source))
+	return hypperpath.DataPath("plugins", filepath.Base(b.Source))
 }

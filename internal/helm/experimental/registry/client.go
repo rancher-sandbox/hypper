@@ -32,8 +32,8 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/helmpath"
 )
 
 const (
@@ -64,7 +64,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	}
 	// set defaults if fields are missing
 	if client.credentialsFile == "" {
-		client.credentialsFile = helmpath.CachePath("registry", CredentialsFileBasename)
+		client.credentialsFile = hypperpath.CachePath("registry", CredentialsFileBasename)
 	}
 	if client.authorizer == nil {
 		authClient, err := auth.NewClient(client.credentialsFile)
@@ -88,7 +88,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		cache, err := NewCache(
 			CacheOptDebug(client.debug),
 			CacheOptWriter(client.out),
-			CacheOptRoot(helmpath.CachePath("registry", CacheRootDir)),
+			CacheOptRoot(hypperpath.CachePath("registry", CacheRootDir)),
 		)
 		if err != nil {
 			return nil, err

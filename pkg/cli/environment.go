@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"github.com/spf13/pflag"
-	"helm.sh/helm/v3/pkg/helmpath"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
@@ -62,10 +62,10 @@ func New() *EnvSettings {
 		KubeAsGroups:     envCSV("HELM_KUBEASGROUPS"),
 		KubeAPIServer:    os.Getenv("HELM_KUBEAPISERVER"),
 		KubeCaFile:       os.Getenv("HELM_KUBECAFILE"),
-		PluginsDirectory: envOr("HELM_PLUGINS", helmpath.DataPath("plugins")),
-		RegistryConfig:   envOr("HELM_REGISTRY_CONFIG", helmpath.ConfigPath("registry.json")),
-		RepositoryConfig: envOr("HELM_REPOSITORY_CONFIG", helmpath.ConfigPath("repositories.yaml")),
-		RepositoryCache:  envOr("HELM_REPOSITORY_CACHE", helmpath.CachePath("repository")),
+		PluginsDirectory: envOr("HYPPER_PLUGINS", hypperpath.DataPath("plugins")),
+		RegistryConfig:   envOr("HYPPER_REGISTRY_CONFIG", hypperpath.ConfigPath("registry.json")),
+		RepositoryConfig: envOr("HYPPER_REPOSITORY_CONFIG", hypperpath.ConfigPath("repositories.yaml")),
+		RepositoryCache:  envOr("HYPPER_REPOSITORY_CACHE", hypperpath.CachePath("repository")),
 	}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
@@ -137,9 +137,9 @@ func envCSV(name string) (ls []string) {
 func (s *EnvSettings) EnvVars() map[string]string {
 	envvars := map[string]string{
 		"HELM_BIN":               os.Args[0],
-		"HELM_CACHE_HOME":        helmpath.CachePath(""),
-		"HELM_CONFIG_HOME":       helmpath.ConfigPath(""),
-		"HELM_DATA_HOME":         helmpath.DataPath(""),
+		"HYPPER_CACHE_HOME":      hypperpath.CachePath(""),
+		"HYPPER_CONFIG_HOME":     hypperpath.ConfigPath(""),
+		"HYPPER_DATA_HOME":       hypperpath.DataPath(""),
 		"HELM_DEBUG":             fmt.Sprint(s.Debug),
 		"HELM_PLUGINS":           s.PluginsDirectory,
 		"HELM_REGISTRY_CONFIG":   s.RegistryConfig,

@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"helm.sh/helm/v3/pkg/helmpath"
-	"helm.sh/helm/v3/pkg/helmpath/xdg"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath/xdg"
 )
 
 // HelmHome sets up a Helm Home in a temp dir.
@@ -33,9 +33,9 @@ func HelmHome(t *testing.T) func() {
 	os.Setenv(xdg.CacheHomeEnvVar, base)
 	os.Setenv(xdg.ConfigHomeEnvVar, base)
 	os.Setenv(xdg.DataHomeEnvVar, base)
-	os.Setenv(helmpath.CacheHomeEnvVar, "")
-	os.Setenv(helmpath.ConfigHomeEnvVar, "")
-	os.Setenv(helmpath.DataHomeEnvVar, "")
+	os.Setenv(hypperpath.CacheHomeEnvVar, "")
+	os.Setenv(hypperpath.ConfigHomeEnvVar, "")
+	os.Setenv(hypperpath.DataHomeEnvVar, "")
 	return func() {
 		os.RemoveAll(base)
 	}

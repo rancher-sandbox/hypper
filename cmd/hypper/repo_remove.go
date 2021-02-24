@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"helm.sh/helm/v3/cmd/helm/require"
-	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/repo"
 )
 
@@ -65,12 +65,12 @@ func (o *repoRemoveOptions) run(out io.Writer) error {
 }
 
 func removeRepoCache(root, name string) error {
-	idx := filepath.Join(root, helmpath.CacheChartsFile(name))
+	idx := filepath.Join(root, hypperpath.CacheChartsFile(name))
 	if _, err := os.Stat(idx); err == nil {
 		os.Remove(idx)
 	}
 
-	idx = filepath.Join(root, helmpath.CacheIndexFile(name))
+	idx = filepath.Join(root, hypperpath.CacheIndexFile(name))
 	if _, err := os.Stat(idx); os.IsNotExist(err) {
 		return nil
 	} else if err != nil {

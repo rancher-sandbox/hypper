@@ -33,8 +33,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/rancher-sandbox/hypper/internal/helm/pkg/getter"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/provenance"
 )
 
@@ -75,7 +75,7 @@ func NewChartRepository(cfg *Entry, getters getter.Providers) (*ChartRepository,
 		Config:    cfg,
 		IndexFile: NewIndexFile(),
 		Client:    client,
-		CachePath: helmpath.CachePath("repository"),
+		CachePath: hypperpath.CachePath("repository"),
 	}, nil
 }
 
@@ -147,12 +147,12 @@ func (r *ChartRepository) DownloadIndexFile() (string, error) {
 	for name := range indexFile.Entries {
 		fmt.Fprintln(&charts, name)
 	}
-	chartsFile := filepath.Join(r.CachePath, helmpath.CacheChartsFile(r.Config.Name))
+	chartsFile := filepath.Join(r.CachePath, hypperpath.CacheChartsFile(r.Config.Name))
 	os.MkdirAll(filepath.Dir(chartsFile), 0755)
 	ioutil.WriteFile(chartsFile, []byte(charts.String()), 0644)
 
 	// Create the index file in the cache directory
-	fname := filepath.Join(r.CachePath, helmpath.CacheIndexFile(r.Config.Name))
+	fname := filepath.Join(r.CachePath, hypperpath.CacheIndexFile(r.Config.Name))
 	os.MkdirAll(filepath.Dir(fname), 0755)
 	return fname, ioutil.WriteFile(fname, index, 0644)
 }

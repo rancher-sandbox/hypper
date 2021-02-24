@@ -33,8 +33,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/rancher-sandbox/hypper/internal/test/ensure"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/helmpath"
 )
 
 var _ Installer = new(HTTPInstaller)
@@ -86,8 +86,8 @@ func TestHTTPInstaller(t *testing.T) {
 	defer srv.Close()
 	source := srv.URL + "/plugins/fake-plugin-0.0.1.tar.gz"
 
-	if err := os.MkdirAll(helmpath.DataPath("plugins"), 0755); err != nil {
-		t.Fatalf("Could not create %s: %s", helmpath.DataPath("plugins"), err)
+	if err := os.MkdirAll(hypperpath.DataPath("plugins"), 0755); err != nil {
+		t.Fatalf("Could not create %s: %s", hypperpath.DataPath("plugins"), err)
 	}
 
 	i, err := NewForSource(source, "0.0.1")
@@ -115,8 +115,8 @@ func TestHTTPInstaller(t *testing.T) {
 	if err := Install(i); err != nil {
 		t.Fatal(err)
 	}
-	if i.Path() != helmpath.DataPath("plugins", "fake-plugin") {
-		t.Fatalf("expected path '$XDG_CONFIG_HOME/helm/plugins/fake-plugin', got %q", i.Path())
+	if i.Path() != hypperpath.DataPath("plugins", "fake-plugin") {
+		t.Fatalf("expected path '$XDG_CONFIG_HOME/hypper/plugins/fake-plugin', got %q", i.Path())
 	}
 
 	// Install again to test plugin exists error
@@ -134,8 +134,8 @@ func TestHTTPInstallerNonExistentVersion(t *testing.T) {
 	defer srv.Close()
 	source := srv.URL + "/plugins/fake-plugin-0.0.1.tar.gz"
 
-	if err := os.MkdirAll(helmpath.DataPath("plugins"), 0755); err != nil {
-		t.Fatalf("Could not create %s: %s", helmpath.DataPath("plugins"), err)
+	if err := os.MkdirAll(hypperpath.DataPath("plugins"), 0755); err != nil {
+		t.Fatalf("Could not create %s: %s", hypperpath.DataPath("plugins"), err)
 	}
 
 	i, err := NewForSource(source, "0.0.2")
@@ -167,8 +167,8 @@ func TestHTTPInstallerUpdate(t *testing.T) {
 	source := srv.URL + "/plugins/fake-plugin-0.0.1.tar.gz"
 	defer ensure.HelmHome(t)()
 
-	if err := os.MkdirAll(helmpath.DataPath("plugins"), 0755); err != nil {
-		t.Fatalf("Could not create %s: %s", helmpath.DataPath("plugins"), err)
+	if err := os.MkdirAll(hypperpath.DataPath("plugins"), 0755); err != nil {
+		t.Fatalf("Could not create %s: %s", hypperpath.DataPath("plugins"), err)
 	}
 
 	i, err := NewForSource(source, "0.0.1")
@@ -196,8 +196,8 @@ func TestHTTPInstallerUpdate(t *testing.T) {
 	if err := Install(i); err != nil {
 		t.Fatal(err)
 	}
-	if i.Path() != helmpath.DataPath("plugins", "fake-plugin") {
-		t.Fatalf("expected path '$XDG_CONFIG_HOME/helm/plugins/fake-plugin', got %q", i.Path())
+	if i.Path() != hypperpath.DataPath("plugins", "fake-plugin") {
+		t.Fatalf("expected path '$XDG_CONFIG_HOME/hypper/plugins/fake-plugin', got %q", i.Path())
 	}
 
 	// Update plugin, should fail because it is not implemented

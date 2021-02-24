@@ -13,9 +13,9 @@ import (
 	"github.com/rancher-sandbox/hypper/internal/helm/pkg/repo"
 	"github.com/rancher-sandbox/hypper/internal/helm/pkg/repo/repotest"
 	"github.com/rancher-sandbox/hypper/internal/test/ensure"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath/xdg"
 	"gopkg.in/yaml.v2"
-	"helm.sh/helm/v3/pkg/helmpath"
-	"helm.sh/helm/v3/pkg/helmpath/xdg"
 )
 
 func TestRepoAddCmd(t *testing.T) {
@@ -96,11 +96,11 @@ func TestRepoAdd(t *testing.T) {
 		t.Errorf("%s was not successfully inserted into %s", testRepoName, repoFile)
 	}
 
-	idx := filepath.Join(helmpath.CachePath("repository"), helmpath.CacheIndexFile(testRepoName))
+	idx := filepath.Join(hypperpath.CachePath("repository"), hypperpath.CacheIndexFile(testRepoName))
 	if _, err := os.Stat(idx); os.IsNotExist(err) {
 		t.Errorf("Error cache index file was not created for repository %s", testRepoName)
 	}
-	idx = filepath.Join(helmpath.CachePath("repository"), helmpath.CacheChartsFile(testRepoName))
+	idx = filepath.Join(hypperpath.CachePath("repository"), hypperpath.CacheChartsFile(testRepoName))
 	if _, err := os.Stat(idx); os.IsNotExist(err) {
 		t.Errorf("Error cache charts file was not created for repository %s", testRepoName)
 	}

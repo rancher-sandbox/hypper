@@ -29,11 +29,11 @@ import (
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/pkg/errors"
 
+	"github.com/rancher-sandbox/hypper/internal/helm/plugin/cache"
 	"github.com/rancher-sandbox/hypper/internal/helm/third_party/dep/fs"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/helmpath"
-	"helm.sh/helm/v3/pkg/plugin/cache"
 )
 
 // HTTPInstaller installs plugins from an archive served by a web server.
@@ -99,7 +99,7 @@ func NewHTTPInstaller(source string) (*HTTPInstaller, error) {
 	}
 
 	i := &HTTPInstaller{
-		CacheDir:   helmpath.CachePath("plugins", key),
+		CacheDir:   hypperpath.CachePath("plugins", key),
 		PluginName: stripPluginName(filepath.Base(source)),
 		base:       newBase(source),
 		extractor:  extractor,
@@ -159,7 +159,7 @@ func (i HTTPInstaller) Path() string {
 	if i.base.Source == "" {
 		return ""
 	}
-	return helmpath.DataPath("plugins", i.PluginName)
+	return hypperpath.DataPath("plugins", i.PluginName)
 }
 
 // CleanJoin resolves dest as a subpath of root.

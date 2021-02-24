@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rancher-sandbox/hypper/internal/helm/pkg/repo"
+	"github.com/rancher-sandbox/hypper/internal/helm/pkg/repo/repotest"
 	"github.com/rancher-sandbox/hypper/internal/test/ensure"
-	"github.com/rancher-sandbox/hypper/pkg/repo"
-	"github.com/rancher-sandbox/hypper/pkg/repo/repotest"
-	"helm.sh/helm/v3/pkg/helmpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 )
 
 func TestRepoRemove(t *testing.T) {
@@ -125,11 +125,11 @@ func TestRepoRemove(t *testing.T) {
 }
 
 func createCacheFiles(rootDir string, repoName string) (cacheIndexFile string, cacheChartsFile string) {
-	cacheIndexFile = filepath.Join(rootDir, helmpath.CacheIndexFile(repoName))
+	cacheIndexFile = filepath.Join(rootDir, hypperpath.CacheIndexFile(repoName))
 	mf, _ := os.Create(cacheIndexFile)
 	mf.Close()
 
-	cacheChartsFile = filepath.Join(rootDir, helmpath.CacheChartsFile(repoName))
+	cacheChartsFile = filepath.Join(rootDir, hypperpath.CacheChartsFile(repoName))
 	mf, _ = os.Create(cacheChartsFile)
 	mf.Close()
 

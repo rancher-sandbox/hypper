@@ -24,8 +24,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-
-	"helm.sh/helm/v3/pkg/plugin"
+	"github.com/rancher-sandbox/hypper/internal/helm/plugin"
 )
 
 // ErrMissingMetadata indicates that plugin.yaml is missing.

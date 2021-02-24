@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"helm.sh/helm/v3/pkg/helmpath"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 )
 
 var _ Installer = new(LocalInstaller)
@@ -47,8 +47,8 @@ func TestLocalInstaller(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if i.Path() != helmpath.DataPath("plugins", "echo") {
-		t.Fatalf("expected path '$XDG_CONFIG_HOME/helm/plugins/helm-env', got %q", i.Path())
+	if i.Path() != hypperpath.DataPath("plugins", "echo") {
+		t.Fatalf("expected path '$XDG_CONFIG_HOME/hypper/plugins/helm-env', got %q", i.Path())
 	}
-	defer os.RemoveAll(filepath.Dir(helmpath.DataPath())) // helmpath.DataPath is like /tmp/helm013130971/helm
+	defer os.RemoveAll(filepath.Dir(hypperpath.DataPath())) // hypperpath.DataPath is like /tmp/helm013130971/helm
 }

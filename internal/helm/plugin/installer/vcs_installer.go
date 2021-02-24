@@ -25,8 +25,8 @@ import (
 
 	"github.com/rancher-sandbox/hypper/internal/helm/third_party/dep/fs"
 
-	"helm.sh/helm/v3/pkg/helmpath"
-	"helm.sh/helm/v3/pkg/plugin/cache"
+	"github.com/rancher-sandbox/hypper/internal/helm/plugin/cache"
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 )
 
 // VCSInstaller installs plugins from remote a repository.
@@ -54,7 +54,7 @@ func NewVCSInstaller(source, version string) (*VCSInstaller, error) {
 	if err != nil {
 		return nil, err
 	}
-	cachedpath := helmpath.CachePath("plugins", key)
+	cachedpath := hypperpath.CachePath("plugins", key)
 	repo, err := vcs.NewRepo(source, cachedpath)
 	if err != nil {
 		return nil, err
