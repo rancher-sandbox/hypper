@@ -1,0 +1,26 @@
+run:
+  timeout: 2m
+
+linters:
+  disable-all: true
+  enable:
+    - deadcode
+    - dupl
+    - gofmt
+    - goimports
+    - golint
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - structcheck
+    - unused
+    - varcheck
+    - staticcheck
+
+linters-settings:
+  gofmt:
+    simplify: true
+  dupl:
+    threshold: 400
