@@ -1,2 +1,2 @@
-Installing chart "zeppelin" in namespace "hypper"…
+Installing chart "zeppelin" in namespace "led"…
 Done! 👏 
