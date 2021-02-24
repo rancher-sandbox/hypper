@@ -21,7 +21,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		Use:          "hypper",
 		Short:        "A package manager built on Helm charts and Helm itself",
 		Long:         globalUsage,
-		SilenceUsage: false,
+		SilenceUsage: true,
 	}
 
 	flags := cmd.PersistentFlags()
