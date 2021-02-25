@@ -7,7 +7,6 @@ import (
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	helmCli "helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/downloader"
@@ -65,7 +64,6 @@ func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Instal
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
-	helmSettings := helmCli.New()
 
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
@@ -80,14 +78,14 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		return nil, err
 	}
 
-	cp, err := client.ChartPathOptions.LocateChart(chart, helmSettings)
+	cp, err := client.ChartPathOptions.LocateChart(chart, settings.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
 
 	logger.Debugf("CHART PATH: %s\n", cp)
 
-	p := getter.All(helmSettings)
+	p := getter.All(settings.EnvSettings)
 	vals, err := valueOpts.MergeValues(p)
 	if err != nil {
 		return nil, err
@@ -99,7 +97,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		return nil, err
 	}
 
-	client.SetNamespace(chartRequested, helmSettings.Namespace())
+	client.SetNamespace(chartRequested, settings.Namespace())
 
 	name, err := client.Name(chartRequested, args)
 	if err != nil {
@@ -127,9 +125,9 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 					Keyring:          client.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
 					Getters:          p,
-					RepositoryConfig: helmSettings.RepositoryConfig,
-					RepositoryCache:  helmSettings.RepositoryCache,
-					Debug:            helmSettings.Debug,
+					RepositoryConfig: settings.RepositoryConfig,
+					RepositoryCache:  settings.RepositoryCache,
+					Debug:            settings.Debug,
 				}
 				if err := man.Update(); err != nil {
 					return nil, err

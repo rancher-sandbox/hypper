@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
@@ -30,38 +31,18 @@ import (
 // defaultMaxHistory sets the maximum number of releases to 0: unlimited
 const defaultMaxHistory = 10
 
-// EnvSettings describes all of the environment settings.
+// EnvSettings is a composite type of helm.pkg.env.EnvSettings.
+// describes all of the environment settings.
 type EnvSettings struct {
+
+	// we use Helm's for all exported fields
+	*cli.EnvSettings
+
+	// unexported Helm's cli.EnvSettings fields are here:
 	namespace string
 	config    *genericclioptions.ConfigFlags
 
-	// KubeConfig is the path to the kubeconfig file
-	KubeConfig string
-	// KubeContext is the name of the kubeconfig context.
-	KubeContext string
-	// Bearer KubeToken used for authentication
-	KubeToken string
-	// Username to impersonate for the operation
-	KubeAsUser string
-	// Groups to impersonate for the operation, multiple groups parsed from a comma delimited list
-	KubeAsGroups []string
-	// Kubernetes API Server Endpoint for authentication
-	KubeAPIServer string
-	// Custom certificate authority file.
-	KubeCaFile string
-	// Debug indicates whether or not Helm is running in Debug mode.
-	Debug bool
-	// RegistryConfig is the path to the registry config file.
-	RegistryConfig string
-	// RepositoryConfig is the path to the repositories file.
-	RepositoryConfig string
-	// RepositoryCache is the path to the repository cache directory.
-	RepositoryCache string
-	// PluginsDirectory is the path to the plugins directory.
-	PluginsDirectory string
-	// MaxHistory is the max release history maintained.
-	MaxHistory int
-
+	// hypper specific
 	Verbose  bool
 	NoColors bool
 	NoEmojis bool
@@ -69,19 +50,13 @@ type EnvSettings struct {
 
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
+	helmEnv := cli.New()
 	env := &EnvSettings{
-		namespace:        os.Getenv("HELM_NAMESPACE"),
-		MaxHistory:       envIntOr("HELM_MAX_HISTORY", defaultMaxHistory),
-		KubeContext:      os.Getenv("HELM_KUBECONTEXT"),
-		KubeToken:        os.Getenv("HELM_KUBETOKEN"),
-		KubeAsUser:       os.Getenv("HELM_KUBEASUSER"),
-		KubeAsGroups:     envCSV("HELM_KUBEASGROUPS"),
-		KubeAPIServer:    os.Getenv("HELM_KUBEAPISERVER"),
-		KubeCaFile:       os.Getenv("HELM_KUBECAFILE"),
-		PluginsDirectory: envOr("HELM_PLUGINS", helmpath.DataPath("plugins")),
-		RegistryConfig:   envOr("HELM_REGISTRY_CONFIG", helmpath.ConfigPath("registry.json")),
-		RepositoryConfig: envOr("HELM_REPOSITORY_CONFIG", helmpath.ConfigPath("repositories.yaml")),
-		RepositoryCache:  envOr("HELM_REPOSITORY_CACHE", helmpath.CachePath("repository")),
+		EnvSettings: helmEnv,
+		namespace:   os.Getenv("HYPPER_NAMESPACE"),
+		Verbose:     false,
+		NoColors:    false,
+		NoEmojis:    false,
 	}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
@@ -99,6 +74,7 @@ func New() *EnvSettings {
 		Impersonate:      &env.KubeAsUser,
 		ImpersonateGroup: &env.KubeAsGroups,
 	}
+
 	return env
 }
 
@@ -118,33 +94,6 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.StringArrayVar(&s.KubeAsGroups, "kube-as-group", s.KubeAsGroups, "group to impersonate for the operation, this flag can be repeated to specify multiple groups.")
 	fs.StringVar(&s.KubeAPIServer, "kube-apiserver", s.KubeAPIServer, "the address and the port for the Kubernetes API server")
 	fs.StringVar(&s.KubeCaFile, "kube-ca-file", s.KubeCaFile, "the certificate authority file for the Kubernetes API server connection")
-}
-
-func envOr(name, def string) string {
-	if v, ok := os.LookupEnv(name); ok {
-		return v
-	}
-	return def
-}
-
-func envIntOr(name string, def int) int {
-	if name == "" {
-		return def
-	}
-	envVal := envOr(name, strconv.Itoa(def))
-	ret, err := strconv.Atoi(envVal)
-	if err != nil {
-		return def
-	}
-	return ret
-}
-
-func envCSV(name string) (ls []string) {
-	trimmed := strings.Trim(os.Getenv(name), ", ")
-	if trimmed != "" {
-		ls = strings.Split(trimmed, ",")
-	}
-	return
 }
 
 func (s *EnvSettings) EnvVars() map[string]string {
@@ -186,9 +135,4 @@ func (s *EnvSettings) Namespace() string {
 		return ns
 	}
 	return "default"
-}
-
-// RESTClientGetter gets the kubeconfig from EnvSettings
-func (s *EnvSettings) RESTClientGetter() genericclioptions.RESTClientGetter {
-	return s.config
 }
