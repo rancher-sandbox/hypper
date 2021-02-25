@@ -16,13 +16,13 @@ func TestInstallCmd(t *testing.T) {
 		// Install, name and namespace as args
 		{
 			name:   "install, name and ns as args",
-			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n=led",
+			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n led",
 			golden: "output/install-name-ns-args.txt",
 		},
 		// Install, name and namespace as args, create ns
 		{
 			name:   "install, name and ns as args",
-			cmd:    "install purple testdata/testcharts/hypper-annot -n=deep --create-namespace",
+			cmd:    "install purple testdata/testcharts/hypper-annot --namespace deep --create-namespace",
 			golden: "output/install-create-namespace.txt",
 		},
 		// Install, hypper annot have priority over fallback annot
