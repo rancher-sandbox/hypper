@@ -43,9 +43,10 @@ type EnvSettings struct {
 	config    *genericclioptions.ConfigFlags
 
 	// hypper specific
-	Verbose  bool
-	NoColors bool
-	NoEmojis bool
+	Verbose           bool
+	NoColors          bool
+	NoEmojis          bool
+	NamespaceFromFlag bool
 }
 
 // New is a constructor of EnvSettings
@@ -96,6 +97,8 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.KubeCaFile, "kube-ca-file", s.KubeCaFile, "the certificate authority file for the Kubernetes API server connection")
 }
 
+// EnvVars reads the hypper and helm enviromental variables and populates
+// values in the EnvSettings caller.
 func (s *EnvSettings) EnvVars() map[string]string {
 	envvars := map[string]string{
 		"HELM_BIN":               os.Args[0],
@@ -129,8 +132,11 @@ func (s *EnvSettings) EnvVars() map[string]string {
 	return envvars
 }
 
-// Namespace gets the namespace from the configuration
+// Namespace gets the namespace from the configuration or the config flag
 func (s *EnvSettings) Namespace() string {
+	if s.NamespaceFromFlag {
+		return s.namespace
+	}
 	if ns, _, err := s.config.ToRawKubeConfigLoader().Namespace(); err == nil {
 		return ns
 	}
