@@ -24,6 +24,7 @@ import (
 
 	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"github.com/spf13/pflag"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
@@ -31,8 +32,14 @@ import (
 // defaultMaxHistory sets the maximum number of releases to 0: unlimited
 const defaultMaxHistory = 10
 
-// EnvSettings describes all of the environment settings.
+// EnvSettings is a composite type of helm.pkg.env.EnvSettings.
+// describes all of the environment settings.
 type EnvSettings struct {
+
+	// we use Helm's for all exported fields
+	*cli.EnvSettings
+
+	// unexported Helm's cli.EnvSettings fields are here:
 	namespace string
 	config    *genericclioptions.ConfigFlags
 
@@ -72,7 +79,10 @@ type EnvSettings struct {
 
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
+	helmEnv := cli.New()
 	env := &EnvSettings{
+		EnvSettings: helmEnv,
+
 		namespace:        os.Getenv("HYPPER_NAMESPACE"),
 		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
 		KubeContext:      os.Getenv("HYPPER_KUBECONTEXT"),
@@ -85,6 +95,9 @@ func New() *EnvSettings {
 		RegistryConfig:   envOr("HYPPER_REGISTRY_CONFIG", hypperpath.ConfigPath("registry.json")),
 		RepositoryConfig: envOr("HYPPER_REPOSITORY_CONFIG", hypperpath.ConfigPath("repositories.yaml")),
 		RepositoryCache:  envOr("HYPPER_REPOSITORY_CACHE", hypperpath.CachePath("repository")),
+		Verbose:          false,
+		NoColors:         false,
+		NoEmojis:         false,
 	}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
@@ -102,6 +115,7 @@ func New() *EnvSettings {
 		Impersonate:      &env.KubeAsUser,
 		ImpersonateGroup: &env.KubeAsGroups,
 	}
+
 	return env
 }
 
@@ -194,9 +208,4 @@ func (s *EnvSettings) Namespace() string {
 		return ns
 	}
 	return "default"
-}
-
-// RESTClientGetter gets the kubeconfig from EnvSettings
-func (s *EnvSettings) RESTClientGetter() genericclioptions.RESTClientGetter {
-	return s.config
 }
