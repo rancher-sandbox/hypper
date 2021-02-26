@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -72,18 +73,18 @@ type EnvSettings struct {
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
 	env := &EnvSettings{
-		namespace:        os.Getenv("HELM_NAMESPACE"),
-		MaxHistory:       envIntOr("HELM_MAX_HISTORY", defaultMaxHistory),
-		KubeContext:      os.Getenv("HELM_KUBECONTEXT"),
-		KubeToken:        os.Getenv("HELM_KUBETOKEN"),
-		KubeAsUser:       os.Getenv("HELM_KUBEASUSER"),
-		KubeAsGroups:     envCSV("HELM_KUBEASGROUPS"),
-		KubeAPIServer:    os.Getenv("HELM_KUBEAPISERVER"),
-		KubeCaFile:       os.Getenv("HELM_KUBECAFILE"),
-		PluginsDirectory: envOr("HELM_PLUGINS", helmpath.DataPath("plugins")),
-		RegistryConfig:   envOr("HELM_REGISTRY_CONFIG", helmpath.ConfigPath("registry.json")),
-		RepositoryConfig: envOr("HELM_REPOSITORY_CONFIG", helmpath.ConfigPath("repositories.yaml")),
-		RepositoryCache:  envOr("HELM_REPOSITORY_CACHE", helmpath.CachePath("repository")),
+		namespace:        os.Getenv("HYPPER_NAMESPACE"),
+		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
+		KubeContext:      os.Getenv("HYPPER_KUBECONTEXT"),
+		KubeToken:        os.Getenv("HYPPER_KUBETOKEN"),
+		KubeAsUser:       os.Getenv("HYPPER_KUBEASUSER"),
+		KubeAsGroups:     envCSV("HYPPER_KUBEASGROUPS"),
+		KubeAPIServer:    os.Getenv("HYPPER_KUBEAPISERVER"),
+		KubeCaFile:       os.Getenv("HYPPER_KUBECAFILE"),
+		PluginsDirectory: envOr("HYPPER_PLUGINS", hypperpath.DataPath("plugins")),
+		RegistryConfig:   envOr("HYPPER_REGISTRY_CONFIG", hypperpath.ConfigPath("registry.json")),
+		RepositoryConfig: envOr("HYPPER_REPOSITORY_CONFIG", hypperpath.ConfigPath("repositories.yaml")),
+		RepositoryCache:  envOr("HYPPER_REPOSITORY_CACHE", hypperpath.CachePath("repository")),
 	}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
