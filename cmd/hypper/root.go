@@ -31,6 +31,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		newInstallCmd(actionConfig, logger),
 		newUninstallCmd(actionConfig, logger),
 		newListCmd(actionConfig, logger),
+		newStatusCmd(actionConfig, logger),
 	)
 
 	flags.ParseErrorsWhitelist.UnknownFlags = true
