@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/Masterminds/log-go"
 	"helm.sh/helm/v3/pkg/action"
@@ -33,13 +34,17 @@ import (
 // Install is a composite type of Helm's Install type
 type Install struct {
 	*action.Install
+
+	// Config stores the actionconfig so it can be retrieved and used again
+	Config *Configuration
 }
 
 // NewInstall creates a new Install object with the given configuration,
 // by wrapping action.NewInstall
 func NewInstall(cfg *Configuration) *Install {
 	return &Install{
-		action.NewInstall(cfg.Configuration),
+		Install: action.NewInstall(cfg.Configuration),
+		Config:  cfg,
 	}
 }
 
