@@ -79,9 +79,9 @@ type EnvSettings struct {
 
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
-	helmEnv := cli.New()
+	// TODO check with reflection that we are not missing any field
 	env := &EnvSettings{
-		EnvSettings: helmEnv,
+		EnvSettings: nil, // this is nil it gets overwritten below to ensure that it does not touch Helm's stuff
 
 		namespace:        os.Getenv("HYPPER_NAMESPACE"),
 		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
@@ -95,10 +95,26 @@ func New() *EnvSettings {
 		RegistryConfig:   envOr("HYPPER_REGISTRY_CONFIG", hypperpath.ConfigPath("registry.json")),
 		RepositoryConfig: envOr("HYPPER_REPOSITORY_CONFIG", hypperpath.ConfigPath("repositories.yaml")),
 		RepositoryCache:  envOr("HYPPER_REPOSITORY_CACHE", hypperpath.CachePath("repository")),
-		Verbose:          false,
-		NoColors:         false,
-		NoEmojis:         false,
+
+		Verbose:  false,
+		NoColors: false,
+		NoEmojis: false,
 	}
+	os.Setenv("HELM_NAMESPACE", env.namespace)
+	env.EnvSettings = cli.New()
+
+	env.EnvSettings.MaxHistory = env.MaxHistory
+	env.EnvSettings.KubeContext = env.KubeContext
+	env.EnvSettings.KubeToken = env.KubeToken
+	env.EnvSettings.KubeAsUser = env.KubeAsUser
+	env.EnvSettings.KubeAsGroups = env.KubeAsGroups
+	env.EnvSettings.KubeAPIServer = env.KubeAPIServer
+	env.EnvSettings.KubeCaFile = env.KubeCaFile
+	env.EnvSettings.PluginsDirectory = env.PluginsDirectory
+	env.EnvSettings.RegistryConfig = env.RegistryConfig
+	env.EnvSettings.RepositoryCache = env.RepositoryCache
+	env.EnvSettings.RepositoryConfig = env.RepositoryConfig
+
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
 	env.NoColors, _ = strconv.ParseBool(os.Getenv("HYPPER_NOCOLORS"))
