@@ -4,6 +4,9 @@ Usage:  hypper uninstall [NAME] [flags]
 Usage:
   hypper uninstall [NAME] [flags]
 
+Aliases:
+  uninstall, del, delete, un
+
 Flags:
       --description string   add a custom description
       --dry-run              simulate a uninstall
