@@ -21,7 +21,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		Use:          "hypper",
 		Short:        "A package manager built on Helm charts and Helm itself",
 		Long:         globalUsage,
-		SilenceUsage: false,
+		SilenceUsage: true,
 	}
 
 	flags := cmd.PersistentFlags()
@@ -42,6 +42,12 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 
 		os.Exit(1)
 	}
+
+	flags.Visit(func(f *pflag.Flag) {
+		if f.Name == "namespace" || f.Name == "n" {
+			settings.NamespaceFromFlag = true
+		}
+	})
 
 	if settings.NoColors {
 		color.NoColor = true // disable colorized output

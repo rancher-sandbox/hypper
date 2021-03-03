@@ -1,3 +1,19 @@
+/*
+Copyright The Helm Authors, SUSE
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package cli
 
 import (
@@ -46,9 +62,11 @@ type EnvSettings struct {
 	// MaxHistory is the max release history maintained.
 	MaxHistory int
 
-	Verbose  bool
-	NoColors bool
-	NoEmojis bool
+	// hypper specific
+	Verbose           bool
+	NoColors          bool
+	NoEmojis          bool
+	NamespaceFromFlag bool
 }
 
 // New is a constructor of EnvSettings
@@ -131,6 +149,8 @@ func envCSV(name string) (ls []string) {
 	return
 }
 
+// EnvVars reads the hypper and helm enviromental variables and populates
+// values in the EnvSettings caller.
 func (s *EnvSettings) EnvVars() map[string]string {
 	envvars := map[string]string{
 		"HELM_BIN":               os.Args[0],
@@ -164,8 +184,11 @@ func (s *EnvSettings) EnvVars() map[string]string {
 	return envvars
 }
 
-// Namespace gets the namespace from the configuration
+// Namespace gets the namespace from the configuration or the config flag
 func (s *EnvSettings) Namespace() string {
+	if s.NamespaceFromFlag {
+		return s.namespace
+	}
 	if ns, _, err := s.config.ToRawKubeConfigLoader().Namespace(); err == nil {
 		return ns
 	}

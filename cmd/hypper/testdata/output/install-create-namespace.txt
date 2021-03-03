@@ -1,0 +1,2 @@
+Installing chart "purple" in namespace "deep"…
+Done! 👏 

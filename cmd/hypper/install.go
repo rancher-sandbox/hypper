@@ -3,10 +3,12 @@ package main
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	helmCli "helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
@@ -18,18 +20,32 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 )
 
-var installDesc = `install a helm chart by wrapping helm calls (for now)`
+const installDesc = `
+This command installs a chart.
+
+The install argument must be a chart reference, a path to a packaged chart,
+a path to an unpacked chart directory or a URL.
+
+There are four different ways you can select the release name and namespace
+where the chart will be installed. By priority order:
+
+1. By the args passed from the CLI: hypper install mymaria example/mariadb -n system
+2. By using hypper.cattle.io annotations in the Chart.yaml
+3. By using catalog.cattle.io annotations in the Chart.yaml
+4. By using the current namespace as configured with the kubeconfig, or the flag --generate-name
+`
 
 func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
 	client := action.NewInstall(actionConfig)
 	valueOpts := &values.Options{}
+	var outfmt output.Format
+
 	cmd := &cobra.Command{
 		Use:   "install [NAME] [CHART]",
 		Short: "install a chart",
 		Long:  installDesc,
 		Args:  require.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
-			logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing %s…", args[0]))
 			// TODO decide how to use returned rel:
 			_, err := runInstall(args, client, valueOpts, logger)
 			if err != nil {
@@ -39,7 +55,14 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 			return nil
 		},
 	}
+	addInstallFlags(cmd, cmd.Flags(), client, valueOpts)
+	bindOutputFlag(cmd, &outfmt)
 	return cmd
+}
+
+func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Install, valueOpts *values.Options) {
+	f.BoolVarP(&client.GenerateName, "generate-name", "g", false, "generate the name (and omit the NAME parameter)")
+	f.BoolVar(&client.CreateNamespace, "create-namespace", false, "create the release namespace if not present")
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
@@ -53,11 +76,10 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		client.Version = ">0.0.0-0"
 	}
 
-	name, chart, err := client.NameAndChart(args)
+	chart, err := client.Chart(args)
 	if err != nil {
 		return nil, err
 	}
-	client.ReleaseName = name
 
 	cp, err := client.ChartPathOptions.LocateChart(chart, helmSettings)
 	if err != nil {
@@ -77,6 +99,20 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	if err != nil {
 		return nil, err
 	}
+
+	if settings.NamespaceFromFlag {
+		client.Namespace = settings.Namespace()
+	} else {
+		client.SetNamespace(chartRequested, settings.Namespace())
+	}
+
+	client.Config.SetNamespace(client.Namespace)
+
+	name, err := client.Name(chartRequested, args)
+	if err != nil {
+		return nil, err
+	}
+	client.ReleaseName = name
 
 	if err := checkIfInstallable(chartRequested); err != nil {
 		return nil, err
@@ -115,7 +151,6 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	client.Namespace = helmSettings.Namespace()
 	return client.Run(chartRequested, vals)
 }
 
