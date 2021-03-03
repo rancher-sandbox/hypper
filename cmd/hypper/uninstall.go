@@ -15,10 +15,12 @@ var uninstallDesc = `remove a helm deployment by wrapping helm calls`
 func newUninstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
 	client := action.NewUninstall(actionConfig)
 	cmd := &cobra.Command{
-		Use:   "uninstall [NAME]",
-		Short: "uninstall a deployment",
-		Long:  uninstallDesc,
-		Args:  require.MinimumNArgs(1),
+		Use:        "uninstall [NAME]",
+		Short:      "uninstall a deployment",
+		Long:       uninstallDesc,
+		Aliases:    []string{"del", "delete", "un"},
+		SuggestFor: []string{"remove", "rm"},
+		Args:       require.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for i := 0; i < len(args); i++ {
 				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":fire: uninstalling %s", args[i]))
