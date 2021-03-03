@@ -33,6 +33,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		newListCmd(actionConfig, logger),
 		newStatusCmd(actionConfig, logger),
 		newRepoCmd(logger),
+		newUpgradeCmd(actionConfig, logger),
 	)
 
 	flags.ParseErrorsWhitelist.UnknownFlags = true
