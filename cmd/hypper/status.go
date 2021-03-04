@@ -1,5 +1,5 @@
 /*
-Copyright The Helm Authors, SUSE
+Copyright The Helm Authors, SUSE LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"strings"
+	"time"
+
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/rancher-sandbox/hypper/pkg/action"
@@ -26,9 +30,6 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/release"
-	"io"
-	"strings"
-	"time"
 )
 
 // NOTE: Keep the list of statuses up-to-date with pkg/release/status.go.
