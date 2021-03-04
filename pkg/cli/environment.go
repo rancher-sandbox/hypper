@@ -22,7 +22,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rancher-sandbox/hypper/pkg/hypperpath"
 	"github.com/spf13/pflag"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
@@ -30,8 +32,14 @@ import (
 // defaultMaxHistory sets the maximum number of releases to 0: unlimited
 const defaultMaxHistory = 10
 
-// EnvSettings describes all of the environment settings.
+// EnvSettings is a composite type of helm.pkg.env.EnvSettings.
+// describes all of the environment settings.
 type EnvSettings struct {
+
+	// we use Helm's for all exported fields
+	*cli.EnvSettings
+
+	// unexported Helm's cli.EnvSettings fields are here:
 	namespace string
 	config    *genericclioptions.ConfigFlags
 
@@ -71,20 +79,42 @@ type EnvSettings struct {
 
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
+	// TODO check with reflection that we are not missing any field
 	env := &EnvSettings{
-		namespace:        os.Getenv("HELM_NAMESPACE"),
-		MaxHistory:       envIntOr("HELM_MAX_HISTORY", defaultMaxHistory),
-		KubeContext:      os.Getenv("HELM_KUBECONTEXT"),
-		KubeToken:        os.Getenv("HELM_KUBETOKEN"),
-		KubeAsUser:       os.Getenv("HELM_KUBEASUSER"),
-		KubeAsGroups:     envCSV("HELM_KUBEASGROUPS"),
-		KubeAPIServer:    os.Getenv("HELM_KUBEAPISERVER"),
-		KubeCaFile:       os.Getenv("HELM_KUBECAFILE"),
-		PluginsDirectory: envOr("HELM_PLUGINS", helmpath.DataPath("plugins")),
-		RegistryConfig:   envOr("HELM_REGISTRY_CONFIG", helmpath.ConfigPath("registry.json")),
-		RepositoryConfig: envOr("HELM_REPOSITORY_CONFIG", helmpath.ConfigPath("repositories.yaml")),
-		RepositoryCache:  envOr("HELM_REPOSITORY_CACHE", helmpath.CachePath("repository")),
+		EnvSettings: nil, // this is nil it gets overwritten below to ensure that it does not touch Helm's stuff
+
+		namespace:        os.Getenv("HYPPER_NAMESPACE"),
+		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
+		KubeContext:      os.Getenv("HYPPER_KUBECONTEXT"),
+		KubeToken:        os.Getenv("HYPPER_KUBETOKEN"),
+		KubeAsUser:       os.Getenv("HYPPER_KUBEASUSER"),
+		KubeAsGroups:     envCSV("HYPPER_KUBEASGROUPS"),
+		KubeAPIServer:    os.Getenv("HYPPER_KUBEAPISERVER"),
+		KubeCaFile:       os.Getenv("HYPPER_KUBECAFILE"),
+		PluginsDirectory: envOr("HYPPER_PLUGINS", hypperpath.DataPath("plugins")),
+		RegistryConfig:   envOr("HYPPER_REGISTRY_CONFIG", hypperpath.ConfigPath("registry.json")),
+		RepositoryConfig: envOr("HYPPER_REPOSITORY_CONFIG", hypperpath.ConfigPath("repositories.yaml")),
+		RepositoryCache:  envOr("HYPPER_REPOSITORY_CACHE", hypperpath.CachePath("repository")),
+
+		Verbose:  false,
+		NoColors: false,
+		NoEmojis: false,
 	}
+	os.Setenv("HELM_NAMESPACE", env.namespace)
+	env.EnvSettings = cli.New()
+
+	env.EnvSettings.MaxHistory = env.MaxHistory
+	env.EnvSettings.KubeContext = env.KubeContext
+	env.EnvSettings.KubeToken = env.KubeToken
+	env.EnvSettings.KubeAsUser = env.KubeAsUser
+	env.EnvSettings.KubeAsGroups = env.KubeAsGroups
+	env.EnvSettings.KubeAPIServer = env.KubeAPIServer
+	env.EnvSettings.KubeCaFile = env.KubeCaFile
+	env.EnvSettings.PluginsDirectory = env.PluginsDirectory
+	env.EnvSettings.RegistryConfig = env.RegistryConfig
+	env.EnvSettings.RepositoryCache = env.RepositoryCache
+	env.EnvSettings.RepositoryConfig = env.RepositoryConfig
+
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
 	env.NoColors, _ = strconv.ParseBool(os.Getenv("HYPPER_NOCOLORS"))
@@ -101,6 +131,7 @@ func New() *EnvSettings {
 		Impersonate:      &env.KubeAsUser,
 		ImpersonateGroup: &env.KubeAsGroups,
 	}
+
 	return env
 }
 
@@ -120,6 +151,11 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.StringArrayVar(&s.KubeAsGroups, "kube-as-group", s.KubeAsGroups, "group to impersonate for the operation, this flag can be repeated to specify multiple groups.")
 	fs.StringVar(&s.KubeAPIServer, "kube-apiserver", s.KubeAPIServer, "the address and the port for the Kubernetes API server")
 	fs.StringVar(&s.KubeCaFile, "kube-ca-file", s.KubeCaFile, "the certificate authority file for the Kubernetes API server connection")
+
+	fs.StringVar(&s.RegistryConfig, "registry-config", s.RegistryConfig, "path to the registry config file")
+	fs.StringVar(&s.RepositoryConfig, "repository-config", s.RepositoryConfig, "path to the file containing repository names and URLs")
+	fs.StringVar(&s.RepositoryCache, "repository-cache", s.RepositoryCache, "path to the file containing cached repository indexes")
+
 }
 
 func envOr(name, def string) string {
@@ -193,9 +229,4 @@ func (s *EnvSettings) Namespace() string {
 		return ns
 	}
 	return "default"
-}
-
-// RESTClientGetter gets the kubeconfig from EnvSettings
-func (s *EnvSettings) RESTClientGetter() genericclioptions.RESTClientGetter {
-	return s.config
 }
