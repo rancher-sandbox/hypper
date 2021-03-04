@@ -30,6 +30,7 @@ func newRepoCmd(logger log.Logger) *cobra.Command {
 		newRepoListCmd(wInfo),
 		newRepoIndexCmd(wInfo),
 		newRepoUpdateCmd(wInfo),
+		newRepoRemoveCmd(wInfo),
 	)
 
 	return cmd
