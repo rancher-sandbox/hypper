@@ -85,6 +85,10 @@ vet:
 fmt:
 	go fmt ./...
 
+.PHONY: license-check
+license-check:
+	@scripts/license_check.sh
+
 .PHONY: clean
 clean:
 	rm $(BINDIR)/$(BINNAME)
