@@ -9,7 +9,8 @@ import (
 
 type Upgrade struct {
 	*action.Upgrade
-	cfg *Configuration
+	cfg         *Configuration
+	ReleaseName string
 }
 
 // NewUpgrade creates a new Upgrade object with the given configuration.

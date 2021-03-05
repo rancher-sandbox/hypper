@@ -102,8 +102,10 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				logger.Warn(eyecandy.ESPrint(settings.NoEmojis, "This chart has been deprecated :exclamation:"))
 
 			}
-
-			chartName, _ := client.Name(ch, args)
+			if client.ReleaseName == "" {
+				client.ReleaseName, _ = client.Name(ch, args)
+				logger.Debugf("client.ReleaseName was empty, setting release name to %s", client.ReleaseName)
+			}
 
 			// Fixes #7002 - Support reading values from STDIN for `upgrade` command
 			// Must load values AFTER determining if we have to call install so that values loaded from stdin are are not read twice
@@ -111,10 +113,10 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				// If a release does not exist, install it.
 				histClient := action.NewHistory(cfg)
 				histClient.Max = 1
-				if _, err := histClient.Run(chartName); err == driver.ErrReleaseNotFound {
+				if _, err := histClient.Run(client.ReleaseName); err == driver.ErrReleaseNotFound {
 					// Only print this to stdout for table output
 					if outfmt == output.Table {
-						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q does not exist. Installing it now. :toolbox:\n", args[0]))
+						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q does not exist. Installing it now. :toolbox:\n", client.ReleaseName))
 					}
 					instClient := action.NewInstall(cfg)
 					instClient.CreateNamespace = createNamespace
@@ -132,7 +134,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 					instClient.DisableOpenAPIValidation = client.DisableOpenAPIValidation
 					instClient.SubNotes = client.SubNotes
 					instClient.Description = client.Description
-					instClient.ReleaseName = chartName
+					instClient.ReleaseName = client.ReleaseName
 
 					rel, err := runInstall(args, instClient, valueOpts, logger)
 					if err != nil {
@@ -149,13 +151,13 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				client.Version = ">0.0.0-0"
 			}
 
-			rel, err := client.Run(chartName, ch, vals)
+			rel, err := client.Run(client.ReleaseName, ch, vals)
 			if err != nil {
 				return errors.Wrap(err, "UPGRADE FAILED")
 			}
 
 			if outfmt == output.Table {
-				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q has been upgraded :partying_face:", chartName))
+				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q has been upgraded :partying_face:", client.ReleaseName))
 			}
 
 			return outfmt.Write(wInfo, &statusPrinter{rel, settings.Debug, false})
@@ -184,6 +186,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 	f.BoolVar(&client.CleanupOnFail, "cleanup-on-fail", false, "allow deletion of new resources created in this upgrade when upgrade fails")
 	f.BoolVar(&client.SubNotes, "render-subchart-notes", false, "if set, render subchart notes along with the parent")
 	f.StringVar(&client.Description, "description", "", "add a custom description")
+	f.StringVar(&client.ReleaseName, "release-name", "", "add a custom release name, overrides annotations")
 	addChartPathOptionsFlags(f, &client.ChartPathOptions)
 	addValueOptionsFlags(f, valueOpts)
 	bindOutputFlag(cmd, &outfmt)
