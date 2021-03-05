@@ -33,7 +33,7 @@ func installAction(t *testing.T) *Install {
 	return instAction
 }
 
-func TestSetNamespace(t *testing.T) {
+func TestInstallSetNamespace(t *testing.T) {
 	is := assert.New(t)
 
 	// chart without annotations

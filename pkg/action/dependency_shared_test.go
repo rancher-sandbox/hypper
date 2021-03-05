@@ -1,5 +1,5 @@
 /*
-Copyright The Helm Authors.
+Copyright The Helm Authors, SUSE LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,144 +18,152 @@ package action
 
 import (
 	"bytes"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"helm.sh/helm/v3/internal/test"
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/release"
+
+	"github.com/Masterminds/log-go"
+	logcli "github.com/Masterminds/log-go/impl/cli"
+	"github.com/rancher-sandbox/hypper/internal/test"
 )
 
-func TestList(t *testing.T) {
+func newSharedDepFixture(t *testing.T, ns string) *SharedDependency {
+	sd := NewSharedDependency(actionConfigFixture(t))
+	sd.Namespace = ns
+	return sd
+}
+
+func TestSharedDepsList(t *testing.T) {
 	for _, tcase := range []struct {
-		chart  string
-		golden string
+		chart     string
+		golden    string
+		wantError bool
 	}{
 		{
-			chart:  "testdata/charts/chart-with-compressed-dependencies",
-			golden: "output/list-compressed-deps.txt",
+			chart:     "no/such/chart",
+			wantError: true,
 		},
 		{
-			chart:  "testdata/charts/chart-with-compressed-dependencies-2.1.8.tgz",
-			golden: "output/list-compressed-deps-tgz.txt",
+			chart:  "testdata/charts/vanilla-helm",
+			golden: "output/shared-deps-no-deps.txt",
 		},
 		{
-			chart:  "testdata/charts/chart-with-uncompressed-dependencies",
-			golden: "output/list-uncompressed-deps.txt",
+			chart:     "testdata/charts/shared-deps-malformed",
+			golden:    "output/shared-deps-malformed.txt",
+			wantError: true,
 		},
 		{
-			chart:  "testdata/charts/chart-with-uncompressed-dependencies-2.1.8.tgz",
-			golden: "output/list-uncompressed-deps-tgz.txt",
-		},
-		{
-			chart:  "testdata/charts/chart-missing-deps",
-			golden: "output/list-missing-deps.txt",
+			chart:  "testdata/charts/hypper-annot",
+			golden: "output/shared-deps-some-deps.txt",
 		},
 	} {
-		buf := bytes.Buffer{}
-		if err := NewDependency().List(tcase.chart, &buf); err != nil {
-			t.Fatal(err)
+		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+		buf := new(bytes.Buffer)
+		logger := logcli.NewStandard()
+		logger.InfoOut = buf
+		logger.WarnOut = buf
+		logger.ErrorOut = buf
+		log.Current = logger
+
+		sharedDepAction := newSharedDepFixture(t, "hypper")
+		err := sharedDepAction.List(tcase.chart, log.Current)
+		if (err != nil) != tcase.wantError {
+			t.Errorf("expected error, got '%v'", err)
 		}
-		test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
+		if tcase.golden != "" {
+			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
+		}
 	}
 }
 
-// TestDependencyStatus_Dashes is a regression test to make sure that dashes in
-// chart names do not cause resolution problems.
-func TestDependencyStatus_Dashes(t *testing.T) {
-	// Make a temp dir
-	dir, err := ioutil.TempDir("", "helmtest-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-
-	chartpath := filepath.Join(dir, "charts")
-	if err := os.MkdirAll(chartpath, 0700); err != nil {
-		t.Fatal(err)
-	}
-
-	// Add some fake charts
-	first := buildChart(withName("first-chart"))
-	_, err = chartutil.Save(first, chartpath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	second := buildChart(withName("first-chart-second-chart"))
-	_, err = chartutil.Save(second, chartpath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dep := &chart.Dependency{
-		Name:    "first-chart",
-		Version: "0.1.0",
-	}
-
-	// Now try to get the deps
-	stat := NewDependency().dependencyStatus(dir, dep, first)
-	if stat != "ok" {
-		t.Errorf("Unexpected status: %q", stat)
-	}
-}
-
-func TestStatArchiveForStatus(t *testing.T) {
-	// Make a temp dir
-	dir, err := ioutil.TempDir("", "helmtest-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-
-	chartpath := filepath.Join(dir, "charts")
-	if err := os.MkdirAll(chartpath, 0700); err != nil {
-		t.Fatal(err)
-	}
-
-	// unsaved chart
-	lilith := buildChart(withName("lilith"))
-
-	// dep referring to chart
-	dep := &chart.Dependency{
-		Name:    "lilith",
-		Version: "1.2.3",
-	}
-
+func TestSharedDepsSetNamespace(t *testing.T) {
 	is := assert.New(t)
 
-	lilithpath := filepath.Join(chartpath, "lilith-1.2.3.tgz")
-	is.Empty(statArchiveForStatus(lilithpath, dep))
+	// chart without annotations
+	instAction := installAction(t)
+	chart := buildChart()
+	instAction.SetNamespace(chart, "defaultns")
+	is.Equal("defaultns", instAction.Namespace)
 
-	// save the chart (version 0.1.0, because that is the default)
-	where, err := chartutil.Save(lilith, chartpath)
-	is.NoError(err)
+	// hypper annotations have priority over fallback annotations
+	instAction = installAction(t)
+	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
+	instAction.SetNamespace(chart, "defaultns")
+	is.Equal("hypper", instAction.Namespace)
 
-	// Should get "wrong version" because we asked for 1.2.3 and got 0.1.0
-	is.Equal("wrong version", statArchiveForStatus(where, dep))
+	// fallback annotations have priority over default ns
+	instAction = installAction(t)
+	chart = buildChart(withFallbackAnnotations())
+	instAction.SetNamespace(chart, "defaultns")
+	is.Equal("fleet-system", instAction.Namespace)
+}
 
-	// Break version on dep
-	dep = &chart.Dependency{
-		Name:    "lilith",
-		Version: "1.2.3.4.5",
+func TestSharedDependencyStatus(t *testing.T) {
+	is := assert.New(t)
+
+	mk := func(name string, vers int, status release.Status, namespace string) *release.Release {
+		return release.Mock(&release.MockReleaseOptions{
+			Name:      name,
+			Version:   vers,
+			Status:    status,
+			Namespace: namespace,
+		})
 	}
-	is.Equal("invalid version", statArchiveForStatus(where, dep))
 
-	// Break the name
-	dep = &chart.Dependency{
-		Name:    "lilith2",
-		Version: "1.2.3",
+	// installed dep
+	sharedDepAction := newSharedDepFixture(t, "hypper")
+	dep := chart.Dependency{
+		Name:       "mariadb",
+		Version:    "10.5.9",
+		Repository: "https://another.example.com/charts",
 	}
-	is.Equal("misnamed", statArchiveForStatus(where, dep))
+	releases := []*release.Release{
+		mk("mariadb", 3, release.StatusDeployed, "hypper"),
+		mk("musketeers", 10, release.StatusSuperseded, "default"),
+		mk("musketeers", 9, release.StatusSuperseded, "default"),
+	}
+	is.Equal("deployed", sharedDepAction.SharedDependencyStatus(&dep, releases))
 
-	// Now create the right version
-	dep = &chart.Dependency{
-		Name:    "lilith",
-		Version: "0.1.0",
+	// print status of release matching dep
+	sharedDepAction = newSharedDepFixture(t, "hypper")
+	dep = chart.Dependency{
+		Name:       "mariadb",
+		Version:    "10.5.9",
+		Repository: "https://another.example.com/charts",
 	}
-	is.Equal("ok", statArchiveForStatus(where, dep))
+	releases = []*release.Release{
+		mk("mariadb", 3, release.StatusPendingInstall, "hypper"),
+	}
+	is.Equal("pending-install", sharedDepAction.SharedDependencyStatus(&dep, releases))
+
+	// not installed, but on the same ns
+	sharedDepAction = newSharedDepFixture(t, "hypper")
+	dep = chart.Dependency{
+		Name:       "mariadb",
+		Version:    "10.5.9",
+		Repository: "https://another.example.com/charts",
+	}
+	releases = []*release.Release{
+		mk("musketeers", 11, release.StatusDeployed, "hypper"),
+		mk("musketeers", 10, release.StatusSuperseded, "hypper"),
+		mk("carabins", 1, release.StatusSuperseded, "hypper"),
+	}
+	is.Equal("not-installed", sharedDepAction.SharedDependencyStatus(&dep, releases))
+
+	// installed, but in a different namespace
+	sharedDepAction = newSharedDepFixture(t, "other-ns")
+	dep = chart.Dependency{
+		Name:       "mariadb",
+		Version:    "10.5.9",
+		Repository: "https://another.example.com/charts",
+	}
+	releases = []*release.Release{
+		mk("mariadb", 11, release.StatusDeployed, "hypper"),
+		mk("musketeers", 10, release.StatusSuperseded, "hypper"),
+		mk("carabins", 1, release.StatusSuperseded, "hypper"),
+	}
+	is.Equal("not-installed", sharedDepAction.SharedDependencyStatus(&dep, releases))
+
 }
