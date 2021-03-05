@@ -48,7 +48,7 @@ func TestUpgradeCmd(t *testing.T) {
 	cfile := &chart.Chart{
 		Metadata: &chart.Metadata{
 			APIVersion:  chart.APIVersionV1,
-			Name:        "testUpgradeChart",
+			Name:        "funny-bunny",
 			Description: "A Helm chart for Kubernetes",
 			Version:     "0.1.0",
 		},
@@ -103,79 +103,79 @@ func TestUpgradeCmd(t *testing.T) {
 	tests := []cmdTestCase{
 		{
 			name:   "upgrade a release",
-			cmd:    fmt.Sprintf("upgrade funny-bunny '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade '%s'", chartPath),
 			golden: "output/upgrade.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 2, ch)},
 		},
 		{
 			name:   "upgrade a release with timeout",
-			cmd:    fmt.Sprintf("upgrade funny-bunny --timeout 120s '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --timeout 120s '%s'", chartPath),
 			golden: "output/upgrade-with-timeout.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 3, ch2)},
 		},
 		{
 			name:   "upgrade a release with --reset-values",
-			cmd:    fmt.Sprintf("upgrade funny-bunny --reset-values '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --reset-values '%s'", chartPath),
 			golden: "output/upgrade-with-reset-values.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 4, ch2)},
 		},
 		{
 			name:   "upgrade a release with --reuse-values",
-			cmd:    fmt.Sprintf("upgrade funny-bunny --reuse-values '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --reuse-values '%s'", chartPath),
 			golden: "output/upgrade-with-reset-values2.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 5, ch2)},
 		},
 		{
 			name:   "install a release with 'upgrade --install'",
-			cmd:    fmt.Sprintf("upgrade zany-bunny -i '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade -i '%s'", chartPath),
 			golden: "output/upgrade-with-install.txt",
-			rels:   []*release.Release{relMock("zany-bunny", 1, ch)},
+			rels:   []*release.Release{relMock("funny-bunny", 1, ch)},
 		},
 		{
 			name:   "install a release with 'upgrade --install' and timeout",
-			cmd:    fmt.Sprintf("upgrade crazy-bunny -i --timeout 120s '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade -i --timeout 120s '%s'", chartPath),
 			golden: "output/upgrade-with-install-timeout.txt",
-			rels:   []*release.Release{relMock("crazy-bunny", 1, ch)},
+			rels:   []*release.Release{relMock("funny-bunny", 1, ch)},
 		},
 		{
 			name:   "upgrade a release with wait",
-			cmd:    fmt.Sprintf("upgrade crazy-bunny --wait '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --wait '%s'", chartPath),
 			golden: "output/upgrade-with-wait.txt",
-			rels:   []*release.Release{relMock("crazy-bunny", 2, ch2)},
+			rels:   []*release.Release{relMock("funny-bunny", 2, ch2)},
 		},
 		{
 			name:   "upgrade a release with wait-for-jobs",
-			cmd:    fmt.Sprintf("upgrade crazy-bunny --wait --wait-for-jobs '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --wait --wait-for-jobs '%s'", chartPath),
 			golden: "output/upgrade-with-wait-for-jobs.txt",
-			rels:   []*release.Release{relMock("crazy-bunny", 2, ch2)},
+			rels:   []*release.Release{relMock("funny-bunny", 2, ch2)},
 		},
 		{
 			name:      "upgrade a release with missing dependencies",
-			cmd:       fmt.Sprintf("upgrade bonkers-bunny %s", missingDepsPath),
+			cmd:       fmt.Sprintf("upgrade %s", missingDepsPath),
 			golden:    "output/upgrade-with-missing-dependencies.txt",
 			wantError: true,
 		},
 		{
 			name:      "upgrade a release with bad dependencies",
-			cmd:       fmt.Sprintf("upgrade bonkers-bunny '%s'", badDepsPath),
+			cmd:       fmt.Sprintf("upgrade '%s'", badDepsPath),
 			golden:    "output/upgrade-with-bad-dependencies.txt",
 			wantError: true,
 		},
 		{
 			name:      "upgrade a non-existent release",
-			cmd:       fmt.Sprintf("upgrade funny-bunny '%s'", chartPath),
+			cmd:       fmt.Sprintf("upgrade '%s'", chartPath),
 			golden:    "output/upgrade-with-bad-or-missing-existing-release.txt",
 			wantError: true,
 		},
 		{
 			name:   "upgrade a failed release",
-			cmd:    fmt.Sprintf("upgrade funny-bunny '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade '%s'", chartPath),
 			golden: "output/upgrade.txt",
 			rels:   []*release.Release{relWithStatusMock("funny-bunny", 2, ch, release.StatusFailed)},
 		},
 		{
 			name:      "upgrade a pending install release",
-			cmd:       fmt.Sprintf("upgrade funny-bunny '%s'", chartPath),
+			cmd:       fmt.Sprintf("upgrade '%s'", chartPath),
 			golden:    "output/upgrade-with-pending-install.txt",
 			wantError: true,
 			rels:      []*release.Release{relWithStatusMock("funny-bunny", 2, ch, release.StatusPendingInstall)},
@@ -194,7 +194,7 @@ func TestUpgradeWithValue(t *testing.T) {
 
 	_ = store.Create(relMock(releaseName, 3, ch))
 
-	cmd := fmt.Sprintf("upgrade %s --set favoriteDrink=tea '%s'", releaseName, chartPath)
+	cmd := fmt.Sprintf("upgrade --set favoriteDrink=tea '%s'", chartPath)
 	_, _, err := executeActionCommandC(store, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -221,7 +221,7 @@ func TestUpgradeWithStringValue(t *testing.T) {
 
 	_ = store.Create(relMock(releaseName, 3, ch))
 
-	cmd := fmt.Sprintf("upgrade %s --set-string favoriteDrink=coffee '%s'", releaseName, chartPath)
+	cmd := fmt.Sprintf("upgrade --set-string favoriteDrink=coffee '%s'", chartPath)
 	_, _, err := executeActionCommandC(store, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -249,7 +249,7 @@ func TestUpgradeInstallWithSubchartNotes(t *testing.T) {
 
 	_ = store.Create(relMock(releaseName, 1, ch))
 
-	cmd := fmt.Sprintf("upgrade %s -i --render-subchart-notes '%s'", releaseName, "testdata/testcharts/chart-with-subchart-notes")
+	cmd := fmt.Sprintf("upgrade -i --render-subchart-notes '%s'", "testdata/testcharts/chart-with-subchart-notes")
 	_, _, err := executeActionCommandC(store, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -281,7 +281,7 @@ func TestUpgradeWithValuesFile(t *testing.T) {
 
 	_ = store.Create(relMock(releaseName, 3, ch))
 
-	cmd := fmt.Sprintf("upgrade %s --values testdata/testcharts/upgradetest/values.yaml '%s'", releaseName, chartPath)
+	cmd := fmt.Sprintf("upgrade --values testdata/testcharts/upgradetest/values.yaml '%s'", chartPath)
 	_, _, err := executeActionCommandC(store, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -314,7 +314,7 @@ func TestUpgradeWithValuesFromStdin(t *testing.T) {
 		t.Errorf("unexpected error, got '%v'", err)
 	}
 
-	cmd := fmt.Sprintf("upgrade %s --values - '%s'", releaseName, chartPath)
+	cmd := fmt.Sprintf("upgrade --values - '%s'", chartPath)
 	_, _, err = executeActionCommandStdinC(store, in, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -344,7 +344,7 @@ func TestUpgradeInstallWithValuesFromStdin(t *testing.T) {
 		t.Errorf("unexpected error, got '%v'", err)
 	}
 
-	cmd := fmt.Sprintf("upgrade %s -f - --install '%s'", releaseName, chartPath)
+	cmd := fmt.Sprintf("upgrade -f - --install '%s'", chartPath)
 	_, _, err = executeActionCommandStdinC(store, in, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -370,7 +370,7 @@ func prepareMockRelease(releaseName string, t *testing.T) (func(n string, v int,
 	cfile := &chart.Chart{
 		Metadata: &chart.Metadata{
 			APIVersion:  chart.APIVersionV1,
-			Name:        "testUpgradeChart",
+			Name:        releaseName,
 			Description: "A Helm chart for Kubernetes",
 			Version:     "0.1.0",
 		},

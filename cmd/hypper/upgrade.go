@@ -82,11 +82,6 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				return err
 			}
 
-			vals, err := valueOpts.MergeValues(getter.All(settings.EnvSettings))
-			if err != nil {
-				return err
-			}
-
 			// Check chart dependencies to make sure all are present in /charts
 			ch, err := loader.Load(chartPath)
 			if err != nil {
@@ -149,6 +144,11 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 			if client.Version == "" && client.Devel {
 				logger.Debug("setting version to >0.0.0-0")
 				client.Version = ">0.0.0-0"
+			}
+
+			vals, err := valueOpts.MergeValues(getter.All(settings.EnvSettings))
+			if err != nil {
+				return err
 			}
 
 			rel, err := client.Run(client.ReleaseName, ch, vals)
