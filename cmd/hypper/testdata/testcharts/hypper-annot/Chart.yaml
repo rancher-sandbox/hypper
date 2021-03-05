@@ -10,3 +10,10 @@ annotations:
   hypper.cattle.io/release-name: my-hypper-name
   catalog.cattle.io/namespace: fleet-system
   catalog.cattle.io/release-name: fleet
+  hypper.cattle.io/shared-dependencies: |
+    - name: prometheus
+      version: "13.3.1"
+      repository: "https://example.com/charts"
+    - name: postgresql
+      version: "10.3.11"
+      repository: "https://another.example.com/charts"
