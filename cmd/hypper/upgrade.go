@@ -20,7 +20,6 @@ import (
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
-
 	"time"
 
 	"github.com/pkg/errors"
@@ -69,59 +68,16 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 	var createNamespace bool
 
 	cmd := &cobra.Command{
-		Use:   "upgrade [RELEASE] [CHART]",
+		Use:   "upgrade [CHART]",
 		Short: "upgrade a release",
 		Long:  upgradeDesc,
-		Args:  require.ExactArgs(2),
+		Args:  require.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client.Namespace = settings.Namespace()
 
 			wInfo := logio.NewWriter(logger, log.InfoLevel)
 
-			// Fixes #7002 - Support reading values from STDIN for `upgrade` command
-			// Must load values AFTER determining if we have to call install so that values loaded from stdin are are not read twice
-			if client.Install {
-				// If a release does not exist, install it.
-				histClient := action.NewHistory(cfg)
-				histClient.Max = 1
-				if _, err := histClient.Run(args[0]); err == driver.ErrReleaseNotFound {
-					// Only print this to stdout for table output
-					if outfmt == output.Table {
-						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q does not exist. Installing it now. :toolbox:\n", args[0]))
-					}
-					instClient := action.NewInstall(cfg)
-					instClient.CreateNamespace = createNamespace
-					instClient.ChartPathOptions = client.ChartPathOptions
-					instClient.DryRun = client.DryRun
-					instClient.DisableHooks = client.DisableHooks
-					instClient.SkipCRDs = client.SkipCRDs
-					instClient.Timeout = client.Timeout
-					instClient.Wait = client.Wait
-					instClient.WaitForJobs = client.WaitForJobs
-					instClient.Devel = client.Devel
-					instClient.Namespace = client.Namespace
-					instClient.Atomic = client.Atomic
-					instClient.PostRenderer = client.PostRenderer
-					instClient.DisableOpenAPIValidation = client.DisableOpenAPIValidation
-					instClient.SubNotes = client.SubNotes
-					instClient.Description = client.Description
-
-					rel, err := runInstall(args, instClient, valueOpts, logger)
-					if err != nil {
-						return err
-					}
-					return outfmt.Write(wInfo, &statusPrinter{rel, settings.Debug, false})
-				} else if err != nil {
-					return err
-				}
-			}
-
-			if client.Version == "" && client.Devel {
-				logger.Debug("setting version to >0.0.0-0")
-				client.Version = ">0.0.0-0"
-			}
-
-			chartPath, err := client.ChartPathOptions.LocateChart(args[1], settings.EnvSettings)
+			chartPath, err := client.ChartPathOptions.LocateChart(args[0], settings.EnvSettings)
 			if err != nil {
 				return err
 			}
@@ -147,13 +103,59 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 
 			}
 
-			rel, err := client.Run(args[0], ch, vals)
+			chartName, _ := client.Name(ch, args)
+
+			// Fixes #7002 - Support reading values from STDIN for `upgrade` command
+			// Must load values AFTER determining if we have to call install so that values loaded from stdin are are not read twice
+			if client.Install {
+				// If a release does not exist, install it.
+				histClient := action.NewHistory(cfg)
+				histClient.Max = 1
+				if _, err := histClient.Run(chartName); err == driver.ErrReleaseNotFound {
+					// Only print this to stdout for table output
+					if outfmt == output.Table {
+						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q does not exist. Installing it now. :toolbox:\n", args[0]))
+					}
+					instClient := action.NewInstall(cfg)
+					instClient.CreateNamespace = createNamespace
+					instClient.ChartPathOptions = client.ChartPathOptions
+					instClient.DryRun = client.DryRun
+					instClient.DisableHooks = client.DisableHooks
+					instClient.SkipCRDs = client.SkipCRDs
+					instClient.Timeout = client.Timeout
+					instClient.Wait = client.Wait
+					instClient.WaitForJobs = client.WaitForJobs
+					instClient.Devel = client.Devel
+					instClient.Namespace = client.Namespace
+					instClient.Atomic = client.Atomic
+					instClient.PostRenderer = client.PostRenderer
+					instClient.DisableOpenAPIValidation = client.DisableOpenAPIValidation
+					instClient.SubNotes = client.SubNotes
+					instClient.Description = client.Description
+					instClient.ReleaseName = chartName
+
+					rel, err := runInstall(args, instClient, valueOpts, logger)
+					if err != nil {
+						return err
+					}
+					return outfmt.Write(wInfo, &statusPrinter{rel, settings.Debug, false})
+				} else if err != nil {
+					return err
+				}
+			}
+
+			if client.Version == "" && client.Devel {
+				logger.Debug("setting version to >0.0.0-0")
+				client.Version = ">0.0.0-0"
+			}
+
+			rel, err := client.Run(chartName, ch, vals)
 			if err != nil {
 				return errors.Wrap(err, "UPGRADE FAILED")
 			}
 
 			if outfmt == output.Table {
-				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q has been upgraded :partying_face:", args[0]))
+				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q has been upgraded :partying_face:", chartName))
 			}
 
 			return outfmt.Write(wInfo, &statusPrinter{rel, settings.Debug, false})
