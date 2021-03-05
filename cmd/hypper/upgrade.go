@@ -1,5 +1,5 @@
 /*
-Copyright The Helm Authors.
+Copyright The Helm Authors, SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import (
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
-	helmCli "helm.sh/helm/v3/pkg/cli"
 
 	"time"
 
@@ -76,7 +75,6 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 		Args:  require.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client.Namespace = settings.Namespace()
-			helmSettings := helmCli.New()
 
 			wInfo := logio.NewWriter(logger, log.InfoLevel)
 
@@ -123,12 +121,12 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				client.Version = ">0.0.0-0"
 			}
 
-			chartPath, err := client.ChartPathOptions.LocateChart(args[1], helmSettings)
+			chartPath, err := client.ChartPathOptions.LocateChart(args[1], settings.EnvSettings)
 			if err != nil {
 				return err
 			}
 
-			vals, err := valueOpts.MergeValues(getter.All(helmSettings))
+			vals, err := valueOpts.MergeValues(getter.All(settings.EnvSettings))
 			if err != nil {
 				return err
 			}
