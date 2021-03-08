@@ -19,10 +19,9 @@ package test
 import (
 	"bytes"
 	"flag"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"path/filepath"
-
-	"github.com/pkg/errors"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.

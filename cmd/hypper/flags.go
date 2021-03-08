@@ -18,6 +18,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/pflag"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/cli/values"
+	"helm.sh/helm/v3/pkg/postrender"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -28,6 +32,7 @@ import (
 )
 
 const outputFlag = "output"
+const postRenderFlag = "post-renderer"
 
 // bindOutputFlag will add the output flag to the given command and bind the
 // value to the given format pointer
@@ -74,5 +79,53 @@ func (o *outputValue) Set(s string) error {
 		return err
 	}
 	*o = outputValue(outfmt)
+	return nil
+}
+
+func addChartPathOptionsFlags(f *pflag.FlagSet, c *action.ChartPathOptions) {
+	f.StringVar(&c.Version, "version", "", "specify the exact chart version to use. If this is not specified, the latest version is used")
+	f.BoolVar(&c.Verify, "verify", false, "verify the package before using it")
+	f.StringVar(&c.Keyring, "keyring", defaultKeyring(), "location of public keys used for verification")
+	f.StringVar(&c.RepoURL, "repo", "", "chart repository url where to locate the requested chart")
+	f.StringVar(&c.Username, "username", "", "chart repository username where to locate the requested chart")
+	f.StringVar(&c.Password, "password", "", "chart repository password where to locate the requested chart")
+	f.StringVar(&c.CertFile, "cert-file", "", "identify HTTPS client using this SSL certificate file")
+	f.StringVar(&c.KeyFile, "key-file", "", "identify HTTPS client using this SSL key file")
+	f.BoolVar(&c.InsecureSkipTLSverify, "insecure-skip-tls-verify", false, "skip tls certificate checks for the chart download")
+	f.StringVar(&c.CaFile, "ca-file", "", "verify certificates of HTTPS-enabled servers using this CA bundle")
+}
+
+func addValueOptionsFlags(f *pflag.FlagSet, v *values.Options) {
+	f.StringSliceVarP(&v.ValueFiles, "values", "f", []string{}, "specify values in a YAML file or a URL (can specify multiple)")
+	f.StringArrayVar(&v.Values, "set", []string{}, "set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
+	f.StringArrayVar(&v.StringValues, "set-string", []string{}, "set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
+	f.StringArrayVar(&v.FileValues, "set-file", []string{}, "set values from respective files specified via the command line (can specify multiple or separate values with commas: key1=path1,key2=path2)")
+}
+
+func bindPostRenderFlag(cmd *cobra.Command, varRef *postrender.PostRenderer) {
+	cmd.Flags().Var(&postRenderer{varRef}, postRenderFlag, "the path to an executable to be used for post rendering. If it exists in $PATH, the binary will be used, otherwise it will try to look for the executable at the given path")
+}
+
+type postRenderer struct {
+	renderer *postrender.PostRenderer
+}
+
+func (p postRenderer) String() string {
+	return "exec"
+}
+
+func (p postRenderer) Type() string {
+	return "postrenderer"
+}
+
+func (p postRenderer) Set(s string) error {
+	if s == "" {
+		return nil
+	}
+	pr, err := postrender.NewExec(s)
+	if err != nil {
+		return err
+	}
+	*p.renderer = pr
 	return nil
 }
