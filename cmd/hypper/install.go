@@ -70,7 +70,10 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 			return nil
 		},
 	}
-	addInstallFlags(cmd, cmd.Flags(), client, valueOpts)
+	f := cmd.Flags()
+	addInstallFlags(cmd, f, client, valueOpts)
+	addValueOptionsFlags(f, valueOpts)
+	addChartPathOptionsFlags(f, &client.ChartPathOptions)
 	bindOutputFlag(cmd, &outfmt)
 	return cmd
 }
