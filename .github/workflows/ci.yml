@@ -33,5 +33,3 @@ jobs:
         run: make test-unit
       - name: Show Coverage of Hypper
         run: make coverage
-      - name: Check license
-        run: make license-check
