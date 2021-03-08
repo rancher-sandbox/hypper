@@ -37,7 +37,7 @@ import (
 const upgradeDesc = `
 This command upgrades a release to a new version of a chart.
 
-The upgrade arguments must be a release and chart. The chart
+The upgrade arguments must be a chart. The chart
 argument can be either: a chart reference('example/mariadb'), a path to a chart directory,
 a packaged chart, or a fully qualified URL. For chart references, the latest
 version will be specified unless the '--version' flag is set.
@@ -52,13 +52,13 @@ You can specify the '--values'/'-f' flag multiple times. The priority will be gi
 last (right-most) file specified. For example, if both myvalues.yaml and override.yaml
 contained a key called 'Test', the value set in override.yaml would take precedence:
 
-    $ helm upgrade -f myvalues.yaml -f override.yaml redis ./redis
+    $ helm upgrade -f myvalues.yaml -f override.yaml ./redis
 
 You can specify the '--set' flag multiple times. The priority will be given to the
 last (right-most) set specified. For example, if both 'bar' and 'newbar' values are
 set for a key called 'foo', the 'newbar' value would take precedence:
 
-    $ helm upgrade --set foo=bar --set foo=newbar redis ./redis
+    $ helm upgrade --set foo=bar --set foo=newbar ./redis
 `
 
 func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command {
@@ -69,7 +69,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 
 	cmd := &cobra.Command{
 		Use:   "upgrade [CHART]",
-		Short: "upgrade a release",
+		Short: "upgrade a chart",
 		Long:  upgradeDesc,
 		Args:  require.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -102,7 +102,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				logger.Debugf("client.ReleaseName was empty, setting release name to %s", client.ReleaseName)
 			}
 
-			// Fixes #7002 - Support reading values from STDIN for `upgrade` command
+			// Fixes helm#7002 - Support reading values from STDIN for `upgrade` command
 			// Must load values AFTER determining if we have to call install so that values loaded from stdin are are not read twice
 			if client.Install {
 				// If a release does not exist, install it.

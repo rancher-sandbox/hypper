@@ -17,10 +17,7 @@ limitations under the License.
 package action
 
 import (
-	"github.com/pkg/errors"
-
-	"helm.sh/helm/v3/pkg/chartutil"
-	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/action"
 )
 
 // History is the action for checking the release's ledger.
@@ -30,29 +27,14 @@ import (
 // To list up to one revision of every release in one specific, or in all,
 // namespaces, see the List action.
 type History struct {
+	*action.History
 	cfg *Configuration
-
-	Max     int
-	Version int
 }
 
 // NewHistory creates a new History object with the given configuration.
 func NewHistory(cfg *Configuration) *History {
 	return &History{
-		cfg: cfg,
+		History: action.NewHistory(cfg.Configuration),
+		cfg:     cfg,
 	}
-}
-
-// Run executes 'helm history' against the given release.
-func (h *History) Run(name string) ([]*release.Release, error) {
-	if err := h.cfg.KubeClient.IsReachable(); err != nil {
-		return nil, err
-	}
-
-	if err := chartutil.ValidateReleaseName(name); err != nil {
-		return nil, errors.Errorf("release name is invalid: %s", name)
-	}
-
-	h.cfg.Log("getting history for release %s", name)
-	return h.cfg.Releases.History(name)
 }

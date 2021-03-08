@@ -21,6 +21,7 @@ func NewUpgrade(cfg *Configuration) *Upgrade {
 	}
 }
 
+// Name returns the name that should be used.
 func (i *Upgrade) Name(chart *chart.Chart, args []string) (string, error) {
 	// args here will only be: [CHART]
 	// cobra flags have been already stripped
