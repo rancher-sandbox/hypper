@@ -1,0 +1,1 @@
+WARNING: No shared dependencies in testdata\testcharts\vanilla-helm

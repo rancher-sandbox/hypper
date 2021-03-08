@@ -123,6 +123,7 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 	buf := new(bytes.Buffer)
 	logger := logcli.NewStandard()
 	logger.InfoOut = buf
+	logger.WarnOut = buf
 	logger.ErrorOut = buf
 	log.Current = logger
 

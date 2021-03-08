@@ -1,5 +1,5 @@
 /*
-Copyright The Helm Authors.
+Copyright The Helm Authors, SUSE LLC.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -18,40 +18,62 @@ package main
 import (
 	"runtime"
 	"testing"
+
+	"helm.sh/helm/v3/pkg/release"
 )
 
-func TestDependencyListCmd(t *testing.T) {
+func TestSharedDependencyListCmd(t *testing.T) {
 	noSuchChart := cmdTestCase{
 		name:      "No such chart",
-		cmd:       "dependency list /no/such/chart",
-		golden:    "output/dependency-list-no-chart-linux.txt",
+		cmd:       "shared-deps list /no/such/chart",
+		golden:    "output/shared-deps-list-no-chart-linux.txt",
 		wantError: true,
 	}
 
-	noDependencies := cmdTestCase{
-		name:   "No dependencies",
-		cmd:    "dependency list testdata/testcharts/alpine",
-		golden: "output/dependency-list-no-requirements-linux.txt",
+	noSharedDependencies := cmdTestCase{
+		name:   "Chart doesn't have shared dependencies",
+		cmd:    "shared-deps list testdata/testcharts/vanilla-helm",
+		golden: "output/shared-deps-list-no-shared-deps-linux.txt",
+	}
+
+	noSharedDependenciesInstalled := cmdTestCase{
+		name:   "No Shared dependencies installed",
+		cmd:    "shared-deps list testdata/testcharts/hypper-annot",
+		golden: "output/shared-deps-list-not-installed.txt",
+	}
+
+	sharedDependenciesInstalled := cmdTestCase{
+		name:   "Shared dependencies installed in correct ns",
+		cmd:    "shared-deps list testdata/testcharts/hypper-annot",
+		golden: "output/shared-deps-list-installed.txt",
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "prometheus", Namespace: "hypper"})},
+	}
+
+	sharedDependenciesInstalledDiffNS := cmdTestCase{
+		name:   "Shared dependencies installed in different ns",
+		cmd:    "shared-deps list testdata/testcharts/hypper-annot",
+		golden: "output/shared-deps-list-installed-diff-ns.txt",
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "prometheus", Namespace: "other-place"})},
+	}
+
+	sharedDependenciesInstalledDiffNSFlag := cmdTestCase{
+		name:   "Shared dependencies installed in different ns, passing -n flag to find them",
+		cmd:    "shared-deps list testdata/testcharts/hypper-annot -n other-place",
+		golden: "output/shared-deps-list-installed-diff-ns-found.txt",
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "prometheus", Namespace: "other-place"})},
 	}
 
 	if runtime.GOOS == "windows" {
-		noSuchChart.golden = "output/dependency-list-no-chart-windows.txt"
-		noDependencies.golden = "output/dependency-list-no-requirements-windows.txt"
+		noSuchChart.golden = "output/shared-deps-list-no-chart-windows.txt"
+		noSharedDependencies.golden = "output/shared-deps-list-no-shared-deps-windows.txt"
 	}
 
 	tests := []cmdTestCase{noSuchChart,
-		noDependencies, {
-			name:   "Dependencies in chart dir",
-			cmd:    "dependency list testdata/testcharts/reqtest",
-			golden: "output/dependency-list.txt",
-		}, {
-			name:   "Dependencies in chart archive",
-			cmd:    "dependency list testdata/testcharts/reqtest-0.1.0.tgz",
-			golden: "output/dependency-list-archive.txt",
-		}}
+		noSharedDependencies,
+		noSharedDependenciesInstalled,
+		sharedDependenciesInstalled,
+		sharedDependenciesInstalledDiffNS,
+		sharedDependenciesInstalledDiffNSFlag,
+	}
 	runTestCmd(t, tests)
-}
-
-func TestDependencyFileCompletion(t *testing.T) {
-	checkFileCompletion(t, "dependency", false)
 }
