@@ -114,3 +114,18 @@ func loadReleasesInMemory(actionConfig *action.Configuration) {
 	// Must reset namespace to the proper one
 	mem.SetNamespace(settings.Namespace())
 }
+
+// This re-Inits the config so we can set the Storage Driver namespace to what is obtained
+// from the chart.
+// This is because on helm you can only set the namespace via the --namespace flag which gets into
+// the envsettings.namespace and the helm.go loads that var into the Configuration object during
+// cobra.OnInitialize. To maintain compativility we do the same but then during the command execution
+// we read the chart annotations and change the release namespace on the fly. This is ok for the
+// namespace install but the Storage Driver, which is already loaded, has a different namespace (usually default)
+// and the Release gets stored in the wrong namespace (stored *for* helm, for k8s is installed properly)
+// This results into a disconnect between where the release is installed and where hypper/helm looks in the
+// Storage Driver to search for it. With this below we re-Init the configuration and hance the Storage Driver to
+// have the namespace correctly set in sync with the Release
+func ReinitConfigForNamespace(cfg *action.Configuration, namespace string, logger log.Logger) {
+	_ = cfg.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), logger.Debugf)
+}

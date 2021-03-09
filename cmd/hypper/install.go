@@ -17,7 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"github.com/Masterminds/log-go"
+	logio "github.com/Masterminds/log-go/io"
 	"github.com/pkg/errors"
+	"github.com/rancher-sandbox/hypper/pkg/action"
+	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/cmd/helm/require"
@@ -28,11 +32,6 @@ import (
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
-
-	"github.com/Masterminds/log-go"
-	logio "github.com/Masterminds/log-go/io"
-	"github.com/rancher-sandbox/hypper/pkg/action"
-	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 )
 
 const installDesc = `
@@ -119,6 +118,9 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	} else {
 		client.SetNamespace(chartRequested, settings.Namespace())
 	}
+
+	// Reinit the config so we set the proper namespace of the Storage Driver
+	ReinitConfigForNamespace(client.Config, client.Namespace, logger)
 
 	client.Config.SetNamespace(client.Namespace)
 
