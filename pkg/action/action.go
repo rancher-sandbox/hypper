@@ -16,8 +16,13 @@ limitations under the License.
 package action
 
 import (
+	"fmt"
+	"os"
+
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/storage"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	"helm.sh/helm/v3/pkg/time"
 )
 
@@ -38,5 +43,50 @@ func (c *Configuration) SetNamespace(namespace string) {
 	case *kube.Client:
 		i.Namespace = namespace
 		c.KubeClient = i
+
+		// When actionConfig.Init is called it setup up the driver with a
+		// namespace. We need to change the namespace for the driver because
+		// we know a new location. Here we detect what driver is already in
+		// use and recreate it with the new namespace.
+		lazyClient := &lazyClient{
+			namespace: namespace,
+			clientFn:  i.Factory.KubernetesClientSet,
+		}
+
+		// Note, there is no default case at the end so that test drivers are
+		// left alone.
+		switch c.Releases.Driver.Name() {
+		case "Secret":
+			d := driver.NewSecrets(newSecretClient(lazyClient))
+			d.Log = c.Log
+			c.Releases = storage.Init(d)
+		case "ConfigMap":
+			d := driver.NewConfigMaps(newConfigMapClient(lazyClient))
+			d.Log = c.Log
+			c.Releases = storage.Init(d)
+		case "Memory":
+			var d *driver.Memory
+			if c.Releases != nil {
+				if mem, ok := c.Releases.Driver.(*driver.Memory); ok {
+					d = mem
+				}
+			}
+			if d == nil {
+				d = driver.NewMemory()
+			}
+			d.SetNamespace(namespace)
+			c.Releases = storage.Init(d)
+		case "SQL":
+			d, err := driver.NewSQL(
+				os.Getenv("HELM_DRIVER_SQL_CONNECTION_STRING"),
+				c.Log,
+				namespace,
+			)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to instantiate SQL driver: %v", err))
+			}
+			c.Releases = storage.Init(d)
+		}
 	}
+
 }
