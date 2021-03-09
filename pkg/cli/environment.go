@@ -75,6 +75,7 @@ type EnvSettings struct {
 	NoColors          bool
 	NoEmojis          bool
 	NamespaceFromFlag bool
+	HelmDriver        string
 }
 
 // New is a constructor of EnvSettings
@@ -95,6 +96,7 @@ func New() *EnvSettings {
 		RegistryConfig:   envOr("HYPPER_REGISTRY_CONFIG", hypperpath.ConfigPath("registry.json")),
 		RepositoryConfig: envOr("HYPPER_REPOSITORY_CONFIG", hypperpath.ConfigPath("repositories.yaml")),
 		RepositoryCache:  envOr("HYPPER_REPOSITORY_CACHE", hypperpath.CachePath("repository")),
+		HelmDriver:       os.Getenv("HELM_DRIVER"),
 
 		Verbose:  false,
 		NoColors: false,

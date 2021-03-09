@@ -62,7 +62,7 @@ func main() {
 	}
 
 	cobra.OnInitialize(func() {
-		helmDriver := os.Getenv("HELM_DRIVER")
+		helmDriver := settings.HelmDriver
 		if err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, logger.Debugf); err != nil {
 			log.Fatal(err)
 		}
@@ -127,5 +127,5 @@ func loadReleasesInMemory(actionConfig *action.Configuration) {
 // Storage Driver to search for it. With this below we re-Init the configuration and hance the Storage Driver to
 // have the namespace correctly set in sync with the Release
 func ReinitConfigForNamespace(cfg *action.Configuration, namespace string, logger log.Logger) {
-	_ = cfg.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), logger.Debugf)
+	_ = cfg.Init(settings.RESTClientGetter(), namespace, settings.HelmDriver, logger.Debugf)
 }
