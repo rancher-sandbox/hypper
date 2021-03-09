@@ -138,6 +138,17 @@ func TestUpgradeCmd(t *testing.T) {
 			rels:   []*release.Release{relMock("funny-bunny", 1, ch)},
 		},
 		{
+			name:   "install a release with 'upgrade --install ' and release-name",
+			cmd:    fmt.Sprintf("upgrade -i --release-name jojo '%s'", chartPath),
+			golden: "output/upgrade-with-install-release-name.txt",
+		},
+		{
+			name:   "upgrade a release with --release-name",
+			cmd:    fmt.Sprintf("upgrade --release-name jojo '%s'", chartPath),
+			golden: "output/upgrade-with-release-name.txt",
+			rels:   []*release.Release{relMock("jojo", 2, ch)},
+		},
+		{
 			name:   "upgrade a release with wait",
 			cmd:    fmt.Sprintf("upgrade --wait '%s'", chartPath),
 			golden: "output/upgrade-with-wait.txt",

@@ -17,16 +17,14 @@ limitations under the License.
 package action
 
 import (
-	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
-	"strings"
 )
 
 // Upgrade is a composite type of Helm's Upgrade type
 type Upgrade struct {
 	*action.Upgrade
-	cfg         *Configuration
+	Config      *Configuration
 	ReleaseName string
 }
 
@@ -34,19 +32,13 @@ type Upgrade struct {
 func NewUpgrade(cfg *Configuration) *Upgrade {
 	return &Upgrade{
 		Upgrade: action.NewUpgrade(cfg.Configuration),
-		cfg:     cfg,
+		Config:  cfg,
 	}
 }
 
 // Name returns the name that should be used.
-func (i *Upgrade) Name(chart *chart.Chart, args []string) (string, error) {
+func (i *Upgrade) Name(chart *chart.Chart) (string, error) {
 	// args here will only be: [CHART]
-	// cobra flags have been already stripped
-
-	if len(args) > 2 {
-		return args[0], errors.Errorf("expected at most two arguments, unexpected arguments: %v", strings.Join(args[2:], ", "))
-	}
-
 	if chart.Metadata.Annotations != nil {
 		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/release-name"]; ok {
 			return val, nil
@@ -58,4 +50,20 @@ func (i *Upgrade) Name(chart *chart.Chart, args []string) (string, error) {
 
 	// If we dont have our annotations then return the base name
 	return chart.Metadata.Name, nil
+}
+
+// SetNamespace sets the Namespace that should be used in action.Upgrade
+//
+// This will read the chart annotations. If no annotations, it leave the existing ns in the action.
+func (i *Upgrade) SetNamespace(chart *chart.Chart, defaultns string) {
+	i.Namespace = defaultns
+	if chart.Metadata.Annotations != nil {
+		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/namespace"]; ok {
+			i.Namespace = val
+		} else {
+			if val, ok := chart.Metadata.Annotations["catalog.cattle.io/namespace"]; ok {
+				i.Namespace = val
+			}
+		}
+	}
 }
