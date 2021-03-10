@@ -61,10 +61,9 @@ func TestInstallCmd(t *testing.T) {
 		},
 		// Install, no name or annotations specified
 		{
-			name:      "install, with no name or annot specified",
-			cmd:       "install testdata/testcharts/vanilla-helm",
-			golden:    "output/install-no-name-or-annot.txt",
-			wantError: true,
+			name:   "install, with no name or annot specified",
+			cmd:    "install testdata/testcharts/vanilla-helm",
+			golden: "output/install-no-name-or-annot.txt",
 		},
 	}
 	runTestActionCmd(t, tests)

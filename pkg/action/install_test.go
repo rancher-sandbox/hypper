@@ -119,10 +119,10 @@ func TestName(t *testing.T) {
 	instAction.ReleaseName = ""
 	chart = buildChart()
 	_, err = instAction.Name(chart, []string{"chart-uri"})
-	if err == nil {
-		t.Fatal("expected an error")
+	if err != nil {
+		t.Fatal(err)
 	}
-	is.Equal("must either provide a name, set the correct chart annotations, or specify --generate-name", err.Error())
+	is.Equal("fleet", name)
 }
 
 func TestNameGenerateName(t *testing.T) {

@@ -124,7 +124,7 @@ func (i *Install) Name(chart *chart.Chart, args []string) (string, error) {
 	}
 
 	if !i.GenerateName {
-		return "", errors.New("must either provide a name, set the correct chart annotations, or specify --generate-name")
+		return chart.Name(), nil
 	}
 
 	base := filepath.Base(args[0])
