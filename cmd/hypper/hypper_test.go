@@ -162,7 +162,6 @@ type cmdTestCase struct {
 	rels []*release.Release
 	// Number of repeats (in case a feature was previously flaky and the test checks
 	// it's now stably producing identical results). 0 means test is run exactly once.
-	// TODO(itxaka): Disabled for now, we are not using it but we may want to keep it 1:1 with helm?
 	repeat int
 }
 
