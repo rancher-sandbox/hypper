@@ -43,7 +43,7 @@ import (
 func testTimestamper() time.Time { return time.Unix(242085845, 0).UTC() }
 
 func init() {
-	action.Timestamper = testTimestamper
+	helmAction.Timestamper = testTimestamper
 }
 
 func runTestCmd(t *testing.T, tests []cmdTestCase) {

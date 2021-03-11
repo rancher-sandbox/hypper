@@ -19,7 +19,6 @@ package main
 import (
 	"fmt"
 	"github.com/rancher-sandbox/hypper/internal/test/ensure"
-	"helm.sh/helm/v3/pkg/action"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -31,17 +30,6 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
 )
-
-// FIXME(itxaka): As far as I can see this is done in here so we can  fake the timestamp in the
-// results so they match the golden files
-// We already have this on hypper.go file and I would expect this to be automatically done as we load that file
-// in the case of helm it works exactly like that, their upgrade_test.go does not set the action.Timestamper, its
-// done on the helm_test.go file
-// I have no idea why, but if I dont change the Timestamper then it doesnt match the golden files because it
-// uses the default Time.Now() timestamper...
-func init() {
-	action.Timestamper = testTimestamper
-}
 
 func TestUpgradeCmd(t *testing.T) {
 	tmpChart := ensure.TempDir(t)
