@@ -44,7 +44,7 @@ func (c *Configuration) SetNamespace(namespace string) {
 		i.Namespace = namespace
 		c.KubeClient = i
 
-		// When actionConfig.Init is called it setup up the driver with a
+		// When actionConfig.Init is called it sets up the driver with a
 		// namespace. We need to change the namespace for the driver because
 		// we know a new location. Here we detect what driver is already in
 		// use and recreate it with the new namespace.
@@ -87,6 +87,19 @@ func (c *Configuration) SetNamespace(namespace string) {
 			}
 			c.Releases = storage.Init(d)
 		}
+	// tester Client:
+	default:
+		var d *driver.Memory
+		if c.Releases != nil {
+			if mem, ok := c.Releases.Driver.(*driver.Memory); ok {
+				d = mem
+			}
+		}
+		if d == nil {
+			d = driver.NewMemory()
+		}
+		d.SetNamespace(namespace)
+		c.Releases = storage.Init(d)
 	}
 
 }
