@@ -180,11 +180,11 @@ func resetEnv() func() {
 func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 
 	args, err := shellwords.Parse(cmd)
-	actionConfig := new(action.Configuration)
-
 	if err != nil {
 		return nil, "", err
 	}
+
+	actionConfig := new(action.Configuration)
 
 	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 	buf := new(bytes.Buffer)
