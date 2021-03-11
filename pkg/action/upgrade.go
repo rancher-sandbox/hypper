@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package action
 
 import (
@@ -22,6 +23,7 @@ import (
 	"strings"
 )
 
+// Upgrade is a composite type of Helm's Upgrade type
 type Upgrade struct {
 	*action.Upgrade
 	cfg         *Configuration
