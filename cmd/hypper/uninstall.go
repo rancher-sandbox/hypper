@@ -40,6 +40,7 @@ func newUninstallCmd(actionConfig *action.Configuration, logger log.Logger) *cob
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for i := 0; i < len(args); i++ {
 				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":fire: uninstalling %s", args[i]))
+				client.Config.SetNamespace(settings.Namespace())
 				res, err := client.Run(args[i])
 				if err != nil {
 					return err
