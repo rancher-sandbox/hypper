@@ -17,11 +17,9 @@ limitations under the License.
 package action
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"helm.sh/helm/v3/pkg/time"
 )
 
 func installAction(t *testing.T) *Install {
@@ -104,16 +102,6 @@ func TestName(t *testing.T) {
 	}
 	is.Equal("fleet", name)
 
-	// --generate-name while specifying a name
-	instAction = installAction(t)
-	instAction.GenerateName = true
-	chart = buildChart()
-	_, err = instAction.Name(chart, []string{"name1", "chart-uri"})
-	if err == nil {
-		t.Fatal(err)
-	}
-	is.Equal("cannot set --generate-name and also specify a name", err.Error())
-
 	// no name or annotations present
 	instAction = installAction(t)
 	instAction.ReleaseName = ""
@@ -123,66 +111,6 @@ func TestName(t *testing.T) {
 		t.Fatal(err)
 	}
 	is.Equal("fleet", name)
-}
-
-func TestNameGenerateName(t *testing.T) {
-	is := assert.New(t)
-	instAction := installAction(t)
-
-	instAction.ReleaseName = ""
-	instAction.GenerateName = true
-	chart := buildChart()
-
-	tests := []struct {
-		Name         string
-		Chart        string
-		ExpectedName string
-	}{
-		{
-			"local filepath",
-			"./chart",
-			fmt.Sprintf("chart-%d", time.Now().Unix()),
-		},
-		{
-			"dot filepath",
-			".",
-			fmt.Sprintf("chart-%d", time.Now().Unix()),
-		},
-		{
-			"empty filepath",
-			"",
-			fmt.Sprintf("chart-%d", time.Now().Unix()),
-		},
-		{
-			"packaged chart",
-			"chart.tgz",
-			fmt.Sprintf("chart-%d", time.Now().Unix()),
-		},
-		{
-			"packaged chart with .tar.gz extension",
-			"chart.tar.gz",
-			fmt.Sprintf("chart-%d", time.Now().Unix()),
-		},
-		{
-			"packaged chart with local extension",
-			"./chart.tgz",
-			fmt.Sprintf("chart-%d", time.Now().Unix()),
-		},
-	}
-
-	for _, tc := range tests {
-		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
-			t.Parallel()
-
-			name, err := instAction.Name(chart, []string{tc.Chart})
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			is.Equal(tc.ExpectedName, name)
-		})
-	}
 }
 
 func TestChart(t *testing.T) {

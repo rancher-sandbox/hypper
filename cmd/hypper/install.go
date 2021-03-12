@@ -47,7 +47,7 @@ where the chart will be installed. By priority order:
 1. By the args passed from the CLI: hypper install mymaria example/mariadb -n system
 2. By using hypper.cattle.io annotations in the Chart.yaml
 3. By using catalog.cattle.io annotations in the Chart.yaml
-4. By using the current namespace as configured with the kubeconfig, or the flag --generate-name
+4. By using the chart name from the Chart.yaml if nothing else is specified
 `
 
 func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra.Command {
@@ -79,7 +79,6 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 }
 
 func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Install, valueOpts *values.Options) {
-	f.BoolVarP(&client.GenerateName, "generate-name", "g", false, "generate the name (and omit the NAME parameter)")
 	f.BoolVar(&client.CreateNamespace, "create-namespace", false, "create the release namespace if not present")
 }
 
