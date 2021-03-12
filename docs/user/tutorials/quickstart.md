@@ -62,8 +62,8 @@ this case the official stable charts.
 
 ```terminal
 $ hypper repo update              # Make sure we get the latest list of charts
-$ hypper install bitnami/mariadb --generate-name
-Installing chart "mariadb-1615547386" in namespace "default"…
+$ hypper install mariadb bitnami/mariadb
+Installing chart "mariadb" in namespace "default"…
 Done! 👏
 ```
 
@@ -101,9 +101,9 @@ It's easy to see what has been released with hypper:
 
 ```terminal
 $ hypper ls --all-namespaces
-NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
-fleet                   fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400                   0.3.4
-mariadb-1615547386      default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5                   10.5.9
+NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
+fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
+mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
 ```
 
 ## Uninstall a release
