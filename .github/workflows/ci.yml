@@ -33,3 +33,9 @@ jobs:
         run: make test-unit
       - name: Show Coverage of Hypper
         run: make coverage
+      - name: Upload hypper binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: hypper-${{ runner.os }}-${{ github.sha }}-go${{ matrix.go-version }}
+          path:    ${{ github.workspace }}/bin/hypper*
+          retention-days: 20
