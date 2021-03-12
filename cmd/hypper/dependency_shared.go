@@ -39,10 +39,10 @@ For example, this Chart.yaml declares two shared dependencies:
       hypper.cattle.io/shared-dependencies: |
 	- name: prometheus
 	  version: "13.3.1"
-          repository: "https://example.com/charts"
+      repository: "https://example.com/charts"
 	- name: postgresql
 	  version: "10.3.11"
-          repository: "https://another.example.com/charts"
+      repository: "https://another.example.com/charts"
 
 
 The 'name' should be the name of a chart, where that name must match the name
