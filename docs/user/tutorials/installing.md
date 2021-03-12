@@ -20,8 +20,12 @@ It will then compile `hypper`, and place it in `./bin/hypper`.
 
 ## From development builds
 
-TBD.
+In addition to releases you can download and install development snapshots of
+Hypper from [Github Actions].
 
 ## From Github releases
 
 TBD.
+
+
+[Github Actions]: https://github.com/rancher-sandbox/hypper/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+workflow%3ACI
