@@ -33,7 +33,7 @@ func installAction(t *testing.T) *Install {
 	return instAction
 }
 
-func TestSetNamespace(t *testing.T) {
+func TestInstallSetNamespace(t *testing.T) {
 	is := assert.New(t)
 
 	// chart without annotations
@@ -44,7 +44,7 @@ func TestSetNamespace(t *testing.T) {
 
 	// hypper annotations have priority over fallback annotations
 	instAction = installAction(t)
-	chart = buildChart(withHypperAnnotations())
+	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
 	instAction.SetNamespace(chart, "defaultns")
 	is.Equal("hypper", instAction.Namespace)
 
@@ -78,7 +78,7 @@ func TestName(t *testing.T) {
 
 	// hypper annotations have priority over fallback annotations
 	instAction = installAction(t)
-	chart = buildChart(withHypperAnnotations())
+	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
 	name, err = instAction.Name(chart, []string{"chart-uri"})
 	if err != nil {
 		t.Fatal(err)

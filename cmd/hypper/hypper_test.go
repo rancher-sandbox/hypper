@@ -123,6 +123,7 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 	buf := new(bytes.Buffer)
 	logger := logcli.NewStandard()
 	logger.InfoOut = buf
+	logger.WarnOut = buf
 	logger.ErrorOut = buf
 	log.Current = logger
 
@@ -161,7 +162,6 @@ type cmdTestCase struct {
 	rels []*release.Release
 	// Number of repeats (in case a feature was previously flaky and the test checks
 	// it's now stably producing identical results). 0 means test is run exactly once.
-	// TODO(itxaka): Disabled for now, we are not using it but we may want to keep it 1:1 with helm?
 	repeat int
 }
 
@@ -180,11 +180,11 @@ func resetEnv() func() {
 func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 
 	args, err := shellwords.Parse(cmd)
-	actionConfig := new(action.Configuration)
-
 	if err != nil {
 		return nil, "", err
 	}
+
+	actionConfig := new(action.Configuration)
 
 	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 	buf := new(bytes.Buffer)

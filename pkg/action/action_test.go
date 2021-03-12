@@ -89,20 +89,20 @@ func buildChart(opts ...chartOption) *chart.Chart {
 
 func withHypperAnnotations() chartOption {
 	return func(opts *chartOptions) {
-		opts.Chart.Metadata.Annotations = map[string]string{
-			"hypper.cattle.io/namespace":     "hypper",
-			"hypper.cattle.io/release-name":  "my-hypper-name",
-			"catalog.cattle.io/namespace":    "fleet-system",
-			"catalog.cattle.io/release-name": "fleet",
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
 		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/namespace"] = "hypper"
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/release-name"] = "my-hypper-name"
 	}
 }
 
 func withFallbackAnnotations() chartOption {
 	return func(opts *chartOptions) {
-		opts.Chart.Metadata.Annotations = map[string]string{
-			"catalog.cattle.io/namespace":    "fleet-system",
-			"catalog.cattle.io/release-name": "fleet",
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
 		}
+		opts.Chart.Metadata.Annotations["catalog.cattle.io/namespace"] = "fleet-system"
+		opts.Chart.Metadata.Annotations["catalog.cattle.io/release-name"] = "fleet"
 	}
 }

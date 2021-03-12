@@ -25,7 +25,7 @@ type List struct {
 	cfg *Configuration
 }
 
-// NewList constructs a new *List by embedding action.List
+// NewList constructs a new *List by embedding helm/pkg/action.List
 func NewList(cfg *Configuration) *List {
 	return &List{
 		action.NewList(cfg.Configuration),
