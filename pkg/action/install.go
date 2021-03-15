@@ -17,9 +17,6 @@ limitations under the License.
 package action
 
 import (
-	"fmt"
-	"path/filepath"
-
 	"strings"
 
 	"github.com/pkg/errors"
@@ -28,7 +25,6 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/release"
-	"helm.sh/helm/v3/pkg/time"
 )
 
 // Install is a composite type of Helm's Install type
@@ -88,9 +84,6 @@ func (i *Install) Name(chart *chart.Chart, args []string) (string, error) {
 	// cobra flags have been already stripped
 
 	flagsNotSet := func() error {
-		if i.GenerateName {
-			return errors.New("cannot set --generate-name and also specify a name")
-		}
 		if i.NameTemplate != "" {
 			return errors.New("cannot set --name-template and also specify a name")
 		}
@@ -123,20 +116,8 @@ func (i *Install) Name(chart *chart.Chart, args []string) (string, error) {
 		return i.ReleaseName, nil
 	}
 
-	if !i.GenerateName {
-		return "", errors.New("must either provide a name, set the correct chart annotations, or specify --generate-name")
-	}
+	return chart.Name(), nil
 
-	base := filepath.Base(args[0])
-	if base == "." || base == "" {
-		base = "chart"
-	}
-	// if present, strip out the file extension from the name
-	if idx := strings.Index(base, "."); idx != -1 {
-		base = base[0:idx]
-	}
-
-	return fmt.Sprintf("%s-%d", base, time.Now().Unix()), nil
 }
 
 // Chart returns the chart that should be used.

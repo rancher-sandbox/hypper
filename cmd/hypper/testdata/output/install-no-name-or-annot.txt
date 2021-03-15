@@ -1,1 +1,2 @@
-Error: must either provide a name, set the correct chart annotations, or specify --generate-name
+Installing chart "empty" in namespace "default"…
+Done! 👏 

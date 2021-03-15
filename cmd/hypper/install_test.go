@@ -53,18 +53,17 @@ func TestInstallCmd(t *testing.T) {
 			cmd:    "install testdata/testcharts/fallback-annot",
 			golden: "output/install-fallback-annot.txt",
 		},
-		// Install, annotations have priority over generate-name
+		// Install, annotations have priority over default name from Chart.yml
 		{
-			name:   "install, annot have priority over generate-name",
-			cmd:    "install testdata/testcharts/hypper-annot --generate-name",
+			name:   "install, annot have priority over default name from Chart.yml",
+			cmd:    "install testdata/testcharts/hypper-annot",
 			golden: "output/install-hypper-annot.txt",
 		},
 		// Install, no name or annotations specified
 		{
-			name:      "install, with no name or annot specified",
-			cmd:       "install testdata/testcharts/vanilla-helm",
-			golden:    "output/install-no-name-or-annot.txt",
-			wantError: true,
+			name:   "install, with no name or annot specified",
+			cmd:    "install testdata/testcharts/vanilla-helm",
+			golden: "output/install-no-name-or-annot.txt",
 		},
 	}
 	runTestActionCmd(t, tests)
