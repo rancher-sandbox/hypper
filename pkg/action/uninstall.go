@@ -22,11 +22,13 @@ import (
 // Uninstall is a composite type of Helm's Uninstall type
 type Uninstall struct {
 	*action.Uninstall
+	Config *Configuration
 }
 
 // NewUninstall creates a new Uninstall by embedding action.Uninstall
 func NewUninstall(cfg *Configuration) *Uninstall {
 	return &Uninstall{
 		action.NewUninstall(cfg.Configuration),
+		cfg,
 	}
 }
