@@ -106,11 +106,11 @@ func TestName(t *testing.T) {
 	instAction = installAction(t)
 	instAction.ReleaseName = ""
 	chart = buildChart()
-	_, err = instAction.Name(chart, []string{"chart-uri"})
+	name, err = instAction.Name(chart, []string{"chart-uri"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	is.Equal("fleet", name)
+	is.Equal("hello", name)
 }
 
 func TestChart(t *testing.T) {
