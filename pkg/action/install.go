@@ -60,50 +60,6 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}) (*release.
 	return rel, err
 }
 
-// Name returns the name that should be used.
-//
-// This will read the flags and handle name generation if necessary.
-func (i *Install) Name(chart *chart.Chart, args []string) (string, error) {
-	// args here will only be: [NAME] [CHART]
-	// cobra flags have been already stripped
-
-	flagsNotSet := func() error {
-		if i.NameTemplate != "" {
-			return errors.New("cannot set --name-template and also specify a name")
-		}
-		return nil
-	}
-
-	if len(args) > 2 {
-		return args[0], errors.Errorf("expected at most two arguments, unexpected arguments: %v", strings.Join(args[2:], ", "))
-	}
-
-	if len(args) == 2 {
-		return args[0], flagsNotSet()
-	}
-
-	if chart.Metadata.Annotations != nil {
-		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/release-name"]; ok {
-			return val, nil
-		}
-		if val, ok := chart.Metadata.Annotations["catalog.cattle.io/release-name"]; ok {
-			return val, nil
-		}
-	}
-
-	if i.NameTemplate != "" {
-		name, err := action.TemplateName(i.NameTemplate)
-		return name, err
-	}
-
-	if i.ReleaseName != "" {
-		return i.ReleaseName, nil
-	}
-
-	return chart.Name(), nil
-
-}
-
 // Chart returns the chart that should be used.
 //
 // This will read the flags and skip args if necessary.

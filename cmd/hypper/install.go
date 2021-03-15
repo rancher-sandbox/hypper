@@ -119,11 +119,12 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	// Set namespace for the install client
 	action.SetNamespace(client, chartRequested, settings.Namespace(), settings.NamespaceFromFlag)
 
-	name, err := client.Name(chartRequested, args)
-	if err != nil {
-		return nil, err
+	if client.ReleaseName == "" {
+		client.ReleaseName, err = action.GetName(chartRequested, client.NameTemplate, args...)
+		if err != nil {
+			return nil, err
+		}
 	}
-	client.ReleaseName = name
 
 	if err := checkIfInstallable(chartRequested); err != nil {
 		return nil, err

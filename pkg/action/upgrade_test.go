@@ -53,7 +53,7 @@ func TestUpgradeName(t *testing.T) {
 
 	// hypper annotations have priority over fallback annotations
 	chart := buildChart(withHypperAnnotations(), withFallbackAnnotations())
-	name, err := GetName(chart, "", make([]string, 0))
+	name, err := GetName(chart, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestUpgradeName(t *testing.T) {
 
 	// fallback annotations
 	chart = buildChart(withFallbackAnnotations())
-	name, err = GetName(chart, "", make([]string, 0))
+	name, err = GetName(chart, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestUpgradeName(t *testing.T) {
 
 	// no annotations should default to the chart name
 	chart = buildChart()
-	name, err = GetName(chart, "", make([]string, 0))
+	name, err = GetName(chart, "")
 	if err != nil {
 		t.Fatal(err)
 	}

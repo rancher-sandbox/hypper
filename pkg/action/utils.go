@@ -16,20 +16,23 @@ limitations under the License.
 package action
 
 import (
+	"github.com/pkg/errors"
+	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"strings"
 )
 
 // SetNamespace sets the Namespace that should be used based on annotations or fallback to default
 // both on the action and on the storage.
 // if setDefault is true then it will just set the default namespace
 // This will read the chart annotations. If no annotations, it leave the existing ns in the action.
-// targetNS can be either the default namesapce (usually "default") or the namespace passed via
+// targetNS can be either the default namespace (usually "default") or the namespace passed via
 // cli flag
-func SetNamespace(x interface{}, chart *chart.Chart, targetNS string, NamespaceFromFlag bool) {
+func SetNamespace(x interface{}, chart *chart.Chart, targetNS string, setDefault bool) {
 	namespace := targetNS
-	// NamespaceFromFlag is mainly used when we set the namespace via the cli flag --namespace
+	// setDefault is mainly used when we set the namespace via the cli flag --namespace
 	// and it has priority over everything else
-	if NamespaceFromFlag {
+	if setDefault {
 		namespace = targetNS
 	} else {
 		if chart.Metadata.Annotations != nil {
@@ -51,4 +54,41 @@ func SetNamespace(x interface{}, chart *chart.Chart, targetNS string, NamespaceF
 		i.Namespace = namespace
 		i.Config.SetNamespace(namespace)
 	}
+}
+
+// Name returns the name that should be used based of annotations
+func GetName(chart *chart.Chart, nameTemplate string, args ...string) (string, error) {
+	// args here could be: [NAME] [CHART]
+	// cobra flags have been already stripped
+
+	flagsNotSet := func() error {
+		if nameTemplate != "" {
+			return errors.New("cannot set --name-template and also specify a name")
+		}
+		return nil
+	}
+
+	if len(args) > 2 {
+		return args[0], errors.Errorf("expected at most two arguments, unexpected arguments: %v", strings.Join(args[2:], ", "))
+	}
+
+	if len(args) == 2 {
+		return args[0], flagsNotSet()
+	}
+
+	if chart.Metadata.Annotations != nil {
+		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/release-name"]; ok {
+			return val, nil
+		}
+		if val, ok := chart.Metadata.Annotations["catalog.cattle.io/release-name"]; ok {
+			return val, nil
+		}
+	}
+
+	if nameTemplate != "" {
+		name, err := action.TemplateName(nameTemplate)
+		return name, err
+	}
+
+	return chart.Name(), nil
 }

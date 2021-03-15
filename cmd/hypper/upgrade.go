@@ -106,7 +106,10 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 
 			}
 			if client.ReleaseName == "" {
-				client.ReleaseName, _ = client.Name(ch)
+				client.ReleaseName, err = action.GetName(ch, "")
+				if err != nil {
+					return err
+				}
 				logger.Debugf("client.ReleaseName was empty, setting release name to %s", client.ReleaseName)
 			}
 
