@@ -2,30 +2,20 @@
 
 This guide covers how you can quickly get started using Hypper.
 
-If you already know Helm, this will be a breeze, as Hypper follows Helm's UI,
-being a drop-in replacement, and extends its functionalities to install Helm
-and Hypper charts alike.
+If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
+and extends its functionalities to install Helm and charts that have been extended
+to work with Hypper.
 
 ## Prerequisites
 
-The following prerequisites are required for a successful and properly secured
-use of Hypper.
+The following prerequisites are required:
 
 1. A Kubernetes cluster.
-1. Deciding what security configurations to apply to your installation, if any
-1. Installing and configuring Hypper.
-
-
-## Install Kubernetes or have access to a cluster
-- You must have Kubernetes installed. We recommend the latest stable release of
-  Kubernetes.
-- You should have a local configured copy of `kubectl`, to check results from
-  the tutorials.
+1. A Chart repository to install charts from.
 
 ## Install Hypper
 
 See the [installation guide](docs/user/tutorials/installing.md).
-
 
 ## Configuring Hypper by initializing repositories
 
@@ -37,14 +27,14 @@ example one with Helm charts:
 $ hypper repo add bitnami https://charts.bitnami.com/bitnami
 ```
 
-You can add several repositories. Let's add also a repository containig charts
+You can add several repositories. Let's add a repository containing charts
 with some Hypper functionality:
 
 ```terminal
 $ hypper repo add rancher-charts https://charts.rancher.io
 ```
 
-Now, you can list the repository that Hypper can access:
+Now, you can list the repositories that Hypper can install charts from:
 
 ```terminal
 $ hypper repo list
@@ -53,23 +43,17 @@ bitnami         https://charts.bitnami.com/bitnami
 rancher-charts  https://charts.rancher.io
 ```
 
-
 ## Install an example Helm chart
 
-To install a chart, you can run the hypper install command. Hypper has several
+To install a chart, you can run the `hypper install` command. Hypper has several
 ways to find and install a chart, but the easiest is to use a repository, in
-this case the official stable charts.
+this case the Bitnami chart repository.
 
 ```terminal
-$ hypper repo update              # Make sure we get the latest list of charts
 $ hypper install mariadb bitnami/mariadb
 Installing chart "mariadb" in namespace "default"…
 Done! 👏
 ```
-
-As with Helm, you can get an idea of the features of this MariaDB chart by
-running `hypper show chart bitnami/mariadb`, or `hypper show all
-bitnami/mariadb` to get all information about the chart.
 
 Whenever you install a chart, a new release is created. So one Helm chart can be
 installed multiple times into the same cluster. And each can be independently
@@ -93,7 +77,7 @@ Done! 👏
 
 This time, the chart got installed with a default name `fleet`, and into a
 default namespace  `fleet-system`. We passed the flag `--create-namespace` to
-not need to create the namespace by hand.
+tell Hypper to create the namespace if it doesn't exist.
 
 ## Learn about releases
 
