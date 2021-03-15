@@ -37,19 +37,19 @@ func TestInstallSetNamespace(t *testing.T) {
 	// chart without annotations
 	instAction := installAction(t)
 	chart := buildChart()
-	instAction.SetNamespace(chart, "defaultns")
+	SetNamespace(instAction, chart, "defaultns", false)
 	is.Equal("defaultns", instAction.Namespace)
 
 	// hypper annotations have priority over fallback annotations
 	instAction = installAction(t)
 	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
-	instAction.SetNamespace(chart, "defaultns")
+	SetNamespace(instAction, chart, "defaultns", false)
 	is.Equal("hypper", instAction.Namespace)
 
 	// fallback annotations have priority over default ns
 	instAction = installAction(t)
 	chart = buildChart(withFallbackAnnotations())
-	instAction.SetNamespace(chart, "defaultns")
+	SetNamespace(instAction, chart, "defaultns", false)
 	is.Equal("fleet-system", instAction.Namespace)
 }
 

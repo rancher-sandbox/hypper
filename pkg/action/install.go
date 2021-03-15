@@ -60,22 +60,6 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}) (*release.
 	return rel, err
 }
 
-// SetNamespace sets the Namespace that should be used in action.Install
-//
-// This will read the chart annotations. If no annotations, it leave the existing ns in the action.
-func (i *Install) SetNamespace(chart *chart.Chart, defaultns string) {
-	i.Namespace = defaultns
-	if chart.Metadata.Annotations != nil {
-		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/namespace"]; ok {
-			i.Namespace = val
-		} else {
-			if val, ok := chart.Metadata.Annotations["catalog.cattle.io/namespace"]; ok {
-				i.Namespace = val
-			}
-		}
-	}
-}
-
 // Name returns the name that should be used.
 //
 // This will read the flags and handle name generation if necessary.
