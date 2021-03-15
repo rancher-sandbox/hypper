@@ -42,6 +42,14 @@ argument can be either: a chart reference('example/mariadb'), a path to a chart 
 a packaged chart, or a fully qualified URL. For chart references, the latest
 version will be specified unless the '--version' flag is set.
 
+There are four different ways you can select the release name and namespace
+where the chart will be upgraded. By priority order:
+
+1. By the args passed from the CLI: hypper upgrade --release-name mariadb example/mariadb --namespace system
+2. By using hypper.cattle.io annotations in the Chart.yaml
+3. By using catalog.cattle.io annotations in the Chart.yaml
+4. By using the current namespace as configured with the kubeconfig
+
 To override values in a chart, use either the '--values' flag and pass in a file
 or use the '--set' flag and pass configuration from the command line, to force string
 values, use '--set-string'. In case a value is large and therefore
@@ -98,7 +106,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 
 			}
 			if client.ReleaseName == "" {
-				client.ReleaseName, _ = client.Name(ch, args)
+				client.ReleaseName, _ = client.Name(ch)
 				logger.Debugf("client.ReleaseName was empty, setting release name to %s", client.ReleaseName)
 			}
 
@@ -114,6 +122,15 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q does not exist. Installing it now. :toolbox:\n", client.ReleaseName))
 					}
 					instClient := action.NewInstall(cfg)
+					// Set namespace for the install client
+					if settings.NamespaceFromFlag {
+						instClient.Namespace = settings.Namespace()
+					} else {
+						instClient.SetNamespace(ch, settings.Namespace())
+					}
+					// By this time client.Namespace has the correct namespace
+					instClient.Config.SetNamespace(instClient.Namespace)
+
 					instClient.CreateNamespace = createNamespace
 					instClient.ChartPathOptions = client.ChartPathOptions
 					instClient.DryRun = client.DryRun
@@ -150,6 +167,16 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 			if err != nil {
 				return err
 			}
+
+			// Set namespace for the upgrade client
+			if settings.NamespaceFromFlag {
+				client.Namespace = settings.Namespace()
+			} else {
+				client.SetNamespace(ch, settings.Namespace())
+			}
+
+			// By this time client.Namespace has the correct namespace, so set it to the storage
+			client.Config.SetNamespace(client.Namespace)
 
 			rel, err := client.Run(client.ReleaseName, ch, vals)
 			if err != nil {
