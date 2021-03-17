@@ -1,0 +1,45 @@
+name: Get hypper script
+on:
+  pull_request:
+    paths:
+      - "scripts/get-hypper" # only run if the script has changed
+jobs:
+  test-windows:
+    runs-on: windows-latest
+    env:
+      HYPPER_INSTALL_DIR: bin/
+      USE_SUDO: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Create bin dir
+        shell: bash
+        run: mkdir -p bin/
+      - name: Export path for install
+        shell: bash
+        run: echo "bin/" >> $GITHUB_PATH
+      - name: Download latest hypper version
+        shell: bash
+        run: scripts/get-hypper
+      - name: Check hypper version
+        run: hypper version
+  test-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download latest hypper version
+        shell: bash
+        run: scripts/get-hypper
+      - name: Check hypper version
+        run: hypper version
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download latest hypper version
+        shell: bash
+        run: scripts/get-hypper
+      - name: Check hypper version
+        run: hypper version
