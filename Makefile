@@ -1,8 +1,8 @@
-BINDIR	:= $(CURDIR)/bin
+BINDIR	:= bin/
 ifeq ($(OS),Windows_NT)
-	BINNAME	?= "hypper.exe"
+	BINNAME	?= hypper.exe
 else
-	BINNAME	?= "hypper"
+	BINNAME	?= hypper
 endif
 INSTALL_PATH ?= /usr/local/bin
 
@@ -34,17 +34,17 @@ endif
 all: build
 
 .PHONY: build
-build: lint $(BINDIR)/$(BINNAME)
+build: lint $(BINDIR)$(BINNAME)
 
 # Rebuild the binary if any of these files change
 SRC := $(shell find . -type f -name '*.go' -print) go.mod go.sum
 
-$(BINDIR)/$(BINNAME): $(SRC)
-	go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME) ./cmd/hypper
+$(BINDIR)$(BINNAME): $(SRC)
+	go build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BINDIR)$(BINNAME) ./cmd/hypper
 
 .PHONY: install
 install: build
-	@install "$(BINDIR)/$(BINNAME)" "$(INSTALL_PATH)/$(BINNAME)"
+	@install "$(BINDIR)$(BINNAME)" "$(INSTALL_PATH)/$(BINNAME)"
 
 .PHONY: test
 test: lint build
@@ -91,5 +91,5 @@ license-check:
 
 .PHONY: clean
 clean:
-	rm $(BINDIR)/$(BINNAME)
+	rm $(BINDIR)$(BINNAME)
 	rmdir $(BINDIR)
