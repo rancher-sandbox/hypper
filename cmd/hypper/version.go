@@ -86,7 +86,6 @@ func (o *versionOptions) run(wr io.Writer) error {
 		buf := &bytes.Buffer{}
 		_ = tt.Execute(buf, version.Get())
 		_, _ = io.Copy(wr, buf)
-		fmt.Print(wr)
 		return nil
 
 	}
