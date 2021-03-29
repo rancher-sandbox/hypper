@@ -9,9 +9,7 @@ INSTALL_PATH ?= /usr/local/bin
 SHELL      = /usr/bin/env bash
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
-GIT_SHA    = $(shell git rev-parse --short HEAD)
 GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
-GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
 
 # go option
 PKG        := ./...
@@ -21,14 +19,9 @@ TESTFLAGS  :=
 LDFLAGS    := -w -s
 GOFLAGS    :=
 
-ifdef VERSION
-	BINARY_VERSION = $(VERSION)
-endif
-BINARY_VERSION ?= ${GIT_TAG}
-
-ifneq ($(BINARY_VERSION),)
-	LDFLAGS += -X helm.sh/helm/v3/internal/version.version=${BINARY_VERSION}
-endif
+LDFLAGS += -X github.com/rancher-sandbox/hypper/internal/version.version=${GIT_TAG}
+LDFLAGS += -X github.com/rancher-sandbox/hypper/internal/version.gitCommit=${GIT_COMMIT}
+LDFLAGS += $(EXT_LDFLAGS)
 
 .PHONY: all
 all: build
