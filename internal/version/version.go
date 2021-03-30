@@ -53,9 +53,9 @@ func GetVersion() string {
 // Get returns build info
 func Get() BuildInfo {
 	v := BuildInfo{
-		Version:      GetVersion(),
-		GitCommit:    gitCommit,
-		GoVersion:    runtime.Version(),
+		Version:   GetVersion(),
+		GitCommit: gitCommit,
+		GoVersion: runtime.Version(),
 	}
 
 	// HACK(bacongobbler): strip out GoVersion during a test run for consistent test output
