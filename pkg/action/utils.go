@@ -16,10 +16,12 @@ limitations under the License.
 package action
 
 import (
+	"strings"
+
+	"github.com/Masterminds/log-go"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
-	"strings"
 )
 
 // SetNamespace sets the Namespace that should be used based on annotations or fallback to default
@@ -53,6 +55,11 @@ func SetNamespace(x interface{}, chart *chart.Chart, targetNS string, setDefault
 	case *Upgrade:
 		i.Namespace = namespace
 		i.Config.SetNamespace(namespace)
+	default:
+		// No namespace was set because the type was unknown to set the
+		// namespace on. This is an error in the use of the function in the
+		// source so a panic is thrown.
+		log.Panic("SetNamespace called on unknown type")
 	}
 }
 
