@@ -44,7 +44,7 @@ install: build
 	@install "$(BINDIR)$(BINNAME)" "$(INSTALL_PATH)/$(BINNAME)"
 
 .PHONY: test
-test: lint build
+test: lint shellcheck build
 test: TESTFLAGS += -race -v
 test: test-style
 test: test-unit
@@ -85,6 +85,12 @@ fmt:
 .PHONY: license-check
 license-check:
 	@scripts/license_check.sh
+
+.PHONY: shellcheck
+shellcheck:
+	@echo "==> Checking shell scripts <=="
+	shellcheck ./scripts/*
+	@echo "==> Done <=="
 
 .PHONY: clean
 clean:
