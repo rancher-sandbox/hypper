@@ -9,7 +9,11 @@ INSTALL_PATH ?= /usr/local/bin
 SHELL      = /usr/bin/env bash
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
-GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
+ifneq ($(GIT_TAG),)
+	GIT_TAG := $(GIT_TAG)
+else
+	GIT_TAG = $(shell git describe --tags 2>/dev/null)
+endif
 
 # go option
 PKG        := ./...
