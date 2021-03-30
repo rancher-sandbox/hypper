@@ -106,7 +106,10 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 
 			}
 			if client.ReleaseName == "" {
-				client.ReleaseName, _ = client.Name(ch)
+				client.ReleaseName, err = action.GetName(ch, "")
+				if err != nil {
+					return err
+				}
 				logger.Debugf("client.ReleaseName was empty, setting release name to %s", client.ReleaseName)
 			}
 
@@ -123,13 +126,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 					}
 					instClient := action.NewInstall(cfg)
 					// Set namespace for the install client
-					if settings.NamespaceFromFlag {
-						instClient.Namespace = settings.Namespace()
-					} else {
-						instClient.SetNamespace(ch, settings.Namespace())
-					}
-					// By this time client.Namespace has the correct namespace
-					instClient.Config.SetNamespace(instClient.Namespace)
+					action.SetNamespace(client, ch, settings.Namespace(), settings.NamespaceFromFlag)
 
 					instClient.CreateNamespace = createNamespace
 					instClient.ChartPathOptions = client.ChartPathOptions
@@ -167,16 +164,8 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 			if err != nil {
 				return err
 			}
-
 			// Set namespace for the upgrade client
-			if settings.NamespaceFromFlag {
-				client.Namespace = settings.Namespace()
-			} else {
-				client.SetNamespace(ch, settings.Namespace())
-			}
-
-			// By this time client.Namespace has the correct namespace, so set it to the storage
-			client.Config.SetNamespace(client.Namespace)
+			action.SetNamespace(client, ch, settings.Namespace(), settings.NamespaceFromFlag)
 
 			rel, err := client.Run(client.ReleaseName, ch, vals)
 			if err != nil {

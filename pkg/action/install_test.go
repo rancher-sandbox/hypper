@@ -37,19 +37,19 @@ func TestInstallSetNamespace(t *testing.T) {
 	// chart without annotations
 	instAction := installAction(t)
 	chart := buildChart()
-	instAction.SetNamespace(chart, "defaultns")
+	SetNamespace(instAction, chart, "defaultns", false)
 	is.Equal("defaultns", instAction.Namespace)
 
 	// hypper annotations have priority over fallback annotations
 	instAction = installAction(t)
 	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
-	instAction.SetNamespace(chart, "defaultns")
+	SetNamespace(instAction, chart, "defaultns", false)
 	is.Equal("hypper", instAction.Namespace)
 
 	// fallback annotations have priority over default ns
 	instAction = installAction(t)
 	chart = buildChart(withFallbackAnnotations())
-	instAction.SetNamespace(chart, "defaultns")
+	SetNamespace(instAction, chart, "defaultns", false)
 	is.Equal("fleet-system", instAction.Namespace)
 }
 
@@ -57,56 +57,40 @@ func TestName(t *testing.T) {
 	is := assert.New(t)
 
 	// too many args
-	instAction := installAction(t)
 	chart := buildChart()
-	_, err := instAction.Name(chart, []string{"name1", "chart-uri", "extraneous-arg"})
+	_, err := GetName(chart, "", "name1", "chart-uri", "extraneous-arg")
 	if err == nil {
 		t.Fatal("expected an error")
 	}
 	is.Equal("expected at most two arguments, unexpected arguments: extraneous-arg", err.Error())
 
 	// name and chart as args
-	instAction = installAction(t)
 	chart = buildChart()
-	name, err := instAction.Name(chart, []string{"name1", "chart-uri"})
+	name, err := GetName(chart, "", "name1", "chart-uri")
 	if err != nil {
 		t.Fatal(err)
 	}
 	is.Equal("name1", name)
 
 	// hypper annotations have priority over fallback annotations
-	instAction = installAction(t)
 	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
-	name, err = instAction.Name(chart, []string{"chart-uri"})
+	name, err = GetName(chart, "", "chart-uri")
 	if err != nil {
 		t.Fatal(err)
 	}
 	is.Equal("my-hypper-name", name)
 
 	// fallback annotations
-	instAction = installAction(t)
 	chart = buildChart(withFallbackAnnotations())
-	name, err = instAction.Name(chart, []string{"chart-uri"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	is.Equal("fleet", name)
-
-	// annotations have priority over generate-name
-	instAction = installAction(t)
-	instAction.GenerateName = true
-	chart = buildChart(withFallbackAnnotations())
-	name, err = instAction.Name(chart, []string{"chart-uri"})
+	name, err = GetName(chart, "", "chart-uri")
 	if err != nil {
 		t.Fatal(err)
 	}
 	is.Equal("fleet", name)
 
 	// no name or annotations present
-	instAction = installAction(t)
-	instAction.ReleaseName = ""
 	chart = buildChart()
-	name, err = instAction.Name(chart, []string{"chart-uri"})
+	name, err = GetName(chart, "", "chart-uri")
 	if err != nil {
 		t.Fatal(err)
 	}

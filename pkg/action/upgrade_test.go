@@ -32,19 +32,19 @@ func TestUpgradeSetNamespace(t *testing.T) {
 	// chart without annotations
 	upgrAction := upgradeAction(t)
 	chart := buildChart()
-	upgrAction.SetNamespace(chart, "defaultns")
+	SetNamespace(upgrAction, chart, "defaultns", false)
 	is.Equal("defaultns", upgrAction.Namespace)
 
 	// hypper annotations have priority over fallback annotations
 	upgrAction = upgradeAction(t)
 	chart = buildChart(withHypperAnnotations(), withFallbackAnnotations())
-	upgrAction.SetNamespace(chart, "defaultns")
+	SetNamespace(upgrAction, chart, "defaultns", false)
 	is.Equal("hypper", upgrAction.Namespace)
 
 	// fallback annotations have priority over default ns
 	upgrAction = upgradeAction(t)
 	chart = buildChart(withFallbackAnnotations())
-	upgrAction.SetNamespace(chart, "defaultns")
+	SetNamespace(upgrAction, chart, "defaultns", false)
 	is.Equal("fleet-system", upgrAction.Namespace)
 }
 
@@ -52,27 +52,24 @@ func TestUpgradeName(t *testing.T) {
 	is := assert.New(t)
 
 	// hypper annotations have priority over fallback annotations
-	upgrAction := upgradeAction(t)
 	chart := buildChart(withHypperAnnotations(), withFallbackAnnotations())
-	name, err := upgrAction.Name(chart)
+	name, err := GetName(chart, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	is.Equal("my-hypper-name", name)
 
 	// fallback annotations
-	upgrAction = upgradeAction(t)
 	chart = buildChart(withFallbackAnnotations())
-	name, err = upgrAction.Name(chart)
+	name, err = GetName(chart, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	is.Equal("fleet", name)
 
 	// no annotations should default to the chart name
-	upgrAction = upgradeAction(t)
 	chart = buildChart()
-	name, err = upgrAction.Name(chart)
+	name, err = GetName(chart, "")
 	if err != nil {
 		t.Fatal(err)
 	}
