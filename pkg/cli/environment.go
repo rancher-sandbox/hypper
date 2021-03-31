@@ -14,6 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*Package cli describes the operating environment for the hypper CLI.
+hypper's environment encapsulates all of the service dependencies hypper has.
+These dependencies are expressed as interfaces so that alternate implementations
+(mocks, etc.) can be easily generated.
+Hypper inherits most of the environment values from helm and expands on top of them
+*/
 package cli
 
 import (
