@@ -1,11 +1,11 @@
 name: ShellCheck
 on:
   push:
-    tags:
-      - v*
-    branches:
-      - main
+    paths:
+      - "scripts/**"
   pull_request:
+    paths:
+      - "scripts/**"
 jobs:
   check:
     runs-on: ubuntu-latest
