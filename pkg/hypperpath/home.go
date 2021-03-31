@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package helmpath calculates filesystem paths to Helm's configuration, cache and data.
+// Package hypperpath calculates filesystem paths to Hypper's configuration, cache and data.
 package hypperpath
 
 // This helper builds paths to Helm's configuration, cache and data paths.
