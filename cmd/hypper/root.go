@@ -51,6 +51,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		newRepoCmd(logger),
 		newUpgradeCmd(actionConfig, logger),
 		newSharedDependencyCmd(actionConfig, logger),
+		newPullCmd(actionConfig, logger),
 		newVersionCmd(logger),
 		newLintCmd(logger),
 		newSearchCmd(logger),
