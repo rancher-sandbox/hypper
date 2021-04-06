@@ -79,7 +79,7 @@ func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
 
 	c, err := loader.Load(chartpath)
 	if err != nil {
-		fmt.Fprintf(wWarn, "No shared dependencies in %s\n", chartpath)
+		fmt.Fprintf(wWarn, "Failed to load chart in %s\n", chartpath)
 		return err
 	}
 
