@@ -52,7 +52,7 @@ func NewSharedDependency(cfg *Configuration) *SharedDependency {
 	}
 }
 
-type yamlDependencies []*chart.Dependency
+type dependencies []*chart.Dependency
 
 // SetNamespace sets the Namespace that should be used in action.SharedDependency
 //
@@ -89,9 +89,9 @@ func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
 		return nil
 	}
 
-	depList := c.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
-	var yamlDeps yamlDependencies
-	if err = yaml.UnmarshalStrict([]byte(depList), &yamlDeps); err != nil {
+	depYaml := c.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
+	var deps dependencies
+	if err = yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
 		fmt.Fprintf(wError, "Chart.yaml metadata is malformed for chart %s\n", chartpath)
 		return err
 	}
@@ -105,7 +105,7 @@ func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
 		return err
 	}
 
-	d.printSharedDependencies(chartpath, wInfo, yamlDeps, releases)
+	d.printSharedDependencies(chartpath, wInfo, deps, releases)
 	return nil
 }
 
@@ -125,12 +125,12 @@ func (d *SharedDependency) SharedDependencyStatus(dep *chart.Dependency, release
 }
 
 // printSharedDependencies prints all of the shared dependencies in the yaml file.
-func (d *SharedDependency) printSharedDependencies(chartpath string, out io.Writer, yamlDeps yamlDependencies, releases []*release.Release) {
+func (d *SharedDependency) printSharedDependencies(chartpath string, out io.Writer, deps dependencies, releases []*release.Release) {
 
 	table := uitable.New()
 	table.MaxColWidth = 80
 	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS")
-	for _, v := range yamlDeps {
+	for _, v := range deps {
 		table.AddRow(v.Name, v.Version, v.Repository, d.SharedDependencyStatus(v, releases))
 	}
 	fmt.Fprintln(out, table)
