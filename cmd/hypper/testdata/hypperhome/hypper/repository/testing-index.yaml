@@ -64,3 +64,23 @@ entries:
           email: containers@bitnami.com
       icon: ""
       apiVersion: v2
+  hypper:
+    - name: hypper
+      url: https://example.com/stable/hypper-0.1.0.tgz
+      created: "2018-04-23T08:20:27.160959131Z"
+      version: 0.1.0
+      description: Chart for hypper
+      icon: ""
+      apiVersion: v2
+      annotations:
+        hypper.cattle.io/namespace: hyppernamespace
+        hypper.cattle.io/release-name: hyppername
+    - name: hypper
+      url: https://example.com/stable/hypper-0.2.0.tgz
+      created: "2018-04-23T08:20:27.160959131Z"
+      version: 0.2.0
+      description: Chart for hypper
+      icon: ""
+      apiVersion: v2
+      annotations:
+        hypper.cattle.io/release-name: hyppername

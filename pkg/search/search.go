@@ -14,11 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* Package search implements the search for charts in repos but extracts it into a package
-so it can be reused and composed over
-Currently the helm search is implemented under the cmd dir which means that most
-of its options cant be used in a composite struct to build on top of them
-*/
 package search
 
 import (
@@ -34,6 +29,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -53,6 +49,7 @@ type RepoOptions struct {
 	MaxColWidth  uint
 	RepoFile     string
 	RepoCacheDir string
+	Annotations  map[string]string
 	OutputFormat output.Format
 }
 
@@ -78,7 +75,14 @@ func (o *RepoOptions) Run(logger log.Logger, args []string) error {
 	}
 
 	SortScore(res)
-	data, err := o.applyConstraint(res)
+	// First we need to check for annotations, otherwise the applyConstraint will only return the highest
+	// chart version for a given release
+	data, err := o.applyAnnotationsConstraint(res)
+	if err != nil {
+		return err
+	}
+
+	data, err = o.applyConstraint(data)
 	if err != nil {
 		return err
 	}
@@ -130,6 +134,43 @@ func (o *RepoOptions) applyConstraint(res []*Result) ([]*Result, error) {
 		if constraint.Check(v) {
 			data = append(data, r)
 			foundNames[r.Name] = true
+		}
+	}
+
+	return data, nil
+}
+
+// applyAnnotationsConstraint get a result list and filters it based on the annotations
+// Currently is an OR so if more than one annotation is given, it will search for both and
+// return the result as long as it finds at least one match
+func (o *RepoOptions) applyAnnotationsConstraint(res []*Result) ([]*Result, error) {
+	if len(o.Annotations) == 0 {
+		return res, nil
+	}
+
+	data := res[:0]
+	for _, result := range res {
+		for key, value := range o.Annotations {
+			annotation := fmt.Sprintf("%v:%v", key, value)
+			log.Debugf("Checking for annotation %v", annotation)
+			if val, ok := result.Chart.Annotations[key]; ok {
+				log.Debugf("Found chart annotation %v with value %v", key, val)
+				if o.Regexp {
+					matcher, err := regexp.Compile(value)
+					if err != nil {
+						return []*Result{}, err
+					}
+					if index := matcher.FindStringIndex(val); len(index) > 0 {
+						log.Debugf("Regexp %v matches against %v", value, val)
+						data = append(data, result)
+					}
+				} else {
+					if val == value {
+						log.Debugf("Value %v matches against %v", value, val)
+						data = append(data, result)
+					}
+				}
+			}
 		}
 	}
 
