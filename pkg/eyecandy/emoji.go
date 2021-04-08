@@ -14,7 +14,7 @@ limitations under the License.
 */
 
 /*Package eyecandy provides common methods to print messages with emojis
-*/
+ */
 package eyecandy
 
 import (

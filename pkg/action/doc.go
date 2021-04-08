@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 // Package action contains the logic for each action that hypper can perform.
 //
 // This is a library for calling top-level hypper actions like 'install',
