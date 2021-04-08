@@ -32,37 +32,37 @@ func TestInstallCmd(t *testing.T) {
 		// Install, name and namespace as args
 		{
 			name:   "install, name and ns as args",
-			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n led",
+			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n led --no-shared-deps",
 			golden: "output/install-name-ns-args.txt",
 		},
 		// Install, name and namespace as args, create ns
 		{
 			name:   "install, name and ns as args",
-			cmd:    "install purple testdata/testcharts/hypper-annot --namespace deep --create-namespace",
+			cmd:    "install purple testdata/testcharts/hypper-annot --namespace deep --create-namespace --no-shared-deps",
 			golden: "output/install-create-namespace.txt",
 		},
 		// Install, hypper annot have priority over fallback annot
 		{
 			name:   "install, hypper annot have priority over fallback annot",
-			cmd:    "install testdata/testcharts/hypper-annot",
+			cmd:    "install testdata/testcharts/hypper-annot --no-shared-deps",
 			golden: "output/install-hypper-annot.txt",
 		},
 		// Install, fallback annotations
 		{
 			name:   "install, fallback annotations",
-			cmd:    "install testdata/testcharts/fallback-annot",
+			cmd:    "install testdata/testcharts/fallback-annot --no-shared-deps",
 			golden: "output/install-fallback-annot.txt",
 		},
 		// Install, annotations have priority over default name from Chart.yml
 		{
 			name:   "install, annot have priority over default name from Chart.yml",
-			cmd:    "install testdata/testcharts/hypper-annot",
+			cmd:    "install testdata/testcharts/hypper-annot --no-shared-deps",
 			golden: "output/install-hypper-annot.txt",
 		},
 		// Install, no name or annotations specified
 		{
 			name:   "install, with no name or annot specified",
-			cmd:    "install testdata/testcharts/vanilla-helm",
+			cmd:    "install testdata/testcharts/vanilla-helm --no-shared-deps",
 			golden: "output/install-no-name-or-annot.txt",
 		},
 	}
