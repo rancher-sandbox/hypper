@@ -106,7 +106,10 @@ func New() *EnvSettings {
 		NoColors: false,
 		NoEmojis: false,
 	}
-	os.Setenv("HELM_NAMESPACE", env.namespace)
+
+	os.Setenv("HELM_NAMESPACE", env.namespace) // WHY???
+
+	// Create default helm settings and propagate our default hypper values
 	env.EnvSettings = cli.New()
 
 	env.EnvSettings.MaxHistory = env.MaxHistory
@@ -139,6 +142,22 @@ func New() *EnvSettings {
 	}
 
 	return env
+}
+
+// FillHelmSettings will fill the helm cli.Settings with the proper values from CLI flags
+// This has to be called after the flags are set, otherwise the flags are not propagated to Helm cli.Settings
+func (s *EnvSettings) FillHelmSettings() {
+	s.EnvSettings.MaxHistory = s.MaxHistory
+	s.EnvSettings.KubeContext = s.KubeContext
+	s.EnvSettings.KubeToken = s.KubeToken
+	s.EnvSettings.KubeAsUser = s.KubeAsUser
+	s.EnvSettings.KubeAsGroups = s.KubeAsGroups
+	s.EnvSettings.KubeAPIServer = s.KubeAPIServer
+	s.EnvSettings.KubeCaFile = s.KubeCaFile
+	s.EnvSettings.PluginsDirectory = s.PluginsDirectory
+	s.EnvSettings.RegistryConfig = s.RegistryConfig
+	s.EnvSettings.RepositoryCache = s.RepositoryCache
+	s.EnvSettings.RepositoryConfig = s.RepositoryConfig
 }
 
 // AddFlags binds flags to the given flagset.
