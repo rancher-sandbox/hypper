@@ -18,16 +18,21 @@ package lint
 
 import (
 	"github.com/rancher-sandbox/hypper/pkg/lint/rules"
+	helmRules "helm.sh/helm/v3/pkg/lint/rules"
 	"helm.sh/helm/v3/pkg/lint/support"
 	"path/filepath"
 )
 
 // All runs all of the available linters on the given base directory.
-func All(basedir string) support.Linter {
+func All(basedir string, values map[string]interface{}, namespace string, strict bool) support.Linter {
 	// Using abs path to get directory context
 	chartDir, _ := filepath.Abs(basedir)
 
 	linter := support.Linter{ChartDir: chartDir}
+	helmRules.Chartfile(&linter)
+	helmRules.ValuesWithOverrides(&linter, values)
+	helmRules.Templates(&linter, values, namespace, strict)
+	helmRules.Dependencies(&linter)
 	rules.Annotations(&linter)
 	return linter
 }

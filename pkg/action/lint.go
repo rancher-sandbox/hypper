@@ -17,8 +17,9 @@ limitations under the License.
 package action
 
 import (
+	"github.com/pkg/errors"
 	"github.com/rancher-sandbox/hypper/pkg/lint"
-	"helm.sh/helm/v3/pkg/action"
+	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/lint/support"
 	"io/ioutil"
@@ -29,27 +30,27 @@ import (
 
 // Lint is a composite type of Helm's Lint type
 type Lint struct {
-	*action.Lint
+	*helmAction.Lint
 }
 
 // NewLint creates a new Lint object with the given configuration.
 func NewLint() *Lint {
 	return &Lint{
-		action.NewLint(),
+		helmAction.NewLint(),
 	}
 }
 
 // Run executes 'helm Lint' against the given chart and then runs the chart against hypper lint rules
-func (l *Lint) Run(paths []string, vals map[string]interface{}) *action.LintResult {
+func (l *Lint) Run(paths []string, vals map[string]interface{}) *helmAction.LintResult {
 	lowestTolerance := support.ErrorSev
 	if l.Strict {
 		lowestTolerance = support.WarningSev
 	}
-	// run it against the helm linter rules
-	result := l.Lint.Run(paths, vals)
-	// run it against our linter rules
+
+	result := &helmAction.LintResult{}
+
 	for _, path := range paths {
-		linter, err := lintChart(path)
+		linter, err := lintChart(path, vals, l.Namespace, l.Strict)
 		if err != nil {
 			result.Errors = append(result.Errors, err)
 			continue
@@ -66,36 +67,34 @@ func (l *Lint) Run(paths []string, vals map[string]interface{}) *action.LintResu
 	return result
 }
 
-// lintChart extracts the chart to a temp dir, checks that is a valid chart (has a Chart.yaml) and runs our rules
-// We dont add to errors if we cant open the file because the helm linter has already added those as it runs before
-// us so no need to flag those errors or else we get them duplicated.
-func lintChart(path string) (support.Linter, error) {
+// lintChart extracts the chart to a temp dir, checks that is a valid chart (has a Chart.yaml) and all rules
+func lintChart(path string, vals map[string]interface{}, namespace string, strict bool) (support.Linter, error) {
 	var chartPath string
 	linter := support.Linter{}
 
 	if strings.HasSuffix(path, ".tgz") || strings.HasSuffix(path, ".tar.gz") {
 		tempDir, err := ioutil.TempDir("", "hypper-lint")
 		if err != nil {
-			return linter, nil
+			return linter, errors.Wrap(err, "unable to create temp dir to extract tarball")
 		}
 		defer os.RemoveAll(tempDir)
 
 		file, err := os.Open(path)
 		if err != nil {
-			return linter, nil
+			return linter, errors.Wrap(err, "unable to open tarball")
 		}
 		defer file.Close()
 
 		if err = chartutil.Expand(tempDir, file); err != nil {
-			return linter, nil
+			return linter, errors.Wrap(err, "unable to extract tarball")
 		}
 
 		files, err := ioutil.ReadDir(tempDir)
 		if err != nil {
-			return linter, nil
+			return linter, errors.Wrapf(err, "unable to read temporary output directory %s", tempDir)
 		}
 		if !files[0].IsDir() {
-			return linter, nil
+			return linter, errors.Errorf("unexpected file %s in temporary output directory %s", files[0].Name(), tempDir)
 		}
 
 		chartPath = filepath.Join(tempDir, files[0].Name())
@@ -108,5 +107,5 @@ func lintChart(path string) (support.Linter, error) {
 		return linter, nil
 	}
 
-	return lint.All(chartPath), nil
+	return lint.All(chartPath, vals, namespace, strict), nil
 }

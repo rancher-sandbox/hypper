@@ -23,19 +23,29 @@ import (
 	"helm.sh/helm/v3/pkg/lint/support"
 )
 
+var values map[string]interface{}
+
+const namespace = "testNamespace"
+const strict = false
+
 const badChartDir = "rules/testdata/badchart"
 const badChartDirWithBrokenHypperDeps = "rules/testdata/badchartbrokenhypperdeps"
 const goodChartDir = "rules/testdata/goodchart"
 
 func TestBadChart(t *testing.T) {
-	m := All(badChartDir).Messages
-	if len(m) != 3 {
+	m := All(badChartDir, values, namespace, strict).Messages
+	if len(m) != 4 {
 		t.Errorf("Number of errors %v", len(m))
 		t.Errorf("All didn't fail with expected errors, got %#v", m)
 	}
-	// There should be 3 WARNINGs, check for them
-	var w1, w2, w3 bool
+	// There should be 1 INFO and 3 WARNINGs, check for them
+	var i1, w1, w2, w3 bool
 	for _, msg := range m {
+		if msg.Severity == support.InfoSev {
+			if strings.Contains(msg.Err.Error(), "icon is recommended") {
+				i1 = true
+			}
+		}
 		if msg.Severity == support.WarningSev {
 			if strings.Contains(msg.Err.Error(), "Setting hypper.cattle.io/release-name in annotations is recommended") {
 				w1 = true
@@ -52,33 +62,38 @@ func TestBadChart(t *testing.T) {
 			}
 		}
 	}
-	if !w1 || !w2 || !w3 {
+	if !i1 || !w1 || !w2 || !w3 {
 		t.Errorf("Didn't find all the expected errors, got %#v", m)
 	}
 }
 
 func TestBadChartBrokenDeps(t *testing.T) {
-	m := All(badChartDirWithBrokenHypperDeps).Messages
-	if len(m) != 1 {
+	m := All(badChartDirWithBrokenHypperDeps, values, namespace, strict).Messages
+	if len(m) != 2 {
 		t.Errorf("Number of errors %v", len(m))
 		t.Errorf("All didn't fail with expected errors, got %#v", m)
 	}
-	// There should be 1 Error, check for it
-	var e1 bool
+	// There should be 1 INFO and 1 ERROR, check for it
+	var i1, e1 bool
 	for _, msg := range m {
+		if msg.Severity == support.InfoSev {
+			if strings.Contains(msg.Err.Error(), "icon is recommended") {
+				i1 = true
+			}
+		}
 		if msg.Severity == support.ErrorSev {
 			if strings.Contains(msg.Err.Error(), "Shared dependencies list is broken, please check the correct format") {
 				e1 = true
 			}
 		}
 	}
-	if !e1 {
+	if !i1 || !e1 {
 		t.Errorf("Didn't find all the expected errors, got %#v", m)
 	}
 }
 
 func TestGoodChart(t *testing.T) {
-	m := All(goodChartDir).Messages
+	m := All(goodChartDir, values, namespace, strict).Messages
 	if len(m) != 0 {
 		t.Error("All returned linter messages when it shouldn't have")
 		for i, msg := range m {
