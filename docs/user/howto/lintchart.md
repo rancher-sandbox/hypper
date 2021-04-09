@@ -5,7 +5,7 @@ We just created or modified our chart or add annotations to take advantage of Hy
 
 Its very simple, just run `hypper lint` against your chart, and it will verify that the chart is well-formed.
 
-`hypper lint` run both Helm checks and Hypper checks against the chart.
+`hypper lint` runs both Helm checks and Hypper checks against the chart.
 
 If the linter encounters things that will cause the chart to fail installation, it will emit [ERROR] messages. If it encounters issues that break with convention or recommendation, it will emit [WARNING] messages.
 
