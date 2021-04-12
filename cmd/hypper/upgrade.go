@@ -17,10 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"time"
+
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -145,7 +146,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 					instClient.Description = client.Description
 					instClient.ReleaseName = client.ReleaseName
 
-					rel, err := runInstall(args, instClient, valueOpts, logger)
+					rel, err := runInstall(args, instClient, valueOpts, logger, settings)
 					if err != nil {
 						return err
 					}

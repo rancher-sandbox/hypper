@@ -11,9 +11,6 @@ annotations:
   catalog.cattle.io/namespace: fleet-system
   catalog.cattle.io/release-name: fleet
   hypper.cattle.io/shared-dependencies: |
-    - name: prometheus
-      version: "13.3.1"
-      repository: "https://example.com/charts"
-    - name: postgresql
-      version: "10.3.11"
-      repository: "https://another.example.com/charts"
+    - name: vanilla-helm
+      version: "0.1.0"
+      repository: "file://testdata/vanilla-helm"

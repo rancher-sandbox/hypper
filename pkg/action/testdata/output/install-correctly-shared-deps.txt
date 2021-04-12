@@ -1,0 +1,4 @@
+DEBUG: CHART PATH: /home/vic/suse/hypper/pkg/action/testdata/charts/vanilla-helm
+DEBUG: Original shared-dep chart version: "0.1.0"
+DEBUG: No shared dependencies in empty
+Installing chart "empty" in namespace "spaced"…

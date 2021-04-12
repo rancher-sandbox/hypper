@@ -107,6 +107,29 @@ func withFallbackAnnotations() chartOption {
 	}
 }
 
+func withMalformedSharedDeps() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		// this ought to have wrong indentation:
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = `- name: vanilla-helm
+   version: "0.1.0"
+ repository: "file://testdata/vanilla-helm"`
+	}
+}
+
+func withSharedDeps() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"testdata/charts/vanilla-helm\"" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"\"" + "\n"
+	}
+}
+
 func withTypeApplication() chartOption {
 	return func(opts *chartOptions) {
 		opts.Chart.Metadata.Type = "application"
