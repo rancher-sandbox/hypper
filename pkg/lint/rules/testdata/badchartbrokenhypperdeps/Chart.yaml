@@ -7,5 +7,6 @@ appVersion: "1.16.0"
 annotations:
   "hypper.cattle.io/release-name": "release"
   "hypper.cattle.io/namespace": "namespace"
-  "hypper.cattle.io/shared-dependencies": "jojo"
+  "hypper.cattle.io/shared-dependencies": |
+    - what: ever
 

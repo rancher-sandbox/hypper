@@ -9,4 +9,4 @@ annotations:
   "hypper.cattle.io/release-name": "release"
   "hypper.cattle.io/namespace": "namespace"
   "hypper.cattle.io/shared-dependencies": |
-    - key: value
+    - name: shareddep
