@@ -65,6 +65,12 @@ func TestInstallCmd(t *testing.T) {
 			cmd:    "install testdata/testcharts/vanilla-helm --no-shared-deps",
 			golden: "output/install-no-name-or-annot.txt",
 		},
+		// Install, with shared deps
+		{
+			name:   "install, with shared deps",
+			cmd:    "install testdata/testcharts/shared-deps",
+			golden: "output/install-with-shared-deps.txt",
+		},
 	}
 	runTestActionCmd(t, tests)
 }
