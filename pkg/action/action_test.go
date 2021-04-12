@@ -106,3 +106,15 @@ func withFallbackAnnotations() chartOption {
 		opts.Chart.Metadata.Annotations["catalog.cattle.io/release-name"] = "fleet"
 	}
 }
+
+func withTypeApplication() chartOption {
+	return func(opts *chartOptions) {
+		opts.Chart.Metadata.Type = "application"
+	}
+}
+
+func withTypeLibrary() chartOption {
+	return func(opts *chartOptions) {
+		opts.Chart.Metadata.Type = "library"
+	}
+}

@@ -133,3 +133,18 @@ func TestNameAndChart(t *testing.T) {
 	}
 	is.Equal("NameAndChart() cannot be used", err.Error())
 }
+
+func TestCheckIfInstallable(t *testing.T) {
+	is := assert.New(t)
+
+	// Application chart type is installable
+	err := CheckIfInstallable(buildChart(withTypeApplication()))
+	is.NoError(err)
+
+	// any other chart type besides Application is not installable
+	err = CheckIfInstallable(buildChart(withTypeLibrary()))
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	is.Equal("library charts are not installable", err.Error())
+}

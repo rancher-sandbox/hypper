@@ -21,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/cmd/helm/require"
-	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/cli/values"
@@ -127,7 +126,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	if err := checkIfInstallable(chartRequested); err != nil {
+	if err := action.CheckIfInstallable(chartRequested); err != nil {
 		return nil, err
 	}
 
@@ -165,15 +164,4 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	}
 
 	return client.Run(chartRequested, vals)
-}
-
-// checkIfInstallable validates if a chart can be installed
-//
-// Application chart type is only installable
-func checkIfInstallable(ch *chart.Chart) error {
-	switch ch.Metadata.Type {
-	case "", "application":
-		return nil
-	}
-	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
 }

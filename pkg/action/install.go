@@ -83,3 +83,14 @@ func (i *Install) Chart(args []string) (string, error) {
 func (i *Install) NameAndChart(args []string) (string, string, error) {
 	return "", "", errors.New("NameAndChart() cannot be used")
 }
+
+// checkIfInstallable validates if a chart can be installed
+//
+// Application chart type is only installable
+func CheckIfInstallable(ch *chart.Chart) error {
+	switch ch.Metadata.Type {
+	case "", "application":
+		return nil
+	}
+	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
+}
