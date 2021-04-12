@@ -87,6 +87,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
+	logger.Debugf("Original chart version: %q", client.Version)
 	if client.Version == "" && client.Devel {
 		logger.Debug("setting version to >0.0.0-0")
 		client.Version = ">0.0.0-0"
