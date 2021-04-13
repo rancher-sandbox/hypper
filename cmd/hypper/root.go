@@ -53,6 +53,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		newSharedDependencyCmd(actionConfig, logger),
 		newVersionCmd(logger),
 		newLintCmd(logger),
+		newSearchCmd(logger),
 	)
 
 	flags.ParseErrorsWhitelist.UnknownFlags = true

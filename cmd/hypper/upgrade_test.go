@@ -396,8 +396,8 @@ func prepareMockRelease(releaseName string, t *testing.T) (func(n string, v int,
 }
 
 func TestUpgradeVersionCompletion(t *testing.T) {
-	repoFile := "testdata/helmhome/helm/repositories.yaml"
-	repoCache := "testdata/helmhome/helm/repository"
+	repoFile := "testdata/hypperhome/hypper/repositories.yaml"
+	repoCache := "testdata/hypperhome/hypper/repository"
 
 	repoSetup := fmt.Sprintf("--repository-config %s --repository-cache %s", repoFile, repoCache)
 
