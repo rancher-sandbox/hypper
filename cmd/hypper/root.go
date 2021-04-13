@@ -59,6 +59,9 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 	flags.ParseErrorsWhitelist.UnknownFlags = true
 	err := flags.Parse(args)
 
+	// Flags are parsed, lets fill the helm cli.Settings with our current settings
+	settings.FillHelmSettings()
+
 	if err != nil && !errors.Is(err, pflag.ErrHelp) {
 		log.Errorf("failed while parsing flags for %s: %s", args, err)
 
