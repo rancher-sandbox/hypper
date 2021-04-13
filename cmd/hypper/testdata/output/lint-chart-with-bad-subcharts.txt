@@ -1,0 +1,10 @@
+==> Linting testdata/testcharts/chart-with-bad-subcharts
+[INFO] Chart.yaml: icon is recommended
+[WARNING] templates/: directory not found
+[ERROR] : unable to load chart
+	error unpacking bad-subchart in chart-with-bad-subcharts: validation: chart.metadata.name is required
+[WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+
+Error: 1 chart(s) linted, 1 chart(s) failed
