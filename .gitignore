@@ -21,3 +21,6 @@ bin/
 
 # code coverage
 coverage.out
+
+book/
+

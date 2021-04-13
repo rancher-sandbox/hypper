@@ -1,0 +1,1 @@
+This section contains some "How tos" that offer practical advice and detailed instruction in an activity. 

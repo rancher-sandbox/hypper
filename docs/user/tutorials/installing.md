@@ -72,6 +72,6 @@ We do not recommend using development snapshots on your production environment.*
 
 In most cases, installation is as simple as getting a pre-built hypper binary. This document covers additional cases for those who want to do more sophisticated things with Hypper.
 
-Once you have the Hypper Client successfully installed, you can move on to the [quickstart guide](docs/user/tutorials/quickstart.md).
+Once you have the Hypper Client successfully installed, you can move on to the [quickstart guide](https://github.com/rancher-sandbox/hypper/docs/user/tutorials/quickstart.md).
 
 [Github Actions]: https://github.com/rancher-sandbox/hypper/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+workflow%3ACI
