@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -495,6 +495,82 @@ Done! 👏
 </code></pre>
 <p>See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the <code>Chart.yaml</code></p>
 <p>If we wanted to specify the release name in the annotations as well we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it! </p>
+<h2><a class="header" href="#how-to-lint-a-hypper-chart" id="how-to-lint-a-hypper-chart">How to lint a hypper chart</a></h2>
+<p>We just created or modified our chart or added annotations to take advantage of Hypper features but...how do we know those annotations are correct?</p>
+<p>It's very simple, just run <code>hypper lint</code> against your chart, and it will verify that the chart is well-formed.</p>
+<p><code>hypper lint</code> runs both Helm checks and Hypper checks against the chart.</p>
+<p>If the linter encounters things that will cause the chart to fail installation, it will emit [ERROR] messages. If it encounters issues that break with convention or recommendation, it will emit [WARNING] messages.</p>
+<p>For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:</p>
+<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
+==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+</code></pre>
+<p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several [WARNING], recommending to set certain values that Hypper supports:</p>
+<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
+==&gt; Linting cmd/hypper/testdata/testcharts/vanilla-helm
+[INFO] Chart.yaml: icon is recommended
+[INFO] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
+[INFO] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
+[INFO] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+</code></pre>
+<p>Running against a shared-dependencies annotation that is malformed will emit an [ERROR]:</p>
+<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
+==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
+[INFO] Chart.yaml: icon is recommended
+[ERROR] Chart.yaml: Shared dependencies list is broken, please check the correct format
+
+Error: 1 chart(s) linted, 1 chart(s) failed
+</code></pre>
+<p>Now if you were to set some kind of automated CI in place to check for linting and are required to have Hypper annotations as mandatory, you can run <code>hypper lint</code> with the <code>--strict</code> flag so all warnings are marked as errors.</p>
+<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
+==&gt; Linting cmd/hypper/testdata/testcharts/fallback-annot
+[INFO] Chart.yaml: icon is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+
+Error: 1 chart(s) linted, 1 chart(s) failed
+</code></pre>
+<h2><a class="header" href="#searching-for-charts-in-repos" id="searching-for-charts-in-repos">Searching for charts in repos</a></h2>
+<p>Search reads through all the repositories configured on the system, and looks for matches. Searching on these repositories uses the metadata stored on the system.</p>
+<p>It will display the latest stable versions of the charts found.</p>
+<pre><code class="language-shell">$ hypper search repo fleet
+NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
+hypper/fleet      	0.3.500      	0.3.5      	Fleet Manager - GitOps at Scale        
+hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale  
+hypper/fleet-crd  	0.3.500      	0.3.5      	Fleet Manager CustomResourceDefinitions
+</code></pre>
+<p>By default, it will only show the latest version that match the keyword used. In order to see all versions you can use the <code>-l</code> flag.</p>
+<pre><code class="language-shell">$ hypper search repo fleet-agent -l
+NAME              	CHART VERSION	APP VERSION	DESCRIPTION                          
+hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale
+hypper/fleet-agent	0.1.500      	0.1.5      	Fleet Manager Agent - GitOps at Scale
+</code></pre>
+<p>You can also search for a specific chart version by using the <code>--version VERSION</code> flag..</p>
+<p>Note that VERSION needs to be a valid SemVer version.</p>
+<pre><code class="language-shell">$ hypper search repo fleet-agent --version 0.1.500
+NAME              	CHART VERSION	APP VERSION	DESCRIPTION                          
+hypper/fleet-agent	0.1.500      	0.1.5      	Fleet Manager Agent - GitOps at Scale
+</code></pre>
+<p>It's also possible to pass the <code>--regexp</code> flag to use regexp in the search.</p>
+<pre><code class="language-shell">$ hypper search repo &quot;fleet-&quot; --regexp
+NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
+hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale  
+hypper/fleet-crd  	0.3.500      	0.3.5      	Fleet Manager CustomResourceDefinitions
+</code></pre>
+<p>If you want to search for development charts (only stable charts are shown by default), use the <code>--devel</code> flag to show those development charts.</p>
+<pre><code class="language-shell">$ hypper search repo fleet-agent --devel
+NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
+hypper/fleet-agent	0.3.500-rc2      	0.3.5-rc2      	Fleet Manager Agent - GitOps at Scale
+</code></pre>
+<h1><a class="header" href="#reference-guides" id="reference-guides">Reference guides</a></h1>
+<p>You can find Golang reference guides in
+<a href="https://pkg.go.dev/github.com/rancher-sandbox/hypper">pkg.go.dev/github.com/rancher-sandbox/hypper</a>,
+particularly for the <a href="https://pkg.go.dev/github.com/rancher-sandbox/hypper/pkg">Hypper library API</a>.</p>
 
                     </main>
 

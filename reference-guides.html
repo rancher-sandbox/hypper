@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Expand a chart with Hypper annotations - Hypper documentation</title>
+        <title>Reference guides - Hypper documentation</title>
         
         
 
@@ -18,26 +18,26 @@
         <meta name="theme-color" content="#ffffff" />
 
         
-        <link rel="icon" href="../../favicon.svg">
+        <link rel="icon" href="favicon.svg">
         
         
-        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="shortcut icon" href="favicon.png">
         
-        <link rel="stylesheet" href="../../css/variables.css">
-        <link rel="stylesheet" href="../../css/general.css">
-        <link rel="stylesheet" href="../../css/chrome.css">
-        <link rel="stylesheet" href="../../css/print.css" media="print">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
         
-        <link rel="stylesheet" href="../../fonts/fonts.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
         
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../../highlight.css">
-        <link rel="stylesheet" href="../../tomorrow-night.css">
-        <link rel="stylesheet" href="../../ayu-highlight.css">
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
         
@@ -47,7 +47,7 @@
     <body>
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
-            var path_to_root = "../../";
+            var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html" class="active"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="reference-guides.html" class="active"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -128,7 +128,7 @@
                     <h1 class="menu-title">Hypper documentation</h1>
 
                     <div class="right-buttons">
-                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         
@@ -163,93 +163,21 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#how-to-expand-a-chart-with-hypper-annotations" id="how-to-expand-a-chart-with-hypper-annotations">How to expand a chart with Hypper annotations</a></h1>
-<p>Hypper charts build on top of Helm charts so any chart out there will work out of the box.</p>
-<p>But we want to go further, we want to take advantage of Hypper features like release and namespace from annotations.</p>
-<p>This is a simple as modifying our <code>Chart.yaml</code> to add to its annotations.</p>
-<p>For example using the <a href="https://github.com/bitnami/charts/tree/master/bitnami/mysql">Mysql chart from Bitnami</a> as example, these are the contents of <code>Chart.yaml</code>:</p>
-<pre><code class="language-yaml">annotations:
-  category: Database
-apiVersion: v2
-appVersion: 8.0.23
-dependencies:
-  - name: common
-    repository: https://charts.bitnami.com/bitnami
-    tags:
-      - bitnami-common
-    version: 1.x.x
-description: Chart to create a Highly available MySQL cluster
-home: https://github.com/bitnami/charts/tree/master/bitnami/mysql
-icon: https://bitnami.com/assets/stacks/mysql/img/mysql-stack-220x234.png
-keywords:
-  - mysql
-  - database
-  - sql
-  - cluster
-  - high availability
-maintainers:
-  - email: containers@bitnami.com
-    name: Bitnami
-name: mysql
-sources:
-  - https://github.com/bitnami/bitnami-docker-mysql
-  - https://mysql.com
-version: 8.5.1
-</code></pre>
-<p>But we want to install it always on the same namespace called <code>databases</code></p>
-<p>So we will expand the <code>Chart.yaml</code> to look like this:</p>
-<pre><code class="language-diff">annotations:
-  category: Database
-+ hypper.cattle.io/namespace: databases
-apiVersion: v2
-appVersion: 8.0.23
-dependencies:
-  - name: common
-    repository: https://charts.bitnami.com/bitnami
-    tags:
-      - bitnami-common
-    version: 1.x.x
-description: Chart to create a Highly available MySQL cluster
-home: https://github.com/bitnami/charts/tree/master/bitnami/mysql
-icon: https://bitnami.com/assets/stacks/mysql/img/mysql-stack-220x234.png
-keywords:
-  - mysql
-  - database
-  - sql
-  - cluster
-  - high availability
-maintainers:
-  - email: containers@bitnami.com
-    name: Bitnami
-name: mysql
-sources:
-  - https://github.com/bitnami/bitnami-docker-mysql
-  - https://mysql.com
-version: 8.5.1
-</code></pre>
-<p>We added the <code>hypper.cattle.io/namespace: databases</code> to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:</p>
-<pre><code class="language-shell">$ hypper install mysql/                 
-Installing chart &quot;mysql&quot; in namespace &quot;databases&quot;…
-Done! 👏 
-
-</code></pre>
-<p>See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the <code>Chart.yaml</code></p>
-<p>If we wanted to specify the release name in the annotations as well we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it! </p>
+                        <h1><a class="header" href="#reference-guides" id="reference-guides">Reference guides</a></h1>
+<p>You can find Golang reference guides in
+<a href="https://pkg.go.dev/github.com/rancher-sandbox/hypper">pkg.go.dev/github.com/rancher-sandbox/hypper</a>,
+particularly for the <a href="https://pkg.go.dev/github.com/rancher-sandbox/hypper/pkg">Hypper library API</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../../user/howto/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="user/howto/search.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
-                        
-                            <a rel="next" href="../../user/howto/lintchart.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
                         
 
                         <div style="clear: both"></div>
@@ -259,15 +187,11 @@ Done! 👏
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../../user/howto/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="user/howto/search.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
-                
-                    <a rel="next" href="../../user/howto/lintchart.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
                 
             </nav>
 
@@ -288,14 +212,14 @@ Done! 👏
         
 
         
-        <script src="../../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../../mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
         
 
-        <script src="../../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../../highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../../book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
         
