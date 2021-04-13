@@ -112,17 +112,7 @@ func New() *EnvSettings {
 	// Create default helm settings and propagate our default hypper values
 	env.EnvSettings = cli.New()
 
-	env.EnvSettings.MaxHistory = env.MaxHistory
-	env.EnvSettings.KubeContext = env.KubeContext
-	env.EnvSettings.KubeToken = env.KubeToken
-	env.EnvSettings.KubeAsUser = env.KubeAsUser
-	env.EnvSettings.KubeAsGroups = env.KubeAsGroups
-	env.EnvSettings.KubeAPIServer = env.KubeAPIServer
-	env.EnvSettings.KubeCaFile = env.KubeCaFile
-	env.EnvSettings.PluginsDirectory = env.PluginsDirectory
-	env.EnvSettings.RegistryConfig = env.RegistryConfig
-	env.EnvSettings.RepositoryCache = env.RepositoryCache
-	env.EnvSettings.RepositoryConfig = env.RepositoryConfig
+	env.FillHelmSettings()
 
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HYPPER_DEBUG"))
 	env.Verbose, _ = strconv.ParseBool(os.Getenv("HYPPER_TRACE"))
