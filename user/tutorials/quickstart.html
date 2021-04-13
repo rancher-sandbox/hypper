@@ -1,0 +1,316 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Quick Start - Hypper documentation</title>
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="../../favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="../../favicon.png">
+        
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html" class="active"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Hypper documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/rancher-sandbox/hypper" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#quickstart" id="quickstart">Quickstart</a></h1>
+<p>This guide covers how you can quickly get started using Hypper.</p>
+<p>If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
+and extends its functionalities to install Helm and charts that have been extended
+to work with Hypper.</p>
+<h2><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h2>
+<p>The following prerequisites are required:</p>
+<ol>
+<li>A Kubernetes cluster.</li>
+<li>A Chart repository to install charts from.</li>
+</ol>
+<h2><a class="header" href="#install-hypper" id="install-hypper">Install Hypper</a></h2>
+<p>See the <a href="docs/user/tutorials/installing.html">installation guide</a>.</p>
+<h2><a class="header" href="#configuring-hypper-by-initializing-repositories" id="configuring-hypper-by-initializing-repositories">Configuring Hypper by initializing repositories</a></h2>
+<p>Hypper enables you to deploy Helm and Hypper charts into your Kubernetes
+cluster. To simplify that, the best way is to add a chart repository, for
+example one with Helm charts:</p>
+<pre><code class="language-terminal">$ hypper repo add bitnami https://charts.bitnami.com/bitnami
+</code></pre>
+<p>You can add several repositories. Let's add a repository containing charts
+with some Hypper functionality:</p>
+<pre><code class="language-terminal">$ hypper repo add rancher-charts https://charts.rancher.io
+</code></pre>
+<p>Now, you can list the repositories that Hypper can install charts from:</p>
+<pre><code class="language-terminal">$ hypper repo list
+NAME            URL
+bitnami         https://charts.bitnami.com/bitnami
+rancher-charts  https://charts.rancher.io
+</code></pre>
+<h2><a class="header" href="#install-an-example-helm-chart" id="install-an-example-helm-chart">Install an example Helm chart</a></h2>
+<p>To install a chart, you can run the <code>hypper install</code> command. Hypper has several
+ways to find and install a chart, but the easiest is to use a repository, in
+this case the Bitnami chart repository.</p>
+<pre><code class="language-terminal">$ hypper install mariadb bitnami/mariadb
+Installing chart &quot;mariadb&quot; in namespace &quot;default&quot;…
+Done! 👏
+</code></pre>
+<p>Whenever you install a chart, a new release is created. So one Helm chart can be
+installed multiple times into the same cluster. And each can be independently
+managed and upgraded.</p>
+<h2><a class="header" href="#install-an-example-hypper-chart" id="install-an-example-hypper-chart">Install an example Hypper chart</a></h2>
+<p>Hypper charts are supersets of Helm charts with more functionality, such as
+specifying default release name, namespace of installation, or installing
+shared-dependency charts automatically.
+They are thought to be installed system-wide in the cluster: 1 Hypper chart for
+all users of the cluster. Think of them as typical system OS libraries/services.</p>
+<p>The commands are the same as you have already used:</p>
+<pre><code class="language-terminal">$ hypper install rancher-charts/fleet --create-namespace
+Installing chart &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
+Done! 👏
+</code></pre>
+<p>This time, the chart got installed with a default name <code>fleet</code>, and into a
+default namespace  <code>fleet-system</code>. We passed the flag <code>--create-namespace</code> to
+tell Hypper to create the namespace if it doesn't exist.</p>
+<h2><a class="header" href="#learn-about-releases" id="learn-about-releases">Learn about releases</a></h2>
+<p>It's easy to see what has been released with hypper:</p>
+<pre><code class="language-terminal">$ hypper ls --all-namespaces
+NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
+fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
+mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
+</code></pre>
+<h2><a class="header" href="#uninstall-a-release" id="uninstall-a-release">Uninstall a release</a></h2>
+<p>To uninstall a release, use the hypper uninstall command:</p>
+<pre><code class="language-terminal">$ hypper uninstall fleet -n fleet-system
+🔥  uninstalling fleet
+🔥  release &quot;fleet&quot; uninstalled
+</code></pre>
+<p>This will uninstall fleet from Kubernetes, which will remove all resources
+associated with the release as well as the release history.</p>
+<p>If the flag <code>--keep-history</code> is provided, release history will be kept. You will
+be able to request information about that release:</p>
+<pre><code class="language-terminal">$ hypper status fleet -n fleet-system
+NAME: fleet
+LAST DEPLOYED: Fri Mar 12 12:14:28 2021
+NAMESPACE: fleet-system
+STATUS: uninstalled
+REVISION: 1
+TEST SUITE: None
+</code></pre>
+<h2><a class="header" href="#read-the-help-text" id="read-the-help-text">Read the help text</a></h2>
+<p>To learn more about available Hypper commands, use <code>hypper help</code>, or type a
+command followed by the <code>-h</code> flag: <code>hypper install -h</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../../user/tutorials/installing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../../user/howto/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../../user/tutorials/installing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="../../user/howto/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
