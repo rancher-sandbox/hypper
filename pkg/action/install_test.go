@@ -68,7 +68,6 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			name:      "dependencies get correctly installed",
 			chart:     buildChart(withHypperAnnotations(), withSharedDeps()),
 			golden:    "output/install-correctly-shared-deps.txt",
-			wantDebug: true,
 		},
 		{
 			name:       "dependencies are already installed",
