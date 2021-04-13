@@ -1,5 +1,5 @@
 /*
-Copyright The Helm Authors.
+Copyright The Helm Authors, SUSE LLC.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -26,19 +26,21 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 
-	"helm.sh/helm/v3/cmd/helm/require"
+	"github.com/Masterminds/log-go"
+	logio "github.com/Masterminds/log-go/io"
+	"github.com/rancher-sandbox/hypper/cmd/hypper/require"
 )
 
 const docsDesc = `
-Generate documentation files for Helm.
 
+Generate documentation files for Hypper.
 This command can generate documentation for Helm in the following formats:
 
 - Markdown
 - Man pages
-
-It can also generate bash autocompletions.
 `
+
+// TODO It can also generate bash autocompletions.
 
 type docsOptions struct {
 	dest            string
@@ -47,19 +49,22 @@ type docsOptions struct {
 	generateHeaders bool
 }
 
-func newDocsCmd(out io.Writer) *cobra.Command {
+func newDocsCmd(logger log.Logger) *cobra.Command {
+
+	wInfo := logio.NewWriter(logger, log.InfoLevel)
+
 	o := &docsOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "docs",
-		Short:             "generate documentation as markdown or man pages",
-		Long:              docsDesc,
-		Hidden:            true,
-		Args:              require.NoArgs,
-		ValidArgsFunction: noCompletions,
+		Use:    "docs",
+		Short:  "generate documentation as markdown or man pages",
+		Long:   docsDesc,
+		Hidden: true,
+		Args:   require.NoArgs,
+		// TODO ValidArgsFunction: noCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			o.topCmd = cmd.Root()
-			return o.run(out)
+			return o.run(wInfo)
 		},
 	}
 

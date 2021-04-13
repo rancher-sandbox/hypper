@@ -16,10 +16,10 @@ limitations under the License.
 
 package main
 
-import (
-	"testing"
-)
+// import (
+// 	"testing"
+// )
 
-func TestDocsFileCompletion(t *testing.T) {
-	checkFileCompletion(t, "docs", false)
-}
+// func TestDocsFileCompletion(t *testing.T) {
+// 	checkFileCompletion(t, "docs", false)
+// }
