@@ -17,6 +17,7 @@ limitations under the License.
 package action
 
 import (
+	"runtime"
 	"testing"
 )
 
@@ -83,6 +84,11 @@ func TestNonExistentChart(t *testing.T) {
 	t.Run("should error out for non existent tgz chart", func(t *testing.T) {
 		testCharts := []string{"non-existent-chart.tgz"}
 		expectedError := "unable to open tarball: open non-existent-chart.tgz: no such file or directory"
+		// Windows feels like it need to add extra text to the error probably? Might be a side issue of using a posix env
+		// to run windows tests?
+		if runtime.GOOS == "windows" {
+			expectedError = "unable to open tarball: open non-existent-chart.tgz: The system cannot find the file specified."
+		}
 		testLint := NewLint()
 
 		result := testLint.Run(testCharts, values)

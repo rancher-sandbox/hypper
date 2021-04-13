@@ -18,21 +18,34 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 )
 
 func TestLintCmdWithSubchartsFlag(t *testing.T) {
 	testChart := "testdata/testcharts/chart-with-bad-subcharts"
-	tests := []cmdTestCase{{
-		name:      "lint good chart with bad subcharts",
-		cmd:       fmt.Sprintf("lint %s", testChart),
-		golden:    "output/lint-chart-with-bad-subcharts.txt",
-		wantError: true,
-	}, {
+	testLintGoodChartBadSubchartWithFlag := cmdTestCase{
 		name:      "lint good chart with bad subcharts using --with-subcharts flag",
 		cmd:       fmt.Sprintf("lint --with-subcharts %s", testChart),
 		golden:    "output/lint-chart-with-bad-subcharts-with-subcharts.txt",
 		wantError: true,
-	}}
+	}
+
+	// If your golden file output contains a path, you are gonna have a bad time! in windows it
+	// will show as \path\to\whatever so it doesnt match the golden files.
+	if runtime.GOOS == "windows" {
+		testLintGoodChartBadSubchartWithFlag.golden = "output/lint-chart-with-bad-subcharts-with-subcharts-windows.txt"
+	}
+
+	tests := []cmdTestCase{
+		{
+			name:      "lint good chart with bad subcharts",
+			cmd:       fmt.Sprintf("lint %s", testChart),
+			golden:    "output/lint-chart-with-bad-subcharts.txt",
+			wantError: true,
+		},
+		testLintGoodChartBadSubchartWithFlag,
+	}
+
 	runTestCmd(t, tests)
 }
