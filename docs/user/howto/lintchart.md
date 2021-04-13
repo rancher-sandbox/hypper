@@ -1,9 +1,9 @@
 ## How to lint a hypper chart
 
-We just created or modified our chart or add annotations to take advantage of Hypper features but...how do we know those annotations are correct?
+We just created or modified our chart or added annotations to take advantage of Hypper features but...how do we know those annotations are correct?
 
 
-Its very simple, just run `hypper lint` against your chart, and it will verify that the chart is well-formed.
+It's very simple, just run `hypper lint` against your chart, and it will verify that the chart is well-formed.
 
 `hypper lint` runs both Helm checks and Hypper checks against the chart.
 
