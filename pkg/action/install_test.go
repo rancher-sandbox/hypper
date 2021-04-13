@@ -26,6 +26,8 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/time"
 )
 
 func installAction(t *testing.T) *Install {
@@ -38,14 +40,16 @@ func installAction(t *testing.T) *Install {
 }
 
 func TestInstallAllSharedDeps(t *testing.T) {
+
 	for _, tcase := range []struct {
-		name      string
-		chart     *chart.Chart
-		golden    string
-		wantError bool
-		error     string
-		wantDebug bool
-		debug     string
+		name       string
+		chart      *chart.Chart
+		golden     string
+		wantError  bool
+		error      string
+		wantDebug  bool
+		debug      string
+		addRelStub bool
 	}{
 		{
 			name:      "chart has no shared-deps",
@@ -67,9 +71,10 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			wantDebug: true,
 		},
 		{
-			name:   "dependencies are already installed",
-			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
-			golden: "output/install-no-shared-metadata.txt",
+			name:       "dependencies are already installed",
+			chart:      buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:     "output/install-shared-dep-installed.txt",
+			addRelStub: true,
 		},
 	} {
 		settings := cli.New()
@@ -89,7 +94,27 @@ func TestInstallAllSharedDeps(t *testing.T) {
 
 		instAction := installAction(t)
 
+		if tcase.addRelStub {
+			now := time.Now()
+			rel := &release.Release{
+				Name: "testdata/charts/vanilla-helm",
+				Info: &release.Info{
+					FirstDeployed: now,
+					LastDeployed:  now,
+					Status:        release.StatusDeployed,
+					Description:   "Named Release Stub",
+				},
+				Version:   1,
+				Namespace: "spaced",
+			}
+			err := instAction.Config.Releases.Create(rel)
+			if err != nil {
+				t.Fatalf("Failed creating rel stub: %s", err)
+			}
+		}
+
 		err := instAction.InstallAllSharedDeps(tcase.chart, settings, log.Current)
+
 		if (err != nil) != tcase.wantError {
 			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
 		}
