@@ -1,5 +1,3 @@
-// +build linux
-
 /*
 Copyright The Helm Authors, SUSE LLC.
 
