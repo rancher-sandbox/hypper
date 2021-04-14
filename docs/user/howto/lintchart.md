@@ -7,7 +7,7 @@ It's very simple, just run `hypper lint` against your chart, and it will verify 
 
 `hypper lint` runs both Helm checks and Hypper checks against the chart.
 
-If the linter encounters things that will cause the chart to fail installation, it will emit [ERROR] messages. If it encounters issues that break with convention or recommendation, it will emit [WARNING] messages.
+If the linter encounters things that will cause the chart to fail installation, it will emit `[ERROR]` messages. If it encounters issues that break with convention or recommendation, it will emit `[WARNING]` messages.
 
 
 For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:
@@ -21,7 +21,7 @@ $ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ```
 
 
-While running it against a vanilla Helm chart with no extra Hypper annotations will emit several [WARNING], recommending to set certain values that Hypper supports:
+While running it against a vanilla Helm chart with no extra Hypper annotations will emit several `[WARNING]`, recommending to set certain values that Hypper supports:
 
 
 ```shell
@@ -35,7 +35,7 @@ $ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm
 1 chart(s) linted, 0 chart(s) failed
 ```
 
-Running against a shared-dependencies annotation that is malformed will emit an [ERROR]:
+Running against a shared-dependencies annotation that is malformed will emit an `[ERROR]`:
 
 ```shell
 $ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
