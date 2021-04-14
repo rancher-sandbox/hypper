@@ -339,7 +339,7 @@ Hypper from <a href="https://github.com/rancher-sandbox/hypper/actions/workflows
 We do not recommend using development snapshots on your production environment.</em></p>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
 <p>In most cases, installation is as simple as getting a pre-built hypper binary. This document covers additional cases for those who want to do more sophisticated things with Hypper.</p>
-<p>Once you have the Hypper Client successfully installed, you can move on to the <a href="https://github.com/rancher-sandbox/hypper/docs/user/tutorials/quickstart.md">quickstart guide</a>.</p>
+<p>Once you have the Hypper Client successfully installed, you can move on to the <a href="user/tutorials/./quickstart.html">quickstart guide</a>.</p>
 <h1><a class="header" href="#quickstart" id="quickstart">Quickstart</a></h1>
 <p>This guide covers how you can quickly get started using Hypper.</p>
 <p>If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
@@ -352,7 +352,7 @@ to work with Hypper.</p>
 <li>A Chart repository to install charts from.</li>
 </ol>
 <h2><a class="header" href="#install-hypper" id="install-hypper">Install Hypper</a></h2>
-<p>See the <a href="user/tutorials/docs/user/tutorials/installing.html">installation guide</a>.</p>
+<p>See the <a href="user/tutorials/./installing.html">installation guide</a>.</p>
 <h2><a class="header" href="#configuring-hypper-by-initializing-repositories" id="configuring-hypper-by-initializing-repositories">Configuring Hypper by initializing repositories</a></h2>
 <p>Hypper enables you to deploy Helm and Hypper charts into your Kubernetes
 cluster. To simplify that, the best way is to add a chart repository, for
@@ -499,7 +499,7 @@ Done! 👏
 <p>We just created or modified our chart or added annotations to take advantage of Hypper features but...how do we know those annotations are correct?</p>
 <p>It's very simple, just run <code>hypper lint</code> against your chart, and it will verify that the chart is well-formed.</p>
 <p><code>hypper lint</code> runs both Helm checks and Hypper checks against the chart.</p>
-<p>If the linter encounters things that will cause the chart to fail installation, it will emit [ERROR] messages. If it encounters issues that break with convention or recommendation, it will emit [WARNING] messages.</p>
+<p>If the linter encounters things that will cause the chart to fail installation, it will emit <code>[ERROR]</code> messages. If it encounters issues that break with convention or recommendation, it will emit <code>[WARNING]</code> messages.</p>
 <p>For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:</p>
 <pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
@@ -507,7 +507,7 @@ Done! 👏
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
-<p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several [WARNING], recommending to set certain values that Hypper supports:</p>
+<p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several <code>[WARNING]</code>, recommending to set certain values that Hypper supports:</p>
 <pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
 ==&gt; Linting cmd/hypper/testdata/testcharts/vanilla-helm
 [INFO] Chart.yaml: icon is recommended
@@ -517,7 +517,7 @@ Done! 👏
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
-<p>Running against a shared-dependencies annotation that is malformed will emit an [ERROR]:</p>
+<p>Running against a shared-dependencies annotation that is malformed will emit an <code>[ERROR]</code>:</p>
 <pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended

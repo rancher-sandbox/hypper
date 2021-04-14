@@ -167,7 +167,7 @@
 <p>We just created or modified our chart or added annotations to take advantage of Hypper features but...how do we know those annotations are correct?</p>
 <p>It's very simple, just run <code>hypper lint</code> against your chart, and it will verify that the chart is well-formed.</p>
 <p><code>hypper lint</code> runs both Helm checks and Hypper checks against the chart.</p>
-<p>If the linter encounters things that will cause the chart to fail installation, it will emit [ERROR] messages. If it encounters issues that break with convention or recommendation, it will emit [WARNING] messages.</p>
+<p>If the linter encounters things that will cause the chart to fail installation, it will emit <code>[ERROR]</code> messages. If it encounters issues that break with convention or recommendation, it will emit <code>[WARNING]</code> messages.</p>
 <p>For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:</p>
 <pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
@@ -175,7 +175,7 @@
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
-<p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several [WARNING], recommending to set certain values that Hypper supports:</p>
+<p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several <code>[WARNING]</code>, recommending to set certain values that Hypper supports:</p>
 <pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
 ==&gt; Linting cmd/hypper/testdata/testcharts/vanilla-helm
 [INFO] Chart.yaml: icon is recommended
@@ -185,7 +185,7 @@
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
-<p>Running against a shared-dependencies annotation that is malformed will emit an [ERROR]:</p>
+<p>Running against a shared-dependencies annotation that is malformed will emit an <code>[ERROR]</code>:</p>
 <pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended

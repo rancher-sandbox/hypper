@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Installing - Hypper documentation</title>
+        <title>Quick Start - Hypper documentation</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html" class="active"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html" class="active"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -163,62 +163,101 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#installing-hypper" id="installing-hypper">Installing Hypper</a></h1>
-<p>This guide shows how to install the Hypper CLI. Hypper can be installed either from source, or from pre-built binary releases.</p>
-<h2><a class="header" href="#from-binary-releases-linux-macos-windows" id="from-binary-releases-linux-macos-windows">From binary releases (Linux, macOS, Windows)</a></h2>
-<p>Every <a href="https://github.com/rancher-sandbox/hypper/releases">release</a> of Hypper provides binaries for a variety of OSes. These binary versions can be manually downloaded and installed.</p>
-<ul>
-<li>Download your <a href="https://github.com/rancher-sandbox/hypper/releases">desired version</a></li>
-<li>Unpack it (<code>tar -zxvf hypper-v0.0.2-linux-amd64.tar.gz</code>)</li>
-<li>Find the hypper binary in the unpacked directory, and move it to its desired destination (<code>mv linux-amd64/hypper /usr/local/bin/hypper</code>)</li>
-</ul>
-<p>From there, you should be able to run the client and add the stable repo: see <code>hypper help</code>.</p>
-<h2><a class="header" href="#from-script-linux-macos-windows" id="from-script-linux-macos-windows">From script (Linux, macOS, windows)</a></h2>
-<p>Hypper now has an installer script that will automatically grab the latest version of hypper and install it locally.</p>
-<p>You can fetch that script, and then execute it locally. It's well documented so that you can read through it and understand what it is doing before you run it.</p>
-<pre><code>$ curl -fsSL -o get_hypper https://raw.githubusercontent.com/rancher-sandbox/hypper/main/scripts/get-hypper
-$ chmod 700 get_hypper
-$ ./get-hypper
+                        <h1><a class="header" href="#quickstart" id="quickstart">Quickstart</a></h1>
+<p>This guide covers how you can quickly get started using Hypper.</p>
+<p>If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
+and extends its functionalities to install Helm and charts that have been extended
+to work with Hypper.</p>
+<h2><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h2>
+<p>The following prerequisites are required:</p>
+<ol>
+<li>A Kubernetes cluster.</li>
+<li>A Chart repository to install charts from.</li>
+</ol>
+<h2><a class="header" href="#install-hypper" id="install-hypper">Install Hypper</a></h2>
+<p>See the <a href="./installing.html">installation guide</a>.</p>
+<h2><a class="header" href="#configuring-hypper-by-initializing-repositories" id="configuring-hypper-by-initializing-repositories">Configuring Hypper by initializing repositories</a></h2>
+<p>Hypper enables you to deploy Helm and Hypper charts into your Kubernetes
+cluster. To simplify that, the best way is to add a chart repository, for
+example one with Helm charts:</p>
+<pre><code class="language-terminal">$ hypper repo add bitnami https://charts.bitnami.com/bitnami
 </code></pre>
-<p>Yes, you can <code>curl https://raw.githubusercontent.com/rancher-sandbox/hypper/main/scripts/get-hypper | bash</code> if you want to live on the edge.</p>
-<p><strong>NOTE</strong></p>
-<p><em>For installing using the script you need bash, curl/wget, and tar (openssl and sudo are optional).
-Please check how you can install those requisites in your OS if needed.</em> </p>
-<h2><a class="header" href="#from-source-linux-macos-windows" id="from-source-linux-macos-windows">From source (Linux, macOS, Windows)</a></h2>
-<p>Building Hypper from source is a bit more work, but the best way to test the
-latest (pre-release) Hypper version.</p>
-<p>You must have a working Go environment (1.14+), and a POSIX environment with the proper tools installed (git, make).</p>
-<p>For Windows, Hypper has been tested under <a href="https://www.cygwin.com/">cygwin</a> and it compiles correctly.</p>
-<pre><code class="language-terminal">$ git clone https://github.com/rancher-sandbox/hypper/hypper.git
-$ cd hypper
-$ make
+<p>You can add several repositories. Let's add a repository containing charts
+with some Hypper functionality:</p>
+<pre><code class="language-terminal">$ hypper repo add rancher-charts https://charts.rancher.io
 </code></pre>
-<p>If required, it will fetch the dependencies and cache them, and validate
-configuration.
-It will then compile <code>hypper</code>, and place it in <code>bin/hypper</code> (<code>bin/hypper.exe</code> for windows).</p>
-<h2><a class="header" href="#from-development-builds" id="from-development-builds">From development builds</a></h2>
-<p>In addition to releases you can download and install development snapshots of
-Hypper from <a href="https://github.com/rancher-sandbox/hypper/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+workflow%3ACI">Github Actions</a>.</p>
-<p>On each successful CI run, artifacts are stored for that run. Just download the binaries and follow the same steps as installing from binary releases.</p>
-<p><strong>NOTE</strong></p>
-<p><em>Development snapshots could be in a broken state, with missing functionality or breaking changes.
-We do not recommend using development snapshots on your production environment.</em></p>
-<h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
-<p>In most cases, installation is as simple as getting a pre-built hypper binary. This document covers additional cases for those who want to do more sophisticated things with Hypper.</p>
-<p>Once you have the Hypper Client successfully installed, you can move on to the <a href="https://github.com/rancher-sandbox/hypper/docs/user/tutorials/quickstart.md">quickstart guide</a>.</p>
+<p>Now, you can list the repositories that Hypper can install charts from:</p>
+<pre><code class="language-terminal">$ hypper repo list
+NAME            URL
+bitnami         https://charts.bitnami.com/bitnami
+rancher-charts  https://charts.rancher.io
+</code></pre>
+<h2><a class="header" href="#install-an-example-helm-chart" id="install-an-example-helm-chart">Install an example Helm chart</a></h2>
+<p>To install a chart, you can run the <code>hypper install</code> command. Hypper has several
+ways to find and install a chart, but the easiest is to use a repository, in
+this case the Bitnami chart repository.</p>
+<pre><code class="language-terminal">$ hypper install mariadb bitnami/mariadb
+Installing chart &quot;mariadb&quot; in namespace &quot;default&quot;…
+Done! 👏
+</code></pre>
+<p>Whenever you install a chart, a new release is created. So one Helm chart can be
+installed multiple times into the same cluster. And each can be independently
+managed and upgraded.</p>
+<h2><a class="header" href="#install-an-example-hypper-chart" id="install-an-example-hypper-chart">Install an example Hypper chart</a></h2>
+<p>Hypper charts are supersets of Helm charts with more functionality, such as
+specifying default release name, namespace of installation, or installing
+shared-dependency charts automatically.
+They are thought to be installed system-wide in the cluster: 1 Hypper chart for
+all users of the cluster. Think of them as typical system OS libraries/services.</p>
+<p>The commands are the same as you have already used:</p>
+<pre><code class="language-terminal">$ hypper install rancher-charts/fleet --create-namespace
+Installing chart &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
+Done! 👏
+</code></pre>
+<p>This time, the chart got installed with a default name <code>fleet</code>, and into a
+default namespace  <code>fleet-system</code>. We passed the flag <code>--create-namespace</code> to
+tell Hypper to create the namespace if it doesn't exist.</p>
+<h2><a class="header" href="#learn-about-releases" id="learn-about-releases">Learn about releases</a></h2>
+<p>It's easy to see what has been released with hypper:</p>
+<pre><code class="language-terminal">$ hypper ls --all-namespaces
+NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
+fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
+mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
+</code></pre>
+<h2><a class="header" href="#uninstall-a-release" id="uninstall-a-release">Uninstall a release</a></h2>
+<p>To uninstall a release, use the hypper uninstall command:</p>
+<pre><code class="language-terminal">$ hypper uninstall fleet -n fleet-system
+🔥  uninstalling fleet
+🔥  release &quot;fleet&quot; uninstalled
+</code></pre>
+<p>This will uninstall fleet from Kubernetes, which will remove all resources
+associated with the release as well as the release history.</p>
+<p>If the flag <code>--keep-history</code> is provided, release history will be kept. You will
+be able to request information about that release:</p>
+<pre><code class="language-terminal">$ hypper status fleet -n fleet-system
+NAME: fleet
+LAST DEPLOYED: Fri Mar 12 12:14:28 2021
+NAMESPACE: fleet-system
+STATUS: uninstalled
+REVISION: 1
+TEST SUITE: None
+</code></pre>
+<h2><a class="header" href="#read-the-help-text" id="read-the-help-text">Read the help text</a></h2>
+<p>To learn more about available Hypper commands, use <code>hypper help</code>, or type a
+command followed by the <code>-h</code> flag: <code>hypper install -h</code>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../../design.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../user/tutorials/installing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../../user/tutorials/quickstart.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../../user/howto/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -230,13 +269,13 @@ We do not recommend using development snapshots on your production environment.<
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../../design.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../user/tutorials/installing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../../user/tutorials/quickstart.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../../user/howto/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
