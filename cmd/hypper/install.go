@@ -84,9 +84,6 @@ func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Instal
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
 
-	// TODO code for loading a chart maybe shouldn't be here, but in
-	// pkg/action/install.go???
-
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
