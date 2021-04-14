@@ -15,7 +15,7 @@ The following prerequisites are required:
 
 ## Install Hypper
 
-See the [installation guide](docs/user/tutorials/installing.md).
+See the [installation guide](./installing.md).
 
 ## Configuring Hypper by initializing repositories
 
