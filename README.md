@@ -1,3 +1,6 @@
+[![CI](https://github.com/rancher-sandbox/hypper/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rancher-sandbox/hypper/actions/workflows/ci.yml)  [![Documentation book](https://github.com/rancher-sandbox/hypper/actions/workflows/docs-book.yml/badge.svg?branch=main)](https://github.com/rancher-sandbox/hypper/actions/workflows/docs-book.yml)
+
+
 # hypper
 
 pronounced hip-er.
