@@ -65,9 +65,9 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			error:     "yaml: line 2: mapping values are not allowed in this context",
 		},
 		{
-			name:      "dependencies get correctly installed",
-			chart:     buildChart(withHypperAnnotations(), withSharedDeps()),
-			golden:    "output/install-correctly-shared-deps.txt",
+			name:   "dependencies get correctly installed",
+			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden: "output/install-correctly-shared-deps.txt",
 		},
 		{
 			name:       "dependencies are already installed",

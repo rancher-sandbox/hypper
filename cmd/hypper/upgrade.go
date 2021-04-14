@@ -146,7 +146,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 					instClient.Description = client.Description
 					instClient.ReleaseName = client.ReleaseName
 
-					rel, err := runInstall(args, instClient, valueOpts, logger, settings)
+					rel, err := runInstall(args, instClient, valueOpts, logger)
 					if err != nil {
 						return err
 					}
