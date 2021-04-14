@@ -5,3 +5,5 @@ create-missing = false
 
 [output.html]
 git-repository-url = "https://github.com/rancher-sandbox/hypper"
+
+[output.linkcheck]
