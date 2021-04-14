@@ -54,6 +54,7 @@ func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []st
 		newVersionCmd(logger),
 		newLintCmd(logger),
 		newSearchCmd(logger),
+		newDocsCmd(logger),
 	)
 
 	flags.ParseErrorsWhitelist.UnknownFlags = true
