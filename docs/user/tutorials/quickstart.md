@@ -3,7 +3,7 @@
 This guide covers how you can quickly get started using Hypper.
 
 If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
-and extends its functionalities to install Helm and charts that have been extended
+and extends its functionalities to install Helm charts that have been extended
 to work with Hypper.
 
 ## Prerequisites
