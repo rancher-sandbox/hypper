@@ -76,7 +76,7 @@ version: 8.5.1
 
 We added the `hypper.cattle.io/namespace: databases` to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:
 
-```shell
+```terminal
 $ hypper install mysql/                 
 Installing chart "mysql" in namespace "databases"…
 Done! 👏 
@@ -85,4 +85,4 @@ Done! 👏
 
 See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the `Chart.yaml`
 
-If we wanted to specify the release name in the annotations as well we just need to add `hypper.cattle.io/release-name` to the annotations as we did above with the namespace and hypper will take care of setting it! 
+If we wanted to specify the release name in the annotations as well we just need to add `hypper.cattle.io/release-name` to the annotations as we did above with the namespace and hypper will take care of setting it!
