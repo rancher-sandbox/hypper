@@ -21,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/cmd/helm/require"
-	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/cli/values"
@@ -80,6 +79,7 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 
 func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Install, valueOpts *values.Options) {
 	f.BoolVar(&client.CreateNamespace, "create-namespace", false, "create the release namespace if not present")
+	f.BoolVar(&client.NoSharedDeps, "no-shared-deps", false, "skip installation of shared dependencies")
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
@@ -87,6 +87,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
+	logger.Debugf("Original chart version: %q", client.Version)
 	if client.Version == "" && client.Devel {
 		logger.Debug("setting version to >0.0.0-0")
 		client.Version = ">0.0.0-0"
@@ -126,7 +127,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	if err := checkIfInstallable(chartRequested); err != nil {
+	if err := action.CheckIfInstallable(chartRequested); err != nil {
 		return nil, err
 	}
 
@@ -163,16 +164,5 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	return client.Run(chartRequested, vals)
-}
-
-// checkIfInstallable validates if a chart can be installed
-//
-// Application chart type is only installable
-func checkIfInstallable(ch *chart.Chart) error {
-	switch ch.Metadata.Type {
-	case "", "application":
-		return nil
-	}
-	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
+	return client.Run(chartRequested, vals, settings, logger)
 }

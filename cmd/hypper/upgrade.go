@@ -17,10 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"time"
+
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"

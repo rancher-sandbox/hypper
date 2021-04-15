@@ -17,9 +17,17 @@ limitations under the License.
 package action
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/Masterminds/log-go"
+	logcli "github.com/Masterminds/log-go/impl/cli"
+	"github.com/rancher-sandbox/hypper/internal/test"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/time"
 )
 
 func installAction(t *testing.T) *Install {
@@ -29,6 +37,152 @@ func installAction(t *testing.T) *Install {
 	instAction.ReleaseName = "test-install-release"
 
 	return instAction
+}
+
+func TestInstallAllSharedDeps(t *testing.T) {
+
+	for _, tcase := range []struct {
+		name       string
+		chart      *chart.Chart
+		golden     string
+		wantError  bool
+		error      string
+		wantDebug  bool
+		debug      string
+		addRelStub bool
+	}{
+		{
+			name:      "chart has no shared-deps",
+			chart:     buildChart(withHypperAnnotations()),
+			golden:    "output/install-no-shared-deps.txt",
+			wantDebug: true,
+		},
+		{
+			name:      "chart metadata has malformed yaml",
+			chart:     buildChart(withMalformedSharedDeps()),
+			golden:    "output/install-malformed-shared-deps.txt",
+			wantError: true,
+			error:     "yaml: line 2: mapping values are not allowed in this context",
+		},
+		{
+			name:   "dependencies get correctly installed",
+			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden: "output/install-correctly-shared-deps.txt",
+		},
+		{
+			name:       "dependencies are already installed",
+			chart:      buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:     "output/install-shared-dep-installed.txt",
+			addRelStub: true,
+		},
+	} {
+		settings := cli.New()
+		settings.Debug = tcase.wantDebug
+
+		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+		buf := new(bytes.Buffer)
+		logger := logcli.NewStandard()
+		logger.InfoOut = buf
+		logger.WarnOut = buf
+		logger.ErrorOut = buf
+		logger.DebugOut = buf
+		if tcase.wantDebug {
+			logger.Level = log.DebugLevel
+		}
+		log.Current = logger
+
+		instAction := installAction(t)
+
+		if tcase.addRelStub {
+			now := time.Now()
+			rel := &release.Release{
+				Name: "testdata/charts/vanilla-helm",
+				Info: &release.Info{
+					FirstDeployed: now,
+					LastDeployed:  now,
+					Status:        release.StatusDeployed,
+					Description:   "Named Release Stub",
+				},
+				Version:   1,
+				Namespace: "spaced",
+			}
+			err := instAction.Config.Releases.Create(rel)
+			if err != nil {
+				t.Fatalf("Failed creating rel stub: %s", err)
+			}
+		}
+
+		err := instAction.InstallAllSharedDeps(tcase.chart, settings, log.Current)
+
+		if (err != nil) != tcase.wantError {
+			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
+		}
+		if tcase.wantError {
+			is := assert.New(t)
+			is.Equal(tcase.error, err.Error())
+		}
+		if tcase.golden != "" {
+			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
+		}
+	}
+}
+
+func TestInstallSharedDep(t *testing.T) {
+	is := assert.New(t)
+
+	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+	buf := new(bytes.Buffer)
+	logger := logcli.NewStandard()
+	logger.InfoOut = buf
+	logger.WarnOut = buf
+	logger.ErrorOut = buf
+	log.Current = logger
+
+	settings := cli.New()
+
+	instAction := installAction(t)
+
+	// TODO dependency version is not satisfied
+
+	// check that install options such as DryRun are passed
+	instAction.DryRun = true
+	dep := &chart.Dependency{
+		Name:       "testdata/charts/vanilla-helm",
+		Repository: "",
+		Version:    "0.1.0",
+	}
+	res, err := instAction.InstallSharedDep(dep, settings, log.Current)
+	instAction.DryRun = false
+	if err != nil {
+		t.Fatalf("Failed install: %s", err)
+	}
+	is.Equal(res.Info.Status.String(), "pending-install", "Expected status of the installed dependency.")
+
+	// install dependency correctly
+	dep = &chart.Dependency{
+		Name:       "testdata/charts/vanilla-helm",
+		Repository: "",
+		Version:    "0.1.0",
+	}
+	res, err = instAction.InstallSharedDep(dep, settings, log.Current)
+	if err != nil {
+		t.Fatalf("Failed install: %s", err)
+	}
+	is.Equal(res.Name, "empty", "Expected release name from dependency.")
+	is.Equal(res.Namespace, "spaced", "Expected parent ns.")
+	is.Equal(res.Info.Status.String(), "deployed", "Expected status of the installed dependency.")
+
+	// install non-existent dependency
+	dep = &chart.Dependency{
+		Name:       "nonexistent-chart",
+		Repository: "",
+		Version:    "0.1.0",
+	}
+	_, err = instAction.InstallSharedDep(dep, settings, log.Current)
+	if err == nil {
+		t.Fatal(err)
+	}
+	is.Equal("failed to download \"nonexistent-chart\" (hint: running `helm repo update` may help)", err.Error())
 }
 
 func TestInstallSetNamespace(t *testing.T) {
@@ -132,4 +286,19 @@ func TestNameAndChart(t *testing.T) {
 		t.Fatal("expected an error")
 	}
 	is.Equal("NameAndChart() cannot be used", err.Error())
+}
+
+func TestCheckIfInstallable(t *testing.T) {
+	is := assert.New(t)
+
+	// Application chart type is installable
+	err := CheckIfInstallable(buildChart(withTypeApplication()))
+	is.NoError(err)
+
+	// any other chart type besides Application is not installable
+	err = CheckIfInstallable(buildChart(withTypeLibrary()))
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	is.Equal("library charts are not installable", err.Error())
 }

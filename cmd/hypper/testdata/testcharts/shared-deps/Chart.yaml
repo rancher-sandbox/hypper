@@ -11,6 +11,6 @@ annotations:
   catalog.cattle.io/namespace: fleet-system
   catalog.cattle.io/release-name: fleet
   hypper.cattle.io/shared-dependencies: |
-    - name: vanilla-helm
-      version: "0.1.0"
-      repository: "file://testdata/vanilla-helm"
+    - name: "testdata/testcharts/vanilla-helm"
+      version: "13.3.1"
+      repository: ""
