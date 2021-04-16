@@ -43,8 +43,8 @@ such, they are defined with:
 - The name field is the name of the chart you want.
 - The version field is the version of the chart you want.
 - The repository field is the full URL to the chart repository. Note that you
-  must also use helm repo add to add that repo locally. You might use the name
-  of the repo instead of URL.
+  must also use `hypper repo add` to add that repo locally. You might use the
+  name of the repo instead of URL.
 
 We can also add a default release name and namespace, where our-app and its
 shared-dependencies will get installed:
