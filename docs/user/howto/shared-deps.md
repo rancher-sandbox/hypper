@@ -1,6 +1,6 @@
 # Working with shared dependencies
 
-Hypper charts understand the concept of shared dependency charts.
+Hypper charts support the concept of shared dependency charts.
 
 A chart declared as a shared dependency is a chart that more than one chart may
 depend on; once deployed, it can be reused by multiple other deployments. Charts
