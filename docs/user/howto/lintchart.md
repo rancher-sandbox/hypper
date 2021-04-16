@@ -12,7 +12,7 @@ If the linter encounters things that will cause the chart to fail installation, 
 
 For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:
 
-```terminal
+```console
 $ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==> Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended
@@ -24,7 +24,7 @@ $ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 While running it against a vanilla Helm chart with no extra Hypper annotations will emit several `[WARNING]`, recommending to set certain values that Hypper supports:
 
 
-```terminal
+```console
 $ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
 ==> Linting cmd/hypper/testdata/testcharts/vanilla-helm
 [INFO] Chart.yaml: icon is recommended
@@ -37,7 +37,7 @@ $ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm
 
 Running against a shared-dependencies annotation that is malformed will emit an `[ERROR]`:
 
-```terminal
+```console
 $ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==> Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended
@@ -49,7 +49,7 @@ Error: 1 chart(s) linted, 1 chart(s) failed
 
 Now if you were to set some kind of automated CI in place to check for linting and are required to have Hypper annotations as mandatory, you can run `hypper lint` with the `--strict` flag so all warnings are marked as errors.
 
-```terminal
+```console
 $ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
 ==> Linting cmd/hypper/testdata/testcharts/fallback-annot
 [INFO] Chart.yaml: icon is recommended

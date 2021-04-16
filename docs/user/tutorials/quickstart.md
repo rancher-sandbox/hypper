@@ -23,20 +23,20 @@ Hypper enables you to deploy Helm and Hypper charts into your Kubernetes
 cluster. To simplify that, the best way is to add a chart repository, for
 example one with Helm charts:
 
-```terminal
+```console
 $ hypper repo add bitnami https://charts.bitnami.com/bitnami
 ```
 
 You can add several repositories. Let's add a repository containing charts
 with some Hypper functionality:
 
-```terminal
+```console
 $ hypper repo add rancher-charts https://charts.rancher.io
 ```
 
 Now, you can list the repositories that Hypper can install charts from:
 
-```terminal
+```console
 $ hypper repo list
 NAME            URL
 bitnami         https://charts.bitnami.com/bitnami
@@ -49,7 +49,7 @@ To install a chart, you can run the `hypper install` command. Hypper has several
 ways to find and install a chart, but the easiest is to use a repository, in
 this case the Bitnami chart repository.
 
-```terminal
+```console
 $ hypper install mariadb bitnami/mariadb
 Installing chart "mariadb" in namespace "default"…
 Done! 👏
@@ -69,7 +69,7 @@ all users of the cluster. Think of them as typical system OS libraries/services.
 
 The commands are the same as you have already used:
 
-```terminal
+```console
 $ hypper install rancher-charts/fleet --create-namespace
 Installing chart "fleet" in namespace "fleet-system"…
 Done! 👏
@@ -83,7 +83,7 @@ tell Hypper to create the namespace if it doesn't exist.
 
 It's easy to see what has been released with hypper:
 
-```terminal
+```console
 $ hypper ls --all-namespaces
 NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
 fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
@@ -94,7 +94,7 @@ mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 C
 
 To uninstall a release, use the hypper uninstall command:
 
-```terminal
+```console
 $ hypper uninstall fleet -n fleet-system
 🔥  uninstalling fleet
 🔥  release "fleet" uninstalled
@@ -106,7 +106,7 @@ associated with the release as well as the release history.
 If the flag `--keep-history` is provided, release history will be kept. You will
 be able to request information about that release:
 
-```terminal
+```console
 $ hypper status fleet -n fleet-system
 NAME: fleet
 LAST DEPLOYED: Fri Mar 12 12:14:28 2021

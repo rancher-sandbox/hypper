@@ -14,7 +14,7 @@ to it.
 
 First, we create a simple empty chart:
 
-```terminal
+```console
 $ helm create our-app
 ```
 
@@ -70,7 +70,7 @@ annotations:
 
 To verify that we did create the correctly, let's lint it:
 
-```terminal
+```console
 $ hypper lint ./our-app
 ==> Linting our-app
 [INFO] Chart.yaml: icon is recommended
@@ -94,7 +94,7 @@ prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      
 
 First, add the repos of the shared dependencies, so they are found:
 
-```terminal
+```console
 $ hypper repo add bitnami 'https://charts.bitnami.com/bitnami'
 "bitnami" has been added to your repositories
 $ hypper repo add prometheus-community 'https://prometheus-community.github.io/helm-charts'
@@ -119,7 +119,7 @@ Done! 👏
 
 That satisfies one shared dependency of `our-app`:
 
-```terminal
+```console
 $ hypper shared-deps list ./our-app
 NAME            VERSION REPOSITORY                                              STATUS
 postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
@@ -128,7 +128,7 @@ prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      
 
 Then, we can install `our-app`, and any of its missing shared dependencies:
 
-```terminal
+```console
 $ hypper install ./our-app --create-namespace
 Installing chart "postgresql" in namespace "hypper"…
 Shared dependency prometheus already installed, not doing anything
@@ -147,7 +147,7 @@ What has happened?
    
 Let's see:
 
-```terminal
+```console
 $ hypper shared-deps list ./our-app
 NAME            VERSION REPOSITORY                                              STATUS
 postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      deployed

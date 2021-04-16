@@ -44,7 +44,7 @@ You must have a working Go environment (1.14+), and a POSIX environment with the
 
 For Windows, Hypper has been tested under [cygwin](https://www.cygwin.com/) and it compiles correctly.
 
-```terminal
+```console
 $ git clone https://github.com/rancher-sandbox/hypper/hypper.git
 $ cd hypper
 $ make

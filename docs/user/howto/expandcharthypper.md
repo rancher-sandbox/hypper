@@ -76,7 +76,7 @@ version: 8.5.1
 
 We added the `hypper.cattle.io/namespace: databases` to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:
 
-```terminal
+```console
 $ hypper install mysql/                 
 Installing chart "mysql" in namespace "databases"…
 Done! 👏 
