@@ -3,9 +3,9 @@
 Hypper charts understand the concept of shared dependency charts.
 
 A chart declared as a shared dependency is a chart that more than one chart may
-depend on. Charts deployed as shared dependencies are the analogous of system
-libraries in an OS: dependencies that are used by several consumers. One
-deployment may satisfy the shared dependencies of several charts.
+depend on; once deployed, it can be reused by multiple other deployments. Charts
+deployed as shared dependencies are the analogous of system libraries in an OS:
+dependencies that are used by several consumers.
 
 ## Creating a Hypper chart with shared dependencies
 

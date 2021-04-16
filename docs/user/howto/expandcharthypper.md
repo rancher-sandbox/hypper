@@ -85,4 +85,4 @@ Done! 👏
 
 See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the `Chart.yaml`
 
-If we wanted to specify the release name in the annotations as well we just need to add `hypper.cattle.io/release-name` to the annotations as we did above with the namespace and hypper will take care of setting it!
+If we wanted to specify the release name in the annotations as well, we just need to add `hypper.cattle.io/release-name` to the annotations as we did above with the namespace and hypper will take care of setting it!
