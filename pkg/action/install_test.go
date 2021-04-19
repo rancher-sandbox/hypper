@@ -39,6 +39,28 @@ func installAction(t *testing.T) *Install {
 	return instAction
 }
 
+func TestInstallReleaseCycle(t *testing.T) {
+
+	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+	buf := new(bytes.Buffer)
+	logger := logcli.NewStandard()
+	logger.InfoOut = buf
+	logger.WarnOut = buf
+	logger.ErrorOut = buf
+	logger.DebugOut = buf
+	log.Current = logger
+
+	is := assert.New(t)
+	instAction := installAction(t)
+	expectedError := "ABORTING: Nested recursion #10. we don't have a SAT solver yet, chances are you are in a cycle!"
+
+	_, err := instAction.Run(buildChart(), map[string]interface{}{}, cli.New(), log.Current, 10)
+	if err == nil {
+		t.Errorf("on test %q expected error, got '%v'", expectedError, err)
+	}
+	is.Equal(expectedError, err.Error())
+}
+
 func TestInstallAllSharedDeps(t *testing.T) {
 
 	for _, tcase := range []struct {
