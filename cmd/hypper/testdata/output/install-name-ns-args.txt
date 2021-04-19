@@ -1,2 +1,2 @@
-Installing chart "zeppelin" in namespace "led"…
+Installing chart "empty" as "zeppelin" in namespace "led"…
 Done! 👏 

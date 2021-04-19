@@ -1,1 +1,2 @@
-Shared dependency testdata/charts/vanilla-helm already installed, not doing anything
+Installing shared dependencies for chart "hello":
+- Shared dependency chart "testdata/charts/vanilla-helm" already installed, skipping

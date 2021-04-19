@@ -1,2 +1,2 @@
-Installing chart "my-hypper-name" in namespace "hypper"…
+Installing chart "empty" as "my-hypper-name" in namespace "hypper"…
 Done! 👏 

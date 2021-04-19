@@ -78,7 +78,7 @@ We added the `hypper.cattle.io/namespace: databases` to the annotation, so now w
 
 ```console
 $ hypper install mysql/                 
-Installing chart "mysql" in namespace "databases"…
+Installing chart "mysql" as "mysql" in namespace "databases"…
 Done! 👏 
 
 ```

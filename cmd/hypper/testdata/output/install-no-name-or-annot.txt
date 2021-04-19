@@ -1,2 +1,2 @@
-Installing chart "empty" in namespace "default"…
+Installing chart "empty" as "empty" in namespace "default"…
 Done! 👏 

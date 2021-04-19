@@ -1,3 +1,4 @@
-Installing chart "empty" in namespace "hypper"…
-Installing chart "my-hypper-name" in namespace "hypper"…
+Installing shared dependencies for chart "empty":
+- Installing chart "empty" as "empty" in namespace "hypper"…
+Installing chart "empty" as "my-hypper-name" in namespace "hypper"…
 Done! 👏 
