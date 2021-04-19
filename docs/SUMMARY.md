@@ -7,4 +7,5 @@
     - [Expand a chart with Hypper annotations](./user/howto/expandcharthypper.md)
     - [Lint charts](./user/howto/lintchart.md)
     - [Search repos for Hypper charts](./user/howto/search.md)
+    - [Work with shared dependencies](./user/howto/shared-deps.md)
 - [Reference guides](./reference-guides.md)
