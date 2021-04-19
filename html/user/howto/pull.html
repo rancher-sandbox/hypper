@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Quick Start - Hypper documentation</title>
+        <title>Pulling charts to the local machine - Hypper documentation</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html" class="active"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/pull.html"><strong aria-hidden="true">4.1.</strong> Pulling charts to the local machine</a></li><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.2.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.3.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.4.</strong> Search repos for Hypper charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/shared-deps.html"><strong aria-hidden="true">4.5.</strong> Work with shared dependencies</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/pull.html" class="active"><strong aria-hidden="true">4.1.</strong> Pulling charts to the local machine</a></li><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.2.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.3.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.4.</strong> Search repos for Hypper charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/shared-deps.html"><strong aria-hidden="true">4.5.</strong> Work with shared dependencies</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -163,101 +163,52 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#quickstart" id="quickstart">Quickstart</a></h1>
-<p>This guide covers how you can quickly get started using Hypper.</p>
-<p>If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
-and extends its functionalities to install Helm charts that have been extended
-to work with Hypper.</p>
-<h2><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h2>
-<p>The following prerequisites are required:</p>
-<ol>
-<li>A Kubernetes cluster.</li>
-<li>A Chart repository to install charts from.</li>
-</ol>
-<h2><a class="header" href="#install-hypper" id="install-hypper">Install Hypper</a></h2>
-<p>See the <a href="./installing.html">installation guide</a>.</p>
-<h2><a class="header" href="#configuring-hypper-by-initializing-repositories" id="configuring-hypper-by-initializing-repositories">Configuring Hypper by initializing repositories</a></h2>
-<p>Hypper enables you to deploy Helm and Hypper charts into your Kubernetes
-cluster. To simplify that, the best way is to add a chart repository, for
-example one with Helm charts:</p>
-<pre><code class="language-console">$ hypper repo add bitnami https://charts.bitnami.com/bitnami
+                        <h1><a class="header" href="#pulling-charts-to-the-local-machine" id="pulling-charts-to-the-local-machine">Pulling charts to the local machine</a></h1>
+<p>Sometimes there is a need to modify charts from a repo or just have a look at what the chart is actually doing.</p>
+<p>For that you can use <code>hypper pull</code>, which will download the chart to your local machine.</p>
+<h2><a class="header" href="#pulling-a-chart" id="pulling-a-chart">Pulling a chart</a></h2>
+<pre><code class="language-shell">$ hypper pull hypper/fleet
+$ ls fleet*
+fleet-0.3.500.tgz
 </code></pre>
-<p>You can add several repositories. Let's add a repository containing charts
-with some Hypper functionality:</p>
-<pre><code class="language-console">$ hypper repo add rancher-charts https://charts.rancher.io
+<h2><a class="header" href="#pulling-a-chart-and-extracting-it" id="pulling-a-chart-and-extracting-it">Pulling a chart and extracting it</a></h2>
+<p>Usually, pull will download the tar.gz chart package, but you can use <code>--untar</code> so instead the package is extracted automatically.</p>
+<pre><code class="language-shell">$ hypper pull hypper/fleet --untar
+$ ls fleet/     
+charts  Chart.yaml  templates  values.yaml
 </code></pre>
-<p>Now, you can list the repositories that Hypper can install charts from:</p>
-<pre><code class="language-console">$ hypper repo list
-NAME            URL
-bitnami         https://charts.bitnami.com/bitnami
-rancher-charts  https://charts.rancher.io
+<h2><a class="header" href="#pulling-a-specific-chart-version" id="pulling-a-specific-chart-version">Pulling a specific chart version</a></h2>
+<p>Pull will automatically download the latest chart version, but you can use <code>--version</code> to get the specified version instead.</p>
+<pre><code class="language-shell">$ hypper pull hypper/fleet --version 0.3.400
+$ ls fleet*
+fleet-0.3.400.tgz
 </code></pre>
-<h2><a class="header" href="#install-an-example-helm-chart" id="install-an-example-helm-chart">Install an example Helm chart</a></h2>
-<p>To install a chart, you can run the <code>hypper install</code> command. Hypper has several
-ways to find and install a chart, but the easiest is to use a repository, in
-this case the Bitnami chart repository.</p>
-<pre><code class="language-console">$ hypper install mariadb bitnami/mariadb
-Installing chart &quot;mariadb&quot; in namespace &quot;default&quot;…
-Done! 👏
+<h2><a class="header" href="#changing-the-output-dir" id="changing-the-output-dir">Changing the output dir</a></h2>
+<p>By default, pull will download the chart into the current dir. Use the <code>-d</code> flag to set the output dir.</p>
+<p>Note: The output dir needs to exist beforehand.</p>
+<pre><code class="language-shell">$ hypper pull hypper/fleet -d chartslocal
+$ ls chartslocal 
+fleet-0.3.500.tgz
 </code></pre>
-<p>Whenever you install a chart, a new release is created. So one Helm chart can be
-installed multiple times into the same cluster. And each can be independently
-managed and upgraded.</p>
-<h2><a class="header" href="#install-an-example-hypper-chart" id="install-an-example-hypper-chart">Install an example Hypper chart</a></h2>
-<p>Hypper charts are supersets of Helm charts with more functionality, such as
-specifying default release name, namespace of installation, or installing
-shared-dependency charts automatically.
-They are thought to be installed system-wide in the cluster: 1 Hypper chart for
-all users of the cluster. Think of them as typical system OS libraries/services.</p>
-<p>The commands are the same as you have already used:</p>
-<pre><code class="language-console">$ hypper install rancher-charts/fleet --create-namespace
-Installing chart &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
-Done! 👏
+<h2><a class="header" href="#pulling-development-versions" id="pulling-development-versions">Pulling development versions</a></h2>
+<p>You can use the <code>--devel</code> flag to pull devel versions. By default, hypper won't download, search or list devel version unless specified by the flag.</p>
+<pre><code class="language-shell">$ hypper pull hypper/fleet --version 0.3.600-rc1 --devel
+$ ls fleet*
+fleet-0.3.600-rc1.tgz
 </code></pre>
-<p>This time, the chart got installed with a default name <code>fleet</code>, and into a
-default namespace  <code>fleet-system</code>. We passed the flag <code>--create-namespace</code> to
-tell Hypper to create the namespace if it doesn't exist.</p>
-<h2><a class="header" href="#learn-about-releases" id="learn-about-releases">Learn about releases</a></h2>
-<p>It's easy to see what has been released with hypper:</p>
-<pre><code class="language-console">$ hypper ls --all-namespaces
-NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
-fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
-mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
-</code></pre>
-<h2><a class="header" href="#uninstall-a-release" id="uninstall-a-release">Uninstall a release</a></h2>
-<p>To uninstall a release, use the hypper uninstall command:</p>
-<pre><code class="language-console">$ hypper uninstall fleet -n fleet-system
-🔥  uninstalling fleet
-🔥  release &quot;fleet&quot; uninstalled
-</code></pre>
-<p>This will uninstall fleet from Kubernetes, which will remove all resources
-associated with the release as well as the release history.</p>
-<p>If the flag <code>--keep-history</code> is provided, release history will be kept. You will
-be able to request information about that release:</p>
-<pre><code class="language-console">$ hypper status fleet -n fleet-system
-NAME: fleet
-LAST DEPLOYED: Fri Mar 12 12:14:28 2021
-NAMESPACE: fleet-system
-STATUS: uninstalled
-REVISION: 1
-TEST SUITE: None
-</code></pre>
-<h2><a class="header" href="#read-the-help-text" id="read-the-help-text">Read the help text</a></h2>
-<p>To learn more about available Hypper commands, use <code>hypper help</code>, or type a
-command followed by the <code>-h</code> flag: <code>hypper install -h</code>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../../user/tutorials/installing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../user/howto/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../../user/howto/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../../user/howto/expandcharthypper.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -269,13 +220,13 @@ command followed by the <code>-h</code> flag: <code>hypper install -h</code>.</p
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../../user/tutorials/installing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../user/howto/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../../user/howto/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../../user/howto/expandcharthypper.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
