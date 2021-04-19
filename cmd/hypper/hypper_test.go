@@ -210,3 +210,7 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 
 	return c, result, err
 }
+
+func executeActionCommand(cmd string) (*cobra.Command, string, error) {
+	return executeActionCommandC(storageFixture(), cmd)
+}
