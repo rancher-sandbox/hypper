@@ -67,6 +67,10 @@ func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
 func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
+	if lvl >= 10 {
+		return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
+	}
+
 	if !i.NoSharedDeps {
 		if err := i.InstallAllSharedDeps(chrt, settings, logger, lvl); err != nil {
 			return nil, err
