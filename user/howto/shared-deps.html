@@ -229,7 +229,7 @@ annotations:
 </code></pre>
 <h2><a class="header" href="#listing-shared-dependencies" id="listing-shared-dependencies">Listing shared dependencies</a></h2>
 <p>Hypper's <code>shared-dep list</code> command will list the shared dependencies, its status, and other information:</p>
-<pre><code>$ hypper shared-deps list ./our-app
+<pre><code class="language-console">$ hypper shared-deps list ./our-app
 NAME            VERSION REPOSITORY                                              STATUS
 postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
 prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      not-installed
@@ -249,8 +249,8 @@ Hang tight while we grab the latest from your chart repositories...
 </code></pre>
 <p>Now, let's pretend that we had <code>prometheus</code> already installed, so let's install
 it by hand:</p>
-<pre><code>$ hypper install prometheus-community/prometheus -n hypper --create-namespace
-Installing chart &quot;prometheus&quot; in namespace &quot;hypper&quot;…
+<pre><code class="language-console">$ hypper install prometheus-community/prometheus -n hypper --create-namespace
+Installing chart &quot;prometheus&quot; as &quot;prometheus&quot; in namespace &quot;hypper&quot;…
 Done! 👏
 </code></pre>
 <p>That satisfies one shared dependency of <code>our-app</code>:</p>
@@ -261,9 +261,10 @@ prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      
 </code></pre>
 <p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies:</p>
 <pre><code class="language-console">$ hypper install ./our-app --create-namespace
-Installing chart &quot;postgresql&quot; in namespace &quot;hypper&quot;…
-Shared dependency prometheus already installed, not doing anything
-Installing chart &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
+Installing shared dependencies for chart &quot;our-app&quot;:
+- Installing chart &quot;postgresql&quot; as &quot;postgresql&quot; in namespace &quot;hypper&quot;…
+- Shared dependency chart &quot;prometheus&quot; already installed, skipping
+Installing chart &quot;our-app&quot; as &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
 Done! 👏
 </code></pre>
 <p>What has happened?</p>
