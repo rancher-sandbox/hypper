@@ -71,7 +71,7 @@ The commands are the same as you have already used:
 
 ```console
 $ hypper install rancher-charts/fleet --create-namespace
-Installing chart "fleet" in namespace "fleet-system"…
+Installing chart "fleet" as "fleet" in namespace "fleet-system"…
 Done! 👏
 ```
 

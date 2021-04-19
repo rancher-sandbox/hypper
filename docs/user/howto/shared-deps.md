@@ -82,7 +82,7 @@ $ hypper lint ./our-app
 
 Hypper's `shared-dep list` command will list the shared dependencies, its status, and other information:
 
-```
+```console
 $ hypper shared-deps list ./our-app
 NAME            VERSION REPOSITORY                                              STATUS
 postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
@@ -111,9 +111,9 @@ Hang tight while we grab the latest from your chart repositories...
 Now, let's pretend that we had `prometheus` already installed, so let's install
 it by hand:
 
-```
+```console
 $ hypper install prometheus-community/prometheus -n hypper --create-namespace
-Installing chart "prometheus" in namespace "hypper"…
+Installing chart "prometheus" as "prometheus" in namespace "hypper"…
 Done! 👏
 ```
 
@@ -130,9 +130,10 @@ Then, we can install `our-app`, and any of its missing shared dependencies:
 
 ```console
 $ hypper install ./our-app --create-namespace
-Installing chart "postgresql" in namespace "hypper"…
-Shared dependency prometheus already installed, not doing anything
-Installing chart "our-app-name" in namespace "hypper"…
+Installing shared dependencies for chart "our-app":
+- Installing chart "postgresql" as "postgresql" in namespace "hypper"…
+- Shared dependency chart "prometheus" already installed, skipping
+Installing chart "our-app" as "our-app-name" in namespace "hypper"…
 Done! 👏
 ```
 
