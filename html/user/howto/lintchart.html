@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html" class="active"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html" class="active"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/shared-deps.html"><strong aria-hidden="true">4.4.</strong> Work with shared dependencies</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -169,14 +169,14 @@
 <p><code>hypper lint</code> runs both Helm checks and Hypper checks against the chart.</p>
 <p>If the linter encounters things that will cause the chart to fail installation, it will emit <code>[ERROR]</code> messages. If it encounters issues that break with convention or recommendation, it will emit <code>[WARNING]</code> messages.</p>
 <p>For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
 <p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several <code>[WARNING]</code>, recommending to set certain values that Hypper supports:</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
 ==&gt; Linting cmd/hypper/testdata/testcharts/vanilla-helm
 [INFO] Chart.yaml: icon is recommended
 [INFO] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
@@ -186,7 +186,7 @@
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
 <p>Running against a shared-dependencies annotation that is malformed will emit an <code>[ERROR]</code>:</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended
 [ERROR] Chart.yaml: Shared dependencies list is broken, please check the correct format
@@ -194,7 +194,7 @@
 Error: 1 chart(s) linted, 1 chart(s) failed
 </code></pre>
 <p>Now if you were to set some kind of automated CI in place to check for linting and are required to have Hypper annotations as mandatory, you can run <code>hypper lint</code> with the <code>--strict</code> flag so all warnings are marked as errors.</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
 ==&gt; Linting cmd/hypper/testdata/testcharts/fallback-annot
 [INFO] Chart.yaml: icon is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended

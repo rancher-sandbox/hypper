@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html" class="active"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../../user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../../user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../user/howto/expandcharthypper.html" class="active"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="../../user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li><li class="chapter-item expanded "><a href="../../user/howto/shared-deps.html"><strong aria-hidden="true">4.4.</strong> Work with shared dependencies</a></li></ol></li><li class="chapter-item expanded "><a href="../../reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -228,13 +228,13 @@ sources:
 version: 8.5.1
 </code></pre>
 <p>We added the <code>hypper.cattle.io/namespace: databases</code> to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:</p>
-<pre><code class="language-shell">$ hypper install mysql/                 
+<pre><code class="language-console">$ hypper install mysql/                 
 Installing chart &quot;mysql&quot; in namespace &quot;databases&quot;…
 Done! 👏 
 
 </code></pre>
 <p>See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the <code>Chart.yaml</code></p>
-<p>If we wanted to specify the release name in the annotations as well we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it! </p>
+<p>If we wanted to specify the release name in the annotations as well, we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it!</p>
 
                     </main>
 

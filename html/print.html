@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li></ol></li><li class="chapter-item expanded "><a href="reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">1.</strong> Hypper Design</a></li><li class="chapter-item expanded "><a href="user/tutorials/installing.html"><strong aria-hidden="true">2.</strong> Installing</a></li><li class="chapter-item expanded "><a href="user/tutorials/quickstart.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="user/howto/index.html"><strong aria-hidden="true">4.</strong> How tos</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="user/howto/expandcharthypper.html"><strong aria-hidden="true">4.1.</strong> Expand a chart with Hypper annotations</a></li><li class="chapter-item expanded "><a href="user/howto/lintchart.html"><strong aria-hidden="true">4.2.</strong> Lint charts</a></li><li class="chapter-item expanded "><a href="user/howto/search.html"><strong aria-hidden="true">4.3.</strong> Search repos for Hypper charts</a></li><li class="chapter-item expanded "><a href="user/howto/shared-deps.html"><strong aria-hidden="true">4.4.</strong> Work with shared dependencies</a></li></ol></li><li class="chapter-item expanded "><a href="reference-guides.html"><strong aria-hidden="true">5.</strong> Reference guides</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -323,7 +323,7 @@ Please check how you can install those requisites in your OS if needed.</em> </p
 latest (pre-release) Hypper version.</p>
 <p>You must have a working Go environment (1.14+), and a POSIX environment with the proper tools installed (git, make).</p>
 <p>For Windows, Hypper has been tested under <a href="https://www.cygwin.com/">cygwin</a> and it compiles correctly.</p>
-<pre><code class="language-terminal">$ git clone https://github.com/rancher-sandbox/hypper/hypper.git
+<pre><code class="language-console">$ git clone https://github.com/rancher-sandbox/hypper/hypper.git
 $ cd hypper
 $ make
 </code></pre>
@@ -343,7 +343,7 @@ We do not recommend using development snapshots on your production environment.<
 <h1><a class="header" href="#quickstart" id="quickstart">Quickstart</a></h1>
 <p>This guide covers how you can quickly get started using Hypper.</p>
 <p>If you already know Helm, this will be a breeze, as Hypper follows Helm's workflow
-and extends its functionalities to install Helm and charts that have been extended
+and extends its functionalities to install Helm charts that have been extended
 to work with Hypper.</p>
 <h2><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h2>
 <p>The following prerequisites are required:</p>
@@ -357,14 +357,14 @@ to work with Hypper.</p>
 <p>Hypper enables you to deploy Helm and Hypper charts into your Kubernetes
 cluster. To simplify that, the best way is to add a chart repository, for
 example one with Helm charts:</p>
-<pre><code class="language-terminal">$ hypper repo add bitnami https://charts.bitnami.com/bitnami
+<pre><code class="language-console">$ hypper repo add bitnami https://charts.bitnami.com/bitnami
 </code></pre>
 <p>You can add several repositories. Let's add a repository containing charts
 with some Hypper functionality:</p>
-<pre><code class="language-terminal">$ hypper repo add rancher-charts https://charts.rancher.io
+<pre><code class="language-console">$ hypper repo add rancher-charts https://charts.rancher.io
 </code></pre>
 <p>Now, you can list the repositories that Hypper can install charts from:</p>
-<pre><code class="language-terminal">$ hypper repo list
+<pre><code class="language-console">$ hypper repo list
 NAME            URL
 bitnami         https://charts.bitnami.com/bitnami
 rancher-charts  https://charts.rancher.io
@@ -373,7 +373,7 @@ rancher-charts  https://charts.rancher.io
 <p>To install a chart, you can run the <code>hypper install</code> command. Hypper has several
 ways to find and install a chart, but the easiest is to use a repository, in
 this case the Bitnami chart repository.</p>
-<pre><code class="language-terminal">$ hypper install mariadb bitnami/mariadb
+<pre><code class="language-console">$ hypper install mariadb bitnami/mariadb
 Installing chart &quot;mariadb&quot; in namespace &quot;default&quot;…
 Done! 👏
 </code></pre>
@@ -387,7 +387,7 @@ shared-dependency charts automatically.
 They are thought to be installed system-wide in the cluster: 1 Hypper chart for
 all users of the cluster. Think of them as typical system OS libraries/services.</p>
 <p>The commands are the same as you have already used:</p>
-<pre><code class="language-terminal">$ hypper install rancher-charts/fleet --create-namespace
+<pre><code class="language-console">$ hypper install rancher-charts/fleet --create-namespace
 Installing chart &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
 Done! 👏
 </code></pre>
@@ -396,14 +396,14 @@ default namespace  <code>fleet-system</code>. We passed the flag <code>--create-
 tell Hypper to create the namespace if it doesn't exist.</p>
 <h2><a class="header" href="#learn-about-releases" id="learn-about-releases">Learn about releases</a></h2>
 <p>It's easy to see what has been released with hypper:</p>
-<pre><code class="language-terminal">$ hypper ls --all-namespaces
+<pre><code class="language-console">$ hypper ls --all-namespaces
 NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
 fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
 mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
 </code></pre>
 <h2><a class="header" href="#uninstall-a-release" id="uninstall-a-release">Uninstall a release</a></h2>
 <p>To uninstall a release, use the hypper uninstall command:</p>
-<pre><code class="language-terminal">$ hypper uninstall fleet -n fleet-system
+<pre><code class="language-console">$ hypper uninstall fleet -n fleet-system
 🔥  uninstalling fleet
 🔥  release &quot;fleet&quot; uninstalled
 </code></pre>
@@ -411,7 +411,7 @@ mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 C
 associated with the release as well as the release history.</p>
 <p>If the flag <code>--keep-history</code> is provided, release history will be kept. You will
 be able to request information about that release:</p>
-<pre><code class="language-terminal">$ hypper status fleet -n fleet-system
+<pre><code class="language-console">$ hypper status fleet -n fleet-system
 NAME: fleet
 LAST DEPLOYED: Fri Mar 12 12:14:28 2021
 NAMESPACE: fleet-system
@@ -488,27 +488,27 @@ sources:
 version: 8.5.1
 </code></pre>
 <p>We added the <code>hypper.cattle.io/namespace: databases</code> to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:</p>
-<pre><code class="language-shell">$ hypper install mysql/                 
+<pre><code class="language-console">$ hypper install mysql/                 
 Installing chart &quot;mysql&quot; in namespace &quot;databases&quot;…
 Done! 👏 
 
 </code></pre>
 <p>See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the <code>Chart.yaml</code></p>
-<p>If we wanted to specify the release name in the annotations as well we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it! </p>
+<p>If we wanted to specify the release name in the annotations as well, we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it!</p>
 <h2><a class="header" href="#how-to-lint-a-hypper-chart" id="how-to-lint-a-hypper-chart">How to lint a hypper chart</a></h2>
 <p>We just created or modified our chart or added annotations to take advantage of Hypper features but...how do we know those annotations are correct?</p>
 <p>It's very simple, just run <code>hypper lint</code> against your chart, and it will verify that the chart is well-formed.</p>
 <p><code>hypper lint</code> runs both Helm checks and Hypper checks against the chart.</p>
 <p>If the linter encounters things that will cause the chart to fail installation, it will emit <code>[ERROR]</code> messages. If it encounters issues that break with convention or recommendation, it will emit <code>[WARNING]</code> messages.</p>
 <p>For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
 <p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several <code>[WARNING]</code>, recommending to set certain values that Hypper supports:</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
 ==&gt; Linting cmd/hypper/testdata/testcharts/vanilla-helm
 [INFO] Chart.yaml: icon is recommended
 [INFO] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
@@ -518,7 +518,7 @@ Done! 👏
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
 <p>Running against a shared-dependencies annotation that is malformed will emit an <code>[ERROR]</code>:</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
 ==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
 [INFO] Chart.yaml: icon is recommended
 [ERROR] Chart.yaml: Shared dependencies list is broken, please check the correct format
@@ -526,7 +526,7 @@ Done! 👏
 Error: 1 chart(s) linted, 1 chart(s) failed
 </code></pre>
 <p>Now if you were to set some kind of automated CI in place to check for linting and are required to have Hypper annotations as mandatory, you can run <code>hypper lint</code> with the <code>--strict</code> flag so all warnings are marked as errors.</p>
-<pre><code class="language-shell">$ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
+<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
 ==&gt; Linting cmd/hypper/testdata/testcharts/fallback-annot
 [INFO] Chart.yaml: icon is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
@@ -538,35 +538,162 @@ Error: 1 chart(s) linted, 1 chart(s) failed
 <h2><a class="header" href="#searching-for-charts-in-repos" id="searching-for-charts-in-repos">Searching for charts in repos</a></h2>
 <p>Search reads through all the repositories configured on the system, and looks for matches. Searching on these repositories uses the metadata stored on the system.</p>
 <p>It will display the latest stable versions of the charts found.</p>
-<pre><code class="language-shell">$ hypper search repo fleet
+<pre><code class="language-console">$ hypper search repo fleet
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
 hypper/fleet      	0.3.500      	0.3.5      	Fleet Manager - GitOps at Scale        
 hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale  
 hypper/fleet-crd  	0.3.500      	0.3.5      	Fleet Manager CustomResourceDefinitions
 </code></pre>
 <p>By default, it will only show the latest version that match the keyword used. In order to see all versions you can use the <code>-l</code> flag.</p>
-<pre><code class="language-shell">$ hypper search repo fleet-agent -l
+<pre><code class="language-console">$ hypper search repo fleet-agent -l
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                          
 hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale
 hypper/fleet-agent	0.1.500      	0.1.5      	Fleet Manager Agent - GitOps at Scale
 </code></pre>
 <p>You can also search for a specific chart version by using the <code>--version VERSION</code> flag..</p>
 <p>Note that VERSION needs to be a valid SemVer version.</p>
-<pre><code class="language-shell">$ hypper search repo fleet-agent --version 0.1.500
+<pre><code class="language-console">$ hypper search repo fleet-agent --version 0.1.500
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                          
 hypper/fleet-agent	0.1.500      	0.1.5      	Fleet Manager Agent - GitOps at Scale
 </code></pre>
 <p>It's also possible to pass the <code>--regexp</code> flag to use regexp in the search.</p>
-<pre><code class="language-shell">$ hypper search repo &quot;fleet-&quot; --regexp
+<pre><code class="language-console">$ hypper search repo &quot;fleet-&quot; --regexp
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
 hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale  
 hypper/fleet-crd  	0.3.500      	0.3.5      	Fleet Manager CustomResourceDefinitions
 </code></pre>
 <p>If you want to search for development charts (only stable charts are shown by default), use the <code>--devel</code> flag to show those development charts.</p>
-<pre><code class="language-shell">$ hypper search repo fleet-agent --devel
+<pre><code class="language-console">$ hypper search repo fleet-agent --devel
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
 hypper/fleet-agent	0.3.500-rc2      	0.3.5-rc2      	Fleet Manager Agent - GitOps at Scale
 </code></pre>
+<h1><a class="header" href="#working-with-shared-dependencies" id="working-with-shared-dependencies">Working with shared dependencies</a></h1>
+<p>Hypper charts support the concept of shared dependency charts.</p>
+<p>A chart declared as a shared dependency is a chart that more than one chart may
+depend on; once deployed, it can be reused by multiple other deployments. Charts
+deployed as shared dependencies are the analogous of system libraries in an OS:
+dependencies that are used by several consumers.</p>
+<h2><a class="header" href="#creating-a-hypper-chart-with-shared-dependencies" id="creating-a-hypper-chart-with-shared-dependencies">Creating a Hypper chart with shared dependencies</a></h2>
+<p>Let's create the simplest chart possible, and add charts as shared dependencies
+to it.</p>
+<p>First, we create a simple empty chart:</p>
+<pre><code class="language-console">$ helm create our-app
+</code></pre>
+<p>Now, we can edit <code>./our-app/Chart.yaml</code>, and add some shared dependencies to it:</p>
+<pre><code class="language-diff">apiVersion: v2
+name: our-app
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+annotations:
++ hypper.cattle.io/shared-dependencies: |
++   - name: postgresql
++     version: &quot;~8.9.4&quot;
++     repository: &quot;https://charts.bitnami.com/bitnami&quot;
++   - name: prometheus
++     version: &quot;~13.7.0&quot;
++     repository: &quot;https://prometheus-community.github.io/helm-charts&quot;
+</code></pre>
+<p>Shared dependencies are just normal Helm
+<a href="https://helm.sh/docs/topics/charts/#chart-dependencies">Dependencies</a>. As
+such, they are defined with:</p>
+<ul>
+<li>The name field is the name of the chart you want.</li>
+<li>The version field is the version of the chart you want.</li>
+<li>The repository field is the full URL to the chart repository. Note that you
+must also use <code>hypper repo add</code> to add that repo locally. You might use the
+name of the repo instead of URL.</li>
+</ul>
+<p>We can also add a default release name and namespace, where our-app and its
+shared-dependencies will get installed:</p>
+<pre><code class="language-diff">apiVersion: v2
+name: our-app
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+annotations:
++ hypper.cattle.io/namespace: hypper
++ hypper.cattle.io/release-name: our-app-name
+  hypper.cattle.io/shared-dependencies: |
+    - name: postgresql
+      version: &quot;~8.9.4&quot;
+      repository: &quot;https://charts.bitnami.com/bitnami&quot;
+    - name: prometheus
+      version: &quot;~13.7.0&quot;
+      repository: &quot;https://prometheus-community.github.io/helm-charts&quot;
+</code></pre>
+<p>To verify that we did create the correctly, let's lint it:</p>
+<pre><code class="language-console">$ hypper lint ./our-app
+==&gt; Linting our-app
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+</code></pre>
+<h2><a class="header" href="#listing-shared-dependencies" id="listing-shared-dependencies">Listing shared dependencies</a></h2>
+<p>Hypper's <code>shared-dep list</code> command will list the shared dependencies, its status, and other information:</p>
+<pre><code>$ hypper shared-deps list ./our-app
+NAME            VERSION REPOSITORY                                              STATUS
+postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
+prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      not-installed
+</code></pre>
+<h2><a class="header" href="#deploying-shared-dependencies" id="deploying-shared-dependencies">Deploying shared dependencies</a></h2>
+<p>First, add the repos of the shared dependencies, so they are found:</p>
+<pre><code class="language-console">$ hypper repo add bitnami 'https://charts.bitnami.com/bitnami'
+&quot;bitnami&quot; has been added to your repositories
+$ hypper repo add prometheus-community 'https://prometheus-community.github.io/helm-charts'
+&quot;prometheus-community&quot; has been added to your repositories
+$ hypper repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the &quot;stable&quot; chart repository
+...Successfully got an update from the &quot;bitnami&quot; chart repository
+...Successfully got an update from the &quot;prometheus-community&quot; chart repository
+🛳  Update Complete.
+</code></pre>
+<p>Now, let's pretend that we had <code>prometheus</code> already installed, so let's install
+it by hand:</p>
+<pre><code>$ hypper install prometheus-community/prometheus -n hypper --create-namespace
+Installing chart &quot;prometheus&quot; in namespace &quot;hypper&quot;…
+Done! 👏
+</code></pre>
+<p>That satisfies one shared dependency of <code>our-app</code>:</p>
+<pre><code class="language-console">$ hypper shared-deps list ./our-app
+NAME            VERSION REPOSITORY                                              STATUS
+postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
+prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      deployed
+</code></pre>
+<p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies:</p>
+<pre><code class="language-console">$ hypper install ./our-app --create-namespace
+Installing chart &quot;postgresql&quot; in namespace &quot;hypper&quot;…
+Shared dependency prometheus already installed, not doing anything
+Installing chart &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
+Done! 👏
+</code></pre>
+<p>What has happened?</p>
+<ol>
+<li>Hypper has made sure that all declared shared dependencies of <code>our-app</code> are
+satisfied, installing those that are missing. Since the chart of the shared
+dependency didn't have annotations for default namespace, it will install
+them on the dependent namespace.</li>
+<li>Since we haven't specified the release name or namespace in the command,
+Hypper has installed <code>our-app</code> in the default release-name (<code>our-app-name</code>)
+and namespace (<code>hypper</code>) we specified in the Hypper annotations.</li>
+</ol>
+<p>Let's see:</p>
+<pre><code class="language-console">$ hypper shared-deps list ./our-app
+NAME            VERSION REPOSITORY                                              STATUS
+postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      deployed
+prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      deployed
+$ hypper list -n hypper
+NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                   APP VERSION
+our-app-name    hypper          1               2021-04-15 17:21:32.697798439 +0200 CEST        deployed        our-app-0.1.0           1.16.0
+postgresql      hypper          1               2021-04-15 17:21:31.992593877 +0200 CEST        deployed        postgresql-10.3.17      11.11.0
+prometheus      hypper          1               2021-04-15 17:03:49.917821217 +0200 CEST        deployed        prometheus-13.7.0       2.26.0
+</code></pre>
+<p>Yay! they are all installed.</p>
+<p>If you want, you can always install <code>our-app</code> without the shared-dependencies, by
+passing the flag <code>--no-shared-deps</code>.</p>
 <h1><a class="header" href="#reference-guides" id="reference-guides">Reference guides</a></h1>
 <p>You can find Golang reference guides in
 <a href="https://pkg.go.dev/github.com/rancher-sandbox/hypper">pkg.go.dev/github.com/rancher-sandbox/hypper</a>,
