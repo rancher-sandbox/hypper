@@ -17,6 +17,7 @@ limitations under the License.
 package action
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -63,15 +64,20 @@ func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
 // Run executes the installation
 //
 // If DryRun is set to true, this will prepare the release, but not install it
-func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
+// lvl is used for printing nested stagered output on recursion. Starts at 0.
+func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	if !i.NoSharedDeps {
-		if err := i.InstallAllSharedDeps(chrt, settings, logger); err != nil {
+		if err := i.InstallAllSharedDeps(chrt, settings, logger, lvl); err != nil {
 			return nil, err
 		}
 	}
 
-	log.Infof("Installing chart \"%s\" in namespace \"%s\"…", i.ReleaseName, i.Namespace)
+	prefix := ""
+	if lvl > 0 {
+		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
+	}
+	logger.Infof("%sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace)
 	helmInstall := i.Install
 	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
 	return rel, err
@@ -117,17 +123,18 @@ func CheckIfInstallable(ch *chart.Chart) error {
 //
 // It will check for malformed chart.Metadata.Annotations, and skip those shared
 // dependencies already deployed.
-func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSettings, logger log.Logger) error {
+// lvl is used for printing nested stagered output on recursion. Starts at 0.
+func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
 
 	if _, ok := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]; !ok {
-		logger.Debugf("No shared dependencies in %s\n", chrt.Name())
+		logger.Debugf("%sNo shared dependencies in chart \"%s\"\n", strings.Repeat("  ", lvl), chrt.Name())
 		return nil
 	}
-
+	logger.Infof("%sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name())
 	depYaml := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
 	var deps dependencies
 	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
-		logger.Errorf("Chart.yaml metadata is malformed for chart %s\n", chrt.Name())
+		logger.Errorf("Chart.yaml metadata is malformed for chart \"%s\"\n", chrt.Name())
 		return err
 	}
 
@@ -138,17 +145,24 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		return err
 	}
 
+	// increment padding of output
+	lvl++
+	prefix := ""
+	if lvl > 0 {
+		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
+	}
+
 	for _, dep := range deps {
 		found := false
 		for _, r := range releases {
 			if r.Name == dep.Name {
-				logger.Infof("Shared dependency %s already installed, not doing anything\n", dep.Name)
+				logger.Infof("%sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name)
 				found = true
 				break // installed, don't keep looking
 			}
 		}
 		if !found {
-			if _, err = i.InstallSharedDep(dep, settings, logger); err != nil {
+			if _, err = i.InstallSharedDep(dep, settings, logger, lvl); err != nil {
 				return err
 			}
 		}
@@ -160,7 +174,8 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 //
 // It does this by creating a new action.Install and setting it correctly,
 // loading the chart, checking for constraints, and delegating the install.Run()
-func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
+// lvl is used for printing nested stagered output on recursion. Starts at 0.
+func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
@@ -209,7 +224,7 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 	}
 
 	if chartRequested.Metadata.Deprecated {
-		logger.Warn("This chart is deprecated")
+		logger.Warnf("Chart \"$s\" is deprecated", chartRequested.Name())
 	}
 
 	// Check chart dependencies to make sure all are present in /charts
@@ -242,7 +257,7 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 		}
 	}
 
-	res, err := clientInstall.Run(chartRequested, vals, settings, logger)
+	res, err := clientInstall.Run(chartRequested, vals, settings, logger, lvl)
 	if err != nil {
 		return res, err
 	}

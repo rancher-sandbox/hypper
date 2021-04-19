@@ -164,5 +164,5 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	return client.Run(chartRequested, vals, settings, logger)
+	return client.Run(chartRequested, vals, settings, logger, 0)
 }

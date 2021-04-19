@@ -1,2 +1,2 @@
-Installing chart "fleet" in namespace "fleet-system"…
+Installing chart "empty" as "fleet" in namespace "fleet-system"…
 Done! 👏 

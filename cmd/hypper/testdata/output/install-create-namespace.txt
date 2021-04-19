@@ -1,2 +1,2 @@
-Installing chart "purple" in namespace "deep"…
+Installing chart "empty" as "purple" in namespace "deep"…
 Done! 👏 

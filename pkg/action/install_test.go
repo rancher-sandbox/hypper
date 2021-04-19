@@ -112,7 +112,7 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			}
 		}
 
-		err := instAction.InstallAllSharedDeps(tcase.chart, settings, log.Current)
+		err := instAction.InstallAllSharedDeps(tcase.chart, settings, log.Current, 0)
 
 		if (err != nil) != tcase.wantError {
 			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
@@ -151,7 +151,7 @@ func TestInstallSharedDep(t *testing.T) {
 		Repository: "",
 		Version:    "0.1.0",
 	}
-	res, err := instAction.InstallSharedDep(dep, settings, log.Current)
+	res, err := instAction.InstallSharedDep(dep, settings, log.Current, 0)
 	instAction.DryRun = false
 	if err != nil {
 		t.Fatalf("Failed install: %s", err)
@@ -164,7 +164,7 @@ func TestInstallSharedDep(t *testing.T) {
 		Repository: "",
 		Version:    "0.1.0",
 	}
-	res, err = instAction.InstallSharedDep(dep, settings, log.Current)
+	res, err = instAction.InstallSharedDep(dep, settings, log.Current, 0)
 	if err != nil {
 		t.Fatalf("Failed install: %s", err)
 	}
@@ -178,7 +178,7 @@ func TestInstallSharedDep(t *testing.T) {
 		Repository: "",
 		Version:    "0.1.0",
 	}
-	_, err = instAction.InstallSharedDep(dep, settings, log.Current)
+	_, err = instAction.InstallSharedDep(dep, settings, log.Current, 0)
 	if err == nil {
 		t.Fatal(err)
 	}
