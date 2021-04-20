@@ -174,6 +174,22 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 	return nil
 }
 
+func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*chart.Chart, error) {
+	i.ChartPathOptions.RepoURL = dep.Repository
+	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Debugf("CHART PATH: %s\n", cp)
+
+	chartRequested, err := loader.Load(cp)
+	if err != nil {
+		return nil, err
+	}
+	return chartRequested, nil
+}
+
 // InstallSharedDep installs a chart.Dependency using the provided settings.
 //
 // It does this by creating a new action.Install and setting it correctly,
@@ -192,21 +208,13 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 		return nil, err
 	}
 
-	clientInstall.ChartPathOptions.RepoURL = dep.Repository
-	cp, err := clientInstall.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	chartRequested, err := clientInstall.LoadChartFromDep(dep, settings, logger)
 	if err != nil {
 		return nil, err
 	}
-
-	logger.Debugf("CHART PATH: %s\n", cp)
 
 	p := getter.All(settings.EnvSettings)
 	vals := make(map[string]interface{}) // TODO calculate vals instead of {}
-
-	chartRequested, err := loader.Load(cp)
-	if err != nil {
-		return nil, err
-	}
 
 	logger.Debugf("Original shared-dep chart version: %q", chartRequested.Metadata.Version)
 	if clientInstall.Devel {
@@ -230,6 +238,16 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 	if chartRequested.Metadata.Deprecated {
 		logger.Warnf("Chart \"$s\" is deprecated", chartRequested.Name())
 	}
+
+	// re-obtain the cp again, for Metadata.Dependencies
+	// FIXME deduplicate
+	i.ChartPathOptions.RepoURL = dep.Repository
+	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Debugf("CHART PATH: %s\n", cp)
 
 	// Check chart dependencies to make sure all are present in /charts
 	if req := chartRequested.Metadata.Dependencies; req != nil {
