@@ -143,13 +143,6 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		return err
 	}
 
-	clientList := NewList(i.Config)
-	clientList.SetStateMask()
-	releases, err := clientList.Run()
-	if err != nil {
-		return err
-	}
-
 	// increment padding of output
 	lvl++
 	prefix := ""
@@ -167,6 +160,15 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		ns := GetNamespace(depChart, GetNamespace(chrt, settings.Namespace()))
 
 		name, err := GetName(depChart, "")
+		if err != nil {
+			return err
+		}
+
+		// obtain the releases for the specific ns that we are searching into
+		i.Config.SetNamespace(ns)
+		clientList := NewList(i.Config)
+		clientList.SetStateMask()
+		releases, err := clientList.Run()
 		if err != nil {
 			return err
 		}
