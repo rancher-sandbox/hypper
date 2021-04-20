@@ -217,7 +217,7 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:
-	SetNamespace(clientInstall, chartRequested, i.Namespace, true)
+	SetNamespace(clientInstall, chartRequested, i.Namespace, false)
 	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, dep.Name)
 	if err != nil {
 		return nil, err
