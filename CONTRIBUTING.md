@@ -7,7 +7,7 @@ signed. Your signature certifies that you wrote the patch or otherwise have the 
 the material. The rules are pretty simple, if you can certify the below (from
 [developercertificate.org](https://developercertificate.org/)):
 
-```
+```txt
 Developer Certificate of Origin
 Version 1.1
 
@@ -48,7 +48,9 @@ By making a contribution to this project, I certify that:
 
 Then you just add a line to every git commit message:
 
-    Signed-off-by: Joe Smith <joe.smith@example.com>
+```terminal
+Signed-off-by: Joe Smith <joe.smith@example.com>
+```
 
 Use your real name (sorry, no pseudonyms or anonymous contributions.)
 
@@ -58,7 +60,7 @@ with `git commit -s`.
 Note: If your git config information is set properly then viewing the `git log` information for your
  commit will look something like this:
 
-```
+```terminal
 Author: Joe Smith <joe.smith@example.com>
 Date:   Thu Feb 2 11:41:15 2018 -0800
 
@@ -68,3 +70,18 @@ Date:   Thu Feb 2 11:41:15 2018 -0800
 ```
 
 Notice the `Author` and `Signed-off-by` lines match.
+
+## Consistent output
+
+We aim for a good user experience so we want to have a consistent cli-output. When creating output aim for the clean style we have been using for the existing cli-outputs and place emoticons at the beginning of the line. We are also using emoticons as *"eye-candy"*, please refer to the following table to style the cli-output of your contribution.
+
+|event|suitable emoticons   |shortcode|example|
+|:-----|:------------------|:-----|:-----|
+|action failed|`❌`|`:x:`|`❌ Failed to install the chart.`|
+|action in progress|`🧰 🛳️`|`:toolbox: :cruise_ship:`|`🛳️ Chart is installing`|
+|action successful|`🥳👏✅`|`:partying_face: :clap: :white_check_mark`|`✅ Chart has been installed`|
+|informational output|`ℹ️`|`:info:`|`ℹ️ The chart is already installed on the cluster, skipping.`|
+|removing stuff|`🔥`|`:fire:`|`🔥 Uninstalling chart...`
+|running a query|`🔍`|`:mag:`|`🔍 Searching for charts` |
+
+**Note:** Emoticons must not be entered as UTF-8 glyphs into the code, we are using the kyokomis emoji library which can be found under [https://github.com/kyokomi/emoji](https://github.com/kyokomi/emoji). All glyphs must be encoded as ASCII-strings. All full list of available emojis can be found [here](https://github.com/kyokomi/emoji/blob/master/emoji_codemap.go).
