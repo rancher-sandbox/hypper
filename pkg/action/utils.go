@@ -64,7 +64,7 @@ func SetNamespace(x interface{}, chart *chart.Chart, targetNS string, setDefault
 	}
 }
 
-// Name returns the name that should be used based of annotations
+// GetName returns the name that should be used based of annotations
 func GetName(chart *chart.Chart, nameTemplate string, args ...string) (string, error) {
 	// args here could be: [NAME] [CHART]
 	// cobra flags have been already stripped
