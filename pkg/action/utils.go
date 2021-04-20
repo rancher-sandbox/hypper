@@ -100,3 +100,17 @@ func GetName(chart *chart.Chart, nameTemplate string, args ...string) (string, e
 
 	return chart.Name(), nil
 }
+
+// GetNamespace returns the namespace that should be used based of annotations, or the passed
+// default namespace
+func GetNamespace(chart *chart.Chart, defaultNS string) string {
+	if chart.Metadata.Annotations != nil {
+		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/namespace"]; ok {
+			return val
+		}
+		if val, ok := chart.Metadata.Annotations["catalog.cattle.io/namespace"]; ok {
+			return val
+		}
+	}
+	return defaultNS
+}
