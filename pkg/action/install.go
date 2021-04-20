@@ -83,6 +83,7 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *
 	}
 	logger.Infof("%sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace)
 	helmInstall := i.Install
+	i.Config.SetNamespace(i.Namespace)
 	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
 	return rel, err
 }
@@ -142,13 +143,6 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		return err
 	}
 
-	clientList := NewList(i.Config)
-	clientList.SetStateMask()
-	releases, err := clientList.Run()
-	if err != nil {
-		return err
-	}
-
 	// increment padding of output
 	lvl++
 	prefix := ""
@@ -158,8 +152,29 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 
 	for _, dep := range deps {
 		found := false
+		depChart, err := i.LoadChartFromDep(dep, settings, logger)
+		if err != nil {
+			return err
+		}
+		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
+		ns := GetNamespace(depChart, GetNamespace(chrt, settings.Namespace()))
+
+		name, err := GetName(depChart, "")
+		if err != nil {
+			return err
+		}
+
+		// obtain the releases for the specific ns that we are searching into
+		i.Config.SetNamespace(ns)
+		clientList := NewList(i.Config)
+		clientList.SetStateMask()
+		releases, err := clientList.Run()
+		if err != nil {
+			return err
+		}
+
 		for _, r := range releases {
-			if r.Name == dep.Name {
+			if r.Name == name && r.Namespace == ns {
 				logger.Infof("%sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name)
 				found = true
 				break // installed, don't keep looking
@@ -172,6 +187,22 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		}
 	}
 	return nil
+}
+
+func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*chart.Chart, error) {
+	i.ChartPathOptions.RepoURL = dep.Repository
+	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Debugf("CHART PATH: %s\n", cp)
+
+	chartRequested, err := loader.Load(cp)
+	if err != nil {
+		return nil, err
+	}
+	return chartRequested, nil
 }
 
 // InstallSharedDep installs a chart.Dependency using the provided settings.
@@ -192,21 +223,13 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 		return nil, err
 	}
 
-	clientInstall.ChartPathOptions.RepoURL = dep.Repository
-	cp, err := clientInstall.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	chartRequested, err := clientInstall.LoadChartFromDep(dep, settings, logger)
 	if err != nil {
 		return nil, err
 	}
-
-	logger.Debugf("CHART PATH: %s\n", cp)
 
 	p := getter.All(settings.EnvSettings)
 	vals := make(map[string]interface{}) // TODO calculate vals instead of {}
-
-	chartRequested, err := loader.Load(cp)
-	if err != nil {
-		return nil, err
-	}
 
 	logger.Debugf("Original shared-dep chart version: %q", chartRequested.Metadata.Version)
 	if clientInstall.Devel {
@@ -230,6 +253,16 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 	if chartRequested.Metadata.Deprecated {
 		logger.Warnf("Chart \"$s\" is deprecated", chartRequested.Name())
 	}
+
+	// re-obtain the cp again, for Metadata.Dependencies
+	// FIXME deduplicate
+	i.ChartPathOptions.RepoURL = dep.Repository
+	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Debugf("CHART PATH: %s\n", cp)
 
 	// Check chart dependencies to make sure all are present in /charts
 	if req := chartRequested.Metadata.Dependencies; req != nil {
