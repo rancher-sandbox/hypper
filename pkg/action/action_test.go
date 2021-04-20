@@ -124,7 +124,7 @@ func withSharedDeps() chartOption {
 		if opts.Chart.Metadata.Annotations == nil {
 			opts.Chart.Metadata.Annotations = make(map[string]string)
 		}
-		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"testdata/charts/vanilla-helm\"" + "\n" +
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"testdata/charts/shared-dep\"" + "\n" +
 			"    version: \"0.1.0\"" + "\n" +
 			"    repository: \"\"" + "\n"
 	}

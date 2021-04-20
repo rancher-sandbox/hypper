@@ -83,6 +83,7 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *
 	}
 	logger.Infof("%sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace)
 	helmInstall := i.Install
+	i.Config.SetNamespace(i.Namespace)
 	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
 	return rel, err
 }
@@ -158,8 +159,20 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 
 	for _, dep := range deps {
 		found := false
+		depChart, err := i.LoadChartFromDep(dep, settings, logger)
+		if err != nil {
+			return err
+		}
+		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
+		ns := GetNamespace(depChart, GetNamespace(chrt, settings.Namespace()))
+
+		name, err := GetName(depChart, "")
+		if err != nil {
+			return err
+		}
+
 		for _, r := range releases {
-			if r.Name == dep.Name {
+			if r.Name == name && r.Namespace == ns {
 				logger.Infof("%sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name)
 				found = true
 				break // installed, don't keep looking

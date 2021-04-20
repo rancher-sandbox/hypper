@@ -118,7 +118,7 @@ func TestInstallAllSharedDeps(t *testing.T) {
 		if tcase.addRelStub {
 			now := time.Now()
 			rel := &release.Release{
-				Name: "testdata/charts/vanilla-helm",
+				Name: "my-shared-dep",
 				Info: &release.Info{
 					FirstDeployed: now,
 					LastDeployed:  now,
@@ -126,8 +126,9 @@ func TestInstallAllSharedDeps(t *testing.T) {
 					Description:   "Named Release Stub",
 				},
 				Version:   1,
-				Namespace: "spaced",
+				Namespace: "my-shared-dep-ns",
 			}
+			instAction.Config.SetNamespace("spaced")
 			err := instAction.Config.Releases.Create(rel)
 			if err != nil {
 				t.Fatalf("Failed creating rel stub: %s", err)
