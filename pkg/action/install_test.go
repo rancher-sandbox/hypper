@@ -194,6 +194,20 @@ func TestInstallSharedDep(t *testing.T) {
 	is.Equal(res.Namespace, "spaced", "Expected parent ns.")
 	is.Equal(res.Info.Status.String(), "deployed", "Expected status of the installed dependency.")
 
+	// install dependency correctly, following its own annotations
+	dep = &chart.Dependency{
+		Name:       "testdata/charts/shared-dep",
+		Repository: "",
+		Version:    "0.1.0",
+	}
+	res, err = instAction.InstallSharedDep(dep, settings, log.Current, 0)
+	if err != nil {
+		t.Fatalf("Failed install: %s", err)
+	}
+	is.Equal(res.Name, "my-shared-dep", "Expected release name from dependency.")
+	is.Equal(res.Namespace, "my-shared-dep-ns", "Expected shared-dep ns.")
+	is.Equal(res.Info.Status.String(), "deployed", "Expected status of the installed dependency.")
+
 	// install non-existent dependency
 	dep = &chart.Dependency{
 		Name:       "nonexistent-chart",

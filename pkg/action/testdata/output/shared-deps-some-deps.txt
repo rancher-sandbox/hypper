@@ -1,2 +1,2 @@
-NAME        	VERSION	REPOSITORY                  	STATUS       
-vanilla-helm	0.1.0  	file://testdata/vanilla-helm	not-installed
+NAME      	VERSION	REPOSITORY                	STATUS       
+shared-dep	0.1.0  	file://testdata/shared-dep	not-installed
