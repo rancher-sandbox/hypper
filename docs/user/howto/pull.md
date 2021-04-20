@@ -8,7 +8,7 @@ For that you can use `hypper pull`, which will download the chart to your local 
 ## Pulling a chart
 
 ```shell
-$ hypper pull hypper/fleet
+$ hypper pull hypper-charts/fleet
 $ ls fleet*
 fleet-0.3.500.tgz
 ```
@@ -18,7 +18,7 @@ fleet-0.3.500.tgz
 Usually, pull will download the tar.gz chart package, but you can use `--untar` so instead the package is extracted automatically.
 
 ```shell
-$ hypper pull hypper/fleet --untar
+$ hypper pull hypper-charts/fleet --untar
 $ ls fleet/     
 charts  Chart.yaml  templates  values.yaml
 ```
@@ -28,9 +28,9 @@ charts  Chart.yaml  templates  values.yaml
 Pull will automatically download the latest chart version, but you can use `--version` to get the specified version instead.
 
 ```shell
-$ hypper pull hypper/fleet --version 0.3.400
+$ hypper pull hypper-charts/fleet --version 0.3.500
 $ ls fleet*
-fleet-0.3.400.tgz
+fleet-0.3.500.tgz
 ```
 
 ## Changing the output dir
@@ -40,7 +40,7 @@ By default, pull will download the chart into the current dir. Use the `-d` flag
 Note: The output dir needs to exist beforehand.
 
 ```shell
-$ hypper pull hypper/fleet -d chartslocal
+$ hypper pull hypper-charts/fleet -d chartslocal
 $ ls chartslocal 
 fleet-0.3.500.tgz
 ```
@@ -50,7 +50,8 @@ fleet-0.3.500.tgz
 You can use the `--devel` flag to pull devel versions. By default, hypper won't download, search or list devel version unless specified by the flag.
 
 ```shell
-$ hypper pull hypper/fleet --version 0.3.600-rc1 --devel
+$ hypper repo add rancher-charts https://charts.rancher.io
+$ hypper pull rancher-charts/fleet --version 0.3.600-rc1 --devel
 $ ls fleet*
 fleet-0.3.600-rc1.tgz
 ```
