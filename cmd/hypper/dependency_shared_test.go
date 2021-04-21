@@ -38,29 +38,35 @@ func TestSharedDependencyListCmd(t *testing.T) {
 
 	noSharedDependenciesInstalled := cmdTestCase{
 		name:   "No Shared dependencies installed",
-		cmd:    "shared-deps list testdata/testcharts/hypper-annot",
+		cmd:    "shared-deps list testdata/testcharts/shared-deps",
 		golden: "output/shared-deps-list-not-installed.txt",
 	}
 
 	sharedDependenciesInstalled := cmdTestCase{
 		name:   "Shared dependencies installed in correct ns",
-		cmd:    "shared-deps list testdata/testcharts/hypper-annot",
+		cmd:    "shared-deps list testdata/testcharts/shared-deps",
 		golden: "output/shared-deps-list-installed.txt",
-		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "prometheus", Namespace: "hypper"})},
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "my-shared-dep", Namespace: "my-shared-dep-ns"})},
 	}
 
 	sharedDependenciesInstalledDiffNS := cmdTestCase{
-		name:   "Shared dependencies installed in different ns",
-		cmd:    "shared-deps list testdata/testcharts/hypper-annot",
+		name:   "Shared dependencies installed in different ns, and not finding them",
+		cmd:    "shared-deps list testdata/testcharts/shared-deps",
 		golden: "output/shared-deps-list-installed-diff-ns.txt",
-		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "prometheus", Namespace: "other-place"})},
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "my-shared-dep", Namespace: "other-ns"})},
 	}
 
 	sharedDependenciesInstalledDiffNSFlag := cmdTestCase{
 		name:   "Shared dependencies installed in different ns, passing -n flag to find them",
-		cmd:    "shared-deps list testdata/testcharts/hypper-annot -n other-place",
+		cmd:    "shared-deps list testdata/testcharts/shared-deps -n my-shared-dep-ns",
 		golden: "output/shared-deps-list-installed-diff-ns-found.txt",
-		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "prometheus", Namespace: "other-place"})},
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "my-shared-dep", Namespace: "my-shared-dep-ns"})},
+	}
+	sharedDependenciesInstalledDiffNSFlagNotFound := cmdTestCase{
+		name:   "Shared dependencies installed in different ns, passing -n flag with incorrect ns and not finding them",
+		cmd:    "shared-deps list testdata/testcharts/shared-deps -n my-shared-dep-ns",
+		golden: "output/shared-deps-list-installed-diff-ns-not-found.txt",
+		rels:   []*release.Release{release.Mock(&release.MockReleaseOptions{Name: "my-shared-dep", Namespace: "other-ns"})},
 	}
 
 	if runtime.GOOS == "windows" {
@@ -74,6 +80,7 @@ func TestSharedDependencyListCmd(t *testing.T) {
 		sharedDependenciesInstalled,
 		sharedDependenciesInstalledDiffNS,
 		sharedDependenciesInstalledDiffNSFlag,
+		sharedDependenciesInstalledDiffNSFlagNotFound,
 	}
 	runTestCmd(t, tests)
 }
