@@ -123,9 +123,8 @@ That satisfies one shared dependency of `our-app`:
 
 ```console
 $ hypper shared-deps list ./our-app -n fleet-system
-NAME            VERSION         REPOSITORY                                              STATUS
-fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed
-rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
+NAME    VERSION         REPOSITORY                                              STATUS          NAMESPACE
+fleet   ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
 ```
 
 Then, we can install `our-app`, and any of its missing shared dependencies:
@@ -151,6 +150,10 @@ What has happened?
 Let's see:
 
 ```console
+$ ./bin/hypper shared-deps list ./our-app
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    deployed        istio-system
 $ hypper list -A
 NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                          APP VERSION
 fleet           fleet-system    1               2021-04-20 17:58:34.645015498 +0200 CEST        deployed        fleet-0.3.500                  0.3.5
