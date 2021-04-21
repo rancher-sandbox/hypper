@@ -46,9 +46,9 @@ will also be contained in provenance files.
 ```yaml
 annotations:
   hypper.cattle.io/shared: |
-    - name: prometheus
-      version: 13.3.1
-      repository: https://prometheus-community.github.io/helm-charts
+    - name: fleet
+      version: "^0.3.500"
+      repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
 ```
 
 Helm annotations are key/value pairs where the value is a string. In this case

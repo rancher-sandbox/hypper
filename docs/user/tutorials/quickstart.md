@@ -31,7 +31,7 @@ You can add several repositories. Let's add a repository containing charts
 with some Hypper functionality:
 
 ```console
-$ hypper repo add rancher-charts https://charts.rancher.io
+$ hypper repo add hypper-charts https://rancher-sandbox.github.io/hypper-charts/repo
 ```
 
 Now, you can list the repositories that Hypper can install charts from:
@@ -40,7 +40,7 @@ Now, you can list the repositories that Hypper can install charts from:
 $ hypper repo list
 NAME            URL
 bitnami         https://charts.bitnami.com/bitnami
-rancher-charts  https://charts.rancher.io
+hypper-charts   https://rancher-sandbox.github.io/hypper-charts/repo
 ```
 
 ## Install an example Helm chart
@@ -70,7 +70,7 @@ all users of the cluster. Think of them as typical system OS libraries/services.
 The commands are the same as you have already used:
 
 ```console
-$ hypper install rancher-charts/fleet --create-namespace
+$ hypper install hypper-charts/fleet --create-namespace
 Installing chart "fleet" as "fleet" in namespace "fleet-system"…
 Done! 👏
 ```
