@@ -37,36 +37,18 @@ type SharedDependency struct {
 	*action.Dependency
 
 	// hypper specific:
-	Namespace string
-	Config    *Configuration
+	Config *Configuration
 }
 
 // NewSharedDependency creates a new SharedDependency object with the given configuration.
 func NewSharedDependency(cfg *Configuration) *SharedDependency {
 	return &SharedDependency{
 		action.NewDependency(),
-		"", //namespace, to be filled when we have the chart
 		cfg,
 	}
 }
 
 type dependencies []*chart.Dependency
-
-// SetNamespace sets the Namespace that should be used in action.SharedDependency
-//
-// This will read the chart annotations. If no annotations, it leave the existing ns in the action.
-func (d *SharedDependency) SetNamespace(chart *chart.Chart, defaultns string) {
-	d.Namespace = defaultns
-	if chart.Metadata.Annotations != nil {
-		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/namespace"]; ok {
-			d.Namespace = val
-		} else {
-			if val, ok := chart.Metadata.Annotations["catalog.cattle.io/namespace"]; ok {
-				d.Namespace = val
-			}
-		}
-	}
-}
 
 // List executes 'hypper shared-dep list'.
 func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, logger log.Logger) error {
@@ -95,11 +77,9 @@ func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, log
 	return d.printSharedDependencies(chartpath, logger, deps, settings)
 }
 
-// SharedDependencyStatus returns a string describing the status of a dependency viz a viz the releases in context.
-func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, settings *cli.EnvSettings) (string, error) {
-
-	// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
-	depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+// SharedDependencyStatus returns a string describing the status of a dependency
+// viz a viz the releases in depNS context.
+func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS string) (string, error) {
 
 	// TODO refactor GetName() into GetName(){ret error} and GetNameFromAnnot()
 	depName, err := GetName(depChart, "")
@@ -150,21 +130,14 @@ func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.
 
 		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
 		depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+		d.Config.SetNamespace(depNS)
 
-		if settings.NamespaceFromFlag {
-			d.Namespace = settings.Namespace()
-		} else {
-			// look for releases in the specific ns that we are searching into
-			d.Config.SetNamespace(depNS)
-		}
-		d.Config.SetNamespace(d.Namespace)
-
-		if settings.NamespaceFromFlag && d.Namespace != depNS {
-			// skip listing this dep, it's not in the same name as the flag
+		if settings.NamespaceFromFlag && settings.Namespace() != depNS {
+			// skip listing this dep, it's not in the same namespace as the flag
 			continue
 		}
 
-		depStatus, err := d.SharedDependencyStatus(depChart, settings)
+		depStatus, err := d.SharedDependencyStatus(depChart, depNS)
 		if err != nil {
 			return err
 		}
