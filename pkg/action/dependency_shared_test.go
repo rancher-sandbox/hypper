@@ -54,7 +54,7 @@ func TestSharedDepsList(t *testing.T) {
 			wantError: true,
 		},
 		{
-			chart:  "testdata/charts/hypper-annot",
+			chart:  "testdata/charts/shared-deps",
 			golden: "output/shared-deps-some-deps.txt",
 		},
 	} {
