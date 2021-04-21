@@ -1,0 +1,10 @@
+apiVersion: v1
+description: Empty shared-dep chart
+home: https://helm.sh/helm
+name: shared-dep-empty
+sources:
+  - https://github.com/rancher-sandbox/hypper
+version: 0.1.0
+annotations:
+  hypper.cattle.io/namespace: my-shared-dep-ns
+  hypper.cattle.io/release-name: my-shared-dep
