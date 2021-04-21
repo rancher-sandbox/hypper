@@ -18,7 +18,6 @@ package action
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
@@ -29,8 +28,6 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
-
-	"helm.sh/helm/v3/pkg/release"
 )
 
 // SharedDependency is the action for building a given chart's shared dependency tree.
@@ -74,7 +71,6 @@ func (d *SharedDependency) SetNamespace(chart *chart.Chart, defaultns string) {
 // List executes 'hypper shared-dep list'.
 func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, logger log.Logger) error {
 
-	wInfo := logio.NewWriter(logger, log.InfoLevel)
 	wWarn := logio.NewWriter(logger, log.WarnLevel)
 	wError := logio.NewWriter(logger, log.ErrorLevel)
 
@@ -96,49 +92,84 @@ func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, log
 		return err
 	}
 
-	if settings.NamespaceFromFlag {
-		d.Namespace = settings.Namespace()
-	} else {
-		d.SetNamespace(c, settings.Namespace())
-	}
-	d.Config.SetNamespace(d.Namespace)
-
-	clientList := action.NewList(d.Config.Configuration)
-
-	clientList.SetStateMask()
-
-	releases, err := clientList.Run()
-	if err != nil {
-		return err
-	}
-
-	d.printSharedDependencies(chartpath, wInfo, deps, releases)
-	return nil
+	return d.printSharedDependencies(chartpath, logger, deps, settings)
 }
 
 // SharedDependencyStatus returns a string describing the status of a dependency viz a viz the releases in context.
-func (d *SharedDependency) SharedDependencyStatus(dep *chart.Dependency, releases []*release.Release) string {
-	// For now, this is all we can check:
-	// Releases don't contain semver or repository info,
-	// checking RBAC to compare ns and error is not possible, as deps don't
-	// record ns and use the dependee namespace. So either we see them installed, or we don't.
-	for _, v := range releases {
-		if v.Name == dep.Name && v.Namespace == d.Namespace {
-			return v.Info.Status.String()
+func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, settings *cli.EnvSettings) (string, error) {
+
+	// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
+	depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+
+	// TODO refactor GetName() into GetName(){ret error} and GetNameFromAnnot()
+	depName, err := GetName(depChart, "")
+	if err != nil {
+		return "", err
+	}
+
+	clientList := NewList(d.Config)
+	clientList.SetStateMask()
+	releases, err := clientList.Run()
+	if err != nil {
+		return "", err
+	}
+
+	for _, r := range releases {
+		// For now, this is all we can check:
+		// Releases don't contain semver or repository info,
+		// checking RBAC to compare ns and error is not possible, as deps don't
+		// record ns and use the dependee namespace. So either we see them installed, or we don't.
+		if r.Name == depName && r.Namespace == depNS {
+			return r.Info.Status.String(), nil
 		}
 	}
 
-	return "not-installed"
+	return "not-installed", nil
 }
 
 // printSharedDependencies prints all of the shared dependencies in the yaml file.
-func (d *SharedDependency) printSharedDependencies(chartpath string, out io.Writer, deps dependencies, releases []*release.Release) {
+// It will respect settings.NamespaceFromFlag when iterating through releases.
+func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.Logger, deps dependencies, settings *cli.EnvSettings) error {
 
 	table := uitable.New()
 	table.MaxColWidth = 80
-	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS")
-	for _, v := range deps {
-		table.AddRow(v.Name, v.Version, v.Repository, d.SharedDependencyStatus(v, releases))
+	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS", "NAMESPACE")
+	for _, dep := range deps {
+		chartPathOptions := action.ChartPathOptions{}
+		chartPathOptions.RepoURL = dep.Repository
+		cp, err := chartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+		if err != nil {
+			return err
+		}
+		logger.Debugf("CHART PATH: %s\n", cp)
+
+		depChart, err := loader.Load(cp)
+		if err != nil {
+			return err
+		}
+
+		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
+		depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+
+		if settings.NamespaceFromFlag {
+			d.Namespace = settings.Namespace()
+		} else {
+			// look for releases in the specific ns that we are searching into
+			d.Config.SetNamespace(depNS)
+		}
+		d.Config.SetNamespace(d.Namespace)
+
+		if settings.NamespaceFromFlag && d.Namespace != depNS {
+			// skip listing this dep, it's not in the same name as the flag
+			continue
+		}
+
+		depStatus, err := d.SharedDependencyStatus(depChart, settings)
+		if err != nil {
+			return err
+		}
+		table.AddRow(depChart.Name(), dep.Version, dep.Repository, depStatus, depNS)
 	}
-	fmt.Fprintln(out, table)
+	log.Infof(table.String())
+	return nil
 }

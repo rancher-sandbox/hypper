@@ -21,18 +21,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/rancher-sandbox/hypper/internal/test"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
+	"helm.sh/helm/v3/pkg/chart"
+	rspb "helm.sh/helm/v3/pkg/release"
 )
 
 func newSharedDepFixture(t *testing.T, ns string) *SharedDependency {
 	sd := NewSharedDependency(actionConfigFixture(t))
 	sd.Namespace = ns
+	sd.Config.SetNamespace(ns)
 	return sd
 }
 
@@ -104,8 +106,6 @@ func TestSharedDepsSetNamespace(t *testing.T) {
 }
 
 func TestSharedDependencyStatus(t *testing.T) {
-	is := assert.New(t)
-
 	mk := func(name string, vers int, status release.Status, namespace string) *release.Release {
 		return release.Mock(&release.MockReleaseOptions{
 			Name:      name,
@@ -115,58 +115,49 @@ func TestSharedDependencyStatus(t *testing.T) {
 		})
 	}
 
-	// installed dep
-	sharedDepAction := newSharedDepFixture(t, "hypper")
-	dep := chart.Dependency{
-		Name:       "mariadb",
-		Version:    "10.5.9",
-		Repository: "https://another.example.com/charts",
+	releasesFixture := []*release.Release{
+		mk("my-hypper-name", 3, release.StatusDeployed, "hypper"),
+		mk("musketeers", 10, release.StatusPendingInstall, "hypper"),
+		mk("dartagnan", 9, release.StatusSuperseded, "default"),
 	}
-	releases := []*release.Release{
-		mk("mariadb", 3, release.StatusDeployed, "hypper"),
-		mk("musketeers", 10, release.StatusSuperseded, "default"),
-		mk("musketeers", 9, release.StatusSuperseded, "default"),
-	}
-	is.Equal("deployed", sharedDepAction.SharedDependencyStatus(&dep, releases))
 
-	// print status of release matching dep
-	sharedDepAction = newSharedDepFixture(t, "hypper")
-	dep = chart.Dependency{
-		Name:       "mariadb",
-		Version:    "10.5.9",
-		Repository: "https://another.example.com/charts",
-	}
-	releases = []*release.Release{
-		mk("mariadb", 3, release.StatusPendingInstall, "hypper"),
-	}
-	is.Equal("pending-install", sharedDepAction.SharedDependencyStatus(&dep, releases))
+	for _, tcase := range []struct {
+		name      string
+		chart     *chart.Chart
+		output    string
+		wantError bool
+		error     string
+		releases  []*rspb.Release
+	}{
+		{
+			name:     "shared dep is installed and found",
+			chart:    buildChart(withHypperAnnotations()),
+			output:   "deployed",
+			releases: releasesFixture,
+		},
+		{
+			name:     "shared dep not installed",
+			chart:    buildChart(withHypperAnnotValues("cow", "other-ns")),
+			output:   "not-installed",
+			releases: releasesFixture,
+		},
+		{
+			name:     "shared dep without hypper annot, uses default ns",
+			chart:    buildChart(withName("dartagnan")),
+			output:   "superseeded",
+			releases: releasesFixture,
+		},
+	} {
+		is := assert.New(t)
+		settings := cli.New()
+		sharedDepAction := newSharedDepFixture(t, "hypper")
 
-	// not installed, but on the same ns
-	sharedDepAction = newSharedDepFixture(t, "hypper")
-	dep = chart.Dependency{
-		Name:       "mariadb",
-		Version:    "10.5.9",
-		Repository: "https://another.example.com/charts",
+		depStatus, err := sharedDepAction.SharedDependencyStatus(tcase.chart, settings)
+		if (err != nil) != tcase.wantError {
+			t.Errorf("expected error, got '%v'", err)
+		}
+		if tcase.output != "" {
+			is.Equal(tcase.output, depStatus)
+		}
 	}
-	releases = []*release.Release{
-		mk("musketeers", 11, release.StatusDeployed, "hypper"),
-		mk("musketeers", 10, release.StatusSuperseded, "hypper"),
-		mk("carabins", 1, release.StatusSuperseded, "hypper"),
-	}
-	is.Equal("not-installed", sharedDepAction.SharedDependencyStatus(&dep, releases))
-
-	// installed, but in a different namespace
-	sharedDepAction = newSharedDepFixture(t, "other-ns")
-	dep = chart.Dependency{
-		Name:       "mariadb",
-		Version:    "10.5.9",
-		Repository: "https://another.example.com/charts",
-	}
-	releases = []*release.Release{
-		mk("mariadb", 11, release.StatusDeployed, "hypper"),
-		mk("musketeers", 10, release.StatusSuperseded, "hypper"),
-		mk("carabins", 1, release.StatusSuperseded, "hypper"),
-	}
-	is.Equal("not-installed", sharedDepAction.SharedDependencyStatus(&dep, releases))
-
 }
