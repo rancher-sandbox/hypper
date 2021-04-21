@@ -23,6 +23,7 @@ import (
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/gosuri/uitable"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"gopkg.in/yaml.v2"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -71,7 +72,7 @@ func (d *SharedDependency) SetNamespace(chart *chart.Chart, defaultns string) {
 }
 
 // List executes 'hypper shared-dep list'.
-func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
+func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, logger log.Logger) error {
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 	wWarn := logio.NewWriter(logger, log.WarnLevel)
@@ -79,7 +80,6 @@ func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
 
 	c, err := loader.Load(chartpath)
 	if err != nil {
-		fmt.Fprintf(wWarn, "Failed to load chart in %s\n", chartpath)
 		return err
 	}
 
@@ -95,6 +95,13 @@ func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
 		fmt.Fprintf(wError, "Chart.yaml metadata is malformed for chart %s\n", chartpath)
 		return err
 	}
+
+	if settings.NamespaceFromFlag {
+		d.Namespace = settings.Namespace()
+	} else {
+		d.SetNamespace(c, settings.Namespace())
+	}
+	d.Config.SetNamespace(d.Namespace)
 
 	clientList := action.NewList(d.Config.Configuration)
 

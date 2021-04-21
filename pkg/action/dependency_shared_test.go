@@ -27,6 +27,7 @@ import (
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/rancher-sandbox/hypper/internal/test"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
 )
 
 func newSharedDepFixture(t *testing.T, ns string) *SharedDependency {
@@ -67,8 +68,10 @@ func TestSharedDepsList(t *testing.T) {
 		logger.ErrorOut = buf
 		log.Current = logger
 
+		settings := cli.New()
+
 		sharedDepAction := newSharedDepFixture(t, "hypper")
-		err := sharedDepAction.List(tcase.chart, log.Current)
+		err := sharedDepAction.List(tcase.chart, settings, log.Current)
 		if (err != nil) != tcase.wantError {
 			t.Errorf("expected error, got '%v'", err)
 		}

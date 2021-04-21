@@ -23,7 +23,6 @@ import (
 
 	"github.com/rancher-sandbox/hypper/pkg/action"
 	"helm.sh/helm/v3/cmd/helm/require"
-	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 const sharedDependencyDesc = `
@@ -116,18 +115,5 @@ func runList(args []string, client *action.SharedDependency, logger log.Logger) 
 		chartpath = filepath.Clean(args[0])
 	}
 
-	c, err := loader.Load(chartpath)
-	if err != nil {
-		return err
-	}
-
-	if settings.NamespaceFromFlag {
-		client.Namespace = settings.Namespace()
-	} else {
-		client.SetNamespace(c, settings.Namespace())
-	}
-
-	client.Config.SetNamespace(client.Namespace)
-
-	return client.List(chartpath, logger)
+	return client.List(chartpath, settings, logger)
 }
