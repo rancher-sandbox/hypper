@@ -31,12 +31,12 @@ Shared dependencies also happen via annotation.
 ```yaml
 annotations:
   hypper.cattle.io/shared-dependencies: |
-    - name: postgresql
-      version: "~8.9.4"
-      repository: "https://charts.bitnami.com/bitnami"
-    - name: prometheus
-      version: "~13.7.0"
-      repository: "https://prometheus-community.github.io/helm-charts"
+    - name: fleet
+      version: "^0.3.500"
+      repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
+    - name: rancher-tracing
+      version: "^1.20.002"
+      repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
 ```
 
 Notice that the value is a multi-line string (noted by the `|` after the `:`). Hypper parses the value as YAML. The other information looks similar to Helms existing dependencies, which Hypper supports. Shared dependencies are handled differently. Instead of being installed along with the charts resources they are installed as separate charts before this chart is installed. These charts are installed as their own releases with their own lifecycles.
