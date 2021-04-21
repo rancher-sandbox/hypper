@@ -18,18 +18,16 @@ package action
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/gosuri/uitable"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"gopkg.in/yaml.v2"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
-
-	"helm.sh/helm/v3/pkg/release"
 )
 
 // SharedDependency is the action for building a given chart's shared dependency tree.
@@ -39,47 +37,27 @@ type SharedDependency struct {
 	*action.Dependency
 
 	// hypper specific:
-	Namespace string
-	Config    *Configuration
+	Config *Configuration
 }
 
 // NewSharedDependency creates a new SharedDependency object with the given configuration.
 func NewSharedDependency(cfg *Configuration) *SharedDependency {
 	return &SharedDependency{
 		action.NewDependency(),
-		"", //namespace, to be filled when we have the chart
 		cfg,
 	}
 }
 
 type dependencies []*chart.Dependency
 
-// SetNamespace sets the Namespace that should be used in action.SharedDependency
-//
-// This will read the chart annotations. If no annotations, it leave the existing ns in the action.
-func (d *SharedDependency) SetNamespace(chart *chart.Chart, defaultns string) {
-	d.Namespace = defaultns
-	if chart.Metadata.Annotations != nil {
-		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/namespace"]; ok {
-			d.Namespace = val
-		} else {
-			if val, ok := chart.Metadata.Annotations["catalog.cattle.io/namespace"]; ok {
-				d.Namespace = val
-			}
-		}
-	}
-}
-
 // List executes 'hypper shared-dep list'.
-func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
+func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, logger log.Logger) error {
 
-	wInfo := logio.NewWriter(logger, log.InfoLevel)
 	wWarn := logio.NewWriter(logger, log.WarnLevel)
 	wError := logio.NewWriter(logger, log.ErrorLevel)
 
 	c, err := loader.Load(chartpath)
 	if err != nil {
-		fmt.Fprintf(wWarn, "Failed to load chart in %s\n", chartpath)
 		return err
 	}
 
@@ -96,42 +74,75 @@ func (d *SharedDependency) List(chartpath string, logger log.Logger) error {
 		return err
 	}
 
-	clientList := action.NewList(d.Config.Configuration)
-
-	clientList.SetStateMask()
-
-	releases, err := clientList.Run()
-	if err != nil {
-		return err
-	}
-
-	d.printSharedDependencies(chartpath, wInfo, deps, releases)
-	return nil
+	return d.printSharedDependencies(chartpath, logger, deps, settings)
 }
 
-// SharedDependencyStatus returns a string describing the status of a dependency viz a viz the releases in context.
-func (d *SharedDependency) SharedDependencyStatus(dep *chart.Dependency, releases []*release.Release) string {
-	// For now, this is all we can check:
-	// Releases don't contain semver or repository info,
-	// checking RBAC to compare ns and error is not possible, as deps don't
-	// record ns and use the dependee namespace. So either we see them installed, or we don't.
-	for _, v := range releases {
-		if v.Name == dep.Name && v.Namespace == d.Namespace {
-			return v.Info.Status.String()
+// SharedDependencyStatus returns a string describing the status of a dependency
+// viz a viz the releases in depNS context.
+func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS string) (string, error) {
+
+	// TODO refactor GetName() into GetName(){ret error} and GetNameFromAnnot()
+	depName, err := GetName(depChart, "")
+	if err != nil {
+		return "", err
+	}
+
+	clientList := NewList(d.Config)
+	clientList.SetStateMask()
+	releases, err := clientList.Run()
+	if err != nil {
+		return "", err
+	}
+
+	for _, r := range releases {
+		// For now, this is all we can check:
+		// Releases don't contain semver or repository info,
+		// checking RBAC to compare ns and error is not possible, as deps don't
+		// record ns and use the dependee namespace. So either we see them installed, or we don't.
+		if r.Name == depName && r.Namespace == depNS {
+			return r.Info.Status.String(), nil
 		}
 	}
 
-	return "not-installed"
+	return "not-installed", nil
 }
 
 // printSharedDependencies prints all of the shared dependencies in the yaml file.
-func (d *SharedDependency) printSharedDependencies(chartpath string, out io.Writer, deps dependencies, releases []*release.Release) {
+// It will respect settings.NamespaceFromFlag when iterating through releases.
+func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.Logger, deps dependencies, settings *cli.EnvSettings) error {
 
 	table := uitable.New()
 	table.MaxColWidth = 80
-	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS")
-	for _, v := range deps {
-		table.AddRow(v.Name, v.Version, v.Repository, d.SharedDependencyStatus(v, releases))
+	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS", "NAMESPACE")
+	for _, dep := range deps {
+		chartPathOptions := action.ChartPathOptions{}
+		chartPathOptions.RepoURL = dep.Repository
+		cp, err := chartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+		if err != nil {
+			return err
+		}
+		logger.Debugf("CHART PATH: %s\n", cp)
+
+		depChart, err := loader.Load(cp)
+		if err != nil {
+			return err
+		}
+
+		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
+		depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+		d.Config.SetNamespace(depNS)
+
+		if settings.NamespaceFromFlag && settings.Namespace() != depNS {
+			// skip listing this dep, it's not in the same namespace as the flag
+			continue
+		}
+
+		depStatus, err := d.SharedDependencyStatus(depChart, depNS)
+		if err != nil {
+			return err
+		}
+		table.AddRow(depChart.Name(), dep.Version, dep.Repository, depStatus, depNS)
 	}
-	fmt.Fprintln(out, table)
+	log.Infof(table.String())
+	return nil
 }

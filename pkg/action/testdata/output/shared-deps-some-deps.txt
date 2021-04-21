@@ -1,2 +1,2 @@
-NAME      	VERSION	REPOSITORY                	STATUS       
-shared-dep	0.1.0  	file://testdata/shared-dep	not-installed
+NAME            	VERSION	REPOSITORY	STATUS       	NAMESPACE       
+shared-dep-empty	0.1.0  	          	not-installed	my-shared-dep-ns
