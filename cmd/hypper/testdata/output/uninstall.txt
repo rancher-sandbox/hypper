@@ -1,2 +1,2 @@
 🔥  uninstalling aeneas
-🔥  release "aeneas" uninstalled
+✅  release "aeneas" uninstalled
