@@ -693,9 +693,8 @@ Done! 👏
 </code></pre>
 <p>That satisfies one shared dependency of <code>our-app</code>:</p>
 <pre><code class="language-console">$ hypper shared-deps list ./our-app -n fleet-system
-NAME            VERSION         REPOSITORY                                              STATUS
-fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed
-rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
+NAME    VERSION         REPOSITORY                                              STATUS          NAMESPACE
+fleet   ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
 </code></pre>
 <p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies:</p>
 <pre><code class="language-console">$ hypper install ./our-app --create-namespace
@@ -716,7 +715,11 @@ Hypper has installed <code>our-app</code> in the default release-name (<code>our
 and namespace (<code>hypper</code>) we specified in the Hypper annotations.</li>
 </ol>
 <p>Let's see:</p>
-<pre><code class="language-console">$ hypper list -A
+<pre><code class="language-console">$ ./bin/hypper shared-deps list ./our-app
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    deployed        istio-system
+$ hypper list -A
 NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                          APP VERSION
 fleet           fleet-system    1               2021-04-20 17:58:34.645015498 +0200 CEST        deployed        fleet-0.3.500                  0.3.5
 our-app-name    hypper          1               2021-04-20 17:59:34.466598447 +0200 CEST        deployed        our-app-0.0.1                  0.0.1
