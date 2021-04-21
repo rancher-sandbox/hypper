@@ -167,32 +167,33 @@
 <p>Sometimes there is a need to modify charts from a repo or just have a look at what the chart is actually doing.</p>
 <p>For that you can use <code>hypper pull</code>, which will download the chart to your local machine.</p>
 <h2><a class="header" href="#pulling-a-chart" id="pulling-a-chart">Pulling a chart</a></h2>
-<pre><code class="language-shell">$ hypper pull hypper/fleet
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet
 $ ls fleet*
 fleet-0.3.500.tgz
 </code></pre>
 <h2><a class="header" href="#pulling-a-chart-and-extracting-it" id="pulling-a-chart-and-extracting-it">Pulling a chart and extracting it</a></h2>
 <p>Usually, pull will download the tar.gz chart package, but you can use <code>--untar</code> so instead the package is extracted automatically.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet --untar
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet --untar
 $ ls fleet/     
 charts  Chart.yaml  templates  values.yaml
 </code></pre>
 <h2><a class="header" href="#pulling-a-specific-chart-version" id="pulling-a-specific-chart-version">Pulling a specific chart version</a></h2>
 <p>Pull will automatically download the latest chart version, but you can use <code>--version</code> to get the specified version instead.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet --version 0.3.400
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet --version 0.3.500
 $ ls fleet*
-fleet-0.3.400.tgz
+fleet-0.3.500.tgz
 </code></pre>
 <h2><a class="header" href="#changing-the-output-dir" id="changing-the-output-dir">Changing the output dir</a></h2>
 <p>By default, pull will download the chart into the current dir. Use the <code>-d</code> flag to set the output dir.</p>
 <p>Note: The output dir needs to exist beforehand.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet -d chartslocal
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet -d chartslocal
 $ ls chartslocal 
 fleet-0.3.500.tgz
 </code></pre>
 <h2><a class="header" href="#pulling-development-versions" id="pulling-development-versions">Pulling development versions</a></h2>
 <p>You can use the <code>--devel</code> flag to pull devel versions. By default, hypper won't download, search or list devel version unless specified by the flag.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet --version 0.3.600-rc1 --devel
+<pre><code class="language-shell">$ hypper repo add rancher-charts https://charts.rancher.io
+$ hypper pull rancher-charts/fleet --version 0.3.600-rc1 --devel
 $ ls fleet*
 fleet-0.3.600-rc1.tgz
 </code></pre>

@@ -361,13 +361,13 @@ example one with Helm charts:</p>
 </code></pre>
 <p>You can add several repositories. Let's add a repository containing charts
 with some Hypper functionality:</p>
-<pre><code class="language-console">$ hypper repo add rancher-charts https://charts.rancher.io
+<pre><code class="language-console">$ hypper repo add hypper-charts https://rancher-sandbox.github.io/hypper-charts/repo
 </code></pre>
 <p>Now, you can list the repositories that Hypper can install charts from:</p>
 <pre><code class="language-console">$ hypper repo list
 NAME            URL
 bitnami         https://charts.bitnami.com/bitnami
-rancher-charts  https://charts.rancher.io
+hypper-charts   https://rancher-sandbox.github.io/hypper-charts/repo
 </code></pre>
 <h2><a class="header" href="#install-an-example-helm-chart" id="install-an-example-helm-chart">Install an example Helm chart</a></h2>
 <p>To install a chart, you can run the <code>hypper install</code> command. Hypper has several
@@ -387,7 +387,7 @@ shared-dependency charts automatically.
 They are thought to be installed system-wide in the cluster: 1 Hypper chart for
 all users of the cluster. Think of them as typical system OS libraries/services.</p>
 <p>The commands are the same as you have already used:</p>
-<pre><code class="language-console">$ hypper install rancher-charts/fleet --create-namespace
+<pre><code class="language-console">$ hypper install hypper-charts/fleet --create-namespace
 Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
 Done! 👏
 </code></pre>
@@ -427,32 +427,33 @@ command followed by the <code>-h</code> flag: <code>hypper install -h</code>.</p
 <p>Sometimes there is a need to modify charts from a repo or just have a look at what the chart is actually doing.</p>
 <p>For that you can use <code>hypper pull</code>, which will download the chart to your local machine.</p>
 <h2><a class="header" href="#pulling-a-chart" id="pulling-a-chart">Pulling a chart</a></h2>
-<pre><code class="language-shell">$ hypper pull hypper/fleet
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet
 $ ls fleet*
 fleet-0.3.500.tgz
 </code></pre>
 <h2><a class="header" href="#pulling-a-chart-and-extracting-it" id="pulling-a-chart-and-extracting-it">Pulling a chart and extracting it</a></h2>
 <p>Usually, pull will download the tar.gz chart package, but you can use <code>--untar</code> so instead the package is extracted automatically.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet --untar
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet --untar
 $ ls fleet/     
 charts  Chart.yaml  templates  values.yaml
 </code></pre>
 <h2><a class="header" href="#pulling-a-specific-chart-version" id="pulling-a-specific-chart-version">Pulling a specific chart version</a></h2>
 <p>Pull will automatically download the latest chart version, but you can use <code>--version</code> to get the specified version instead.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet --version 0.3.400
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet --version 0.3.500
 $ ls fleet*
-fleet-0.3.400.tgz
+fleet-0.3.500.tgz
 </code></pre>
 <h2><a class="header" href="#changing-the-output-dir" id="changing-the-output-dir">Changing the output dir</a></h2>
 <p>By default, pull will download the chart into the current dir. Use the <code>-d</code> flag to set the output dir.</p>
 <p>Note: The output dir needs to exist beforehand.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet -d chartslocal
+<pre><code class="language-shell">$ hypper pull hypper-charts/fleet -d chartslocal
 $ ls chartslocal 
 fleet-0.3.500.tgz
 </code></pre>
 <h2><a class="header" href="#pulling-development-versions" id="pulling-development-versions">Pulling development versions</a></h2>
 <p>You can use the <code>--devel</code> flag to pull devel versions. By default, hypper won't download, search or list devel version unless specified by the flag.</p>
-<pre><code class="language-shell">$ hypper pull hypper/fleet --version 0.3.600-rc1 --devel
+<pre><code class="language-shell">$ hypper repo add rancher-charts https://charts.rancher.io
+$ hypper pull rancher-charts/fleet --version 0.3.600-rc1 --devel
 $ ls fleet*
 fleet-0.3.600-rc1.tgz
 </code></pre>
@@ -572,33 +573,32 @@ Error: 1 chart(s) linted, 1 chart(s) failed
 <p>Search reads through all the repositories configured on the system, and looks for matches. Searching on these repositories uses the metadata stored on the system.</p>
 <p>It will display the latest stable versions of the charts found.</p>
 <pre><code class="language-console">$ hypper search repo fleet
-NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
-hypper/fleet      	0.3.500      	0.3.5      	Fleet Manager - GitOps at Scale        
-hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale  
-hypper/fleet-crd  	0.3.500      	0.3.5      	Fleet Manager CustomResourceDefinitions
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+hypper-charts/fleet             0.3.500         0.3.5           Fleet Manager - GitOps at Scale
+hypper-charts/fleet-agent       0.3.500         0.3.5           Fleet Manager Agent - GitOps at Scale
+hypper-charts/fleet-crd         0.3.500         0.3.5           Fleet Manager CustomResourceDefinitions
 </code></pre>
 <p>By default, it will only show the latest version that match the keyword used. In order to see all versions you can use the <code>-l</code> flag.</p>
 <pre><code class="language-console">$ hypper search repo fleet-agent -l
-NAME              	CHART VERSION	APP VERSION	DESCRIPTION                          
-hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale
-hypper/fleet-agent	0.1.500      	0.1.5      	Fleet Manager Agent - GitOps at Scale
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+hypper-charts/fleet-agent       0.3.500         0.3.5           Fleet Manager Agent - GitOps at Scale
 </code></pre>
 <p>You can also search for a specific chart version by using the <code>--version VERSION</code> flag..</p>
 <p>Note that VERSION needs to be a valid SemVer version.</p>
-<pre><code class="language-console">$ hypper search repo fleet-agent --version 0.1.500
+<pre><code class="language-console">$ hypper search repo fleet-agent --version 0.3.500
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                          
-hypper/fleet-agent	0.1.500      	0.1.5      	Fleet Manager Agent - GitOps at Scale
+hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale
 </code></pre>
 <p>It's also possible to pass the <code>--regexp</code> flag to use regexp in the search.</p>
 <pre><code class="language-console">$ hypper search repo &quot;fleet-&quot; --regexp
-NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
-hypper/fleet-agent	0.3.500      	0.3.5      	Fleet Manager Agent - GitOps at Scale  
-hypper/fleet-crd  	0.3.500      	0.3.5      	Fleet Manager CustomResourceDefinitions
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+hypper-charts/fleet-agent       0.3.500         0.3.5           Fleet Manager Agent - GitOps at Scale
+hypper-charts/fleet-crd         0.3.500         0.3.5           Fleet Manager CustomResourceDefinitions
 </code></pre>
 <p>If you want to search for development charts (only stable charts are shown by default), use the <code>--devel</code> flag to show those development charts.</p>
 <pre><code class="language-console">$ hypper search repo fleet-agent --devel
-NAME              	CHART VERSION	APP VERSION	DESCRIPTION                            
-hypper/fleet-agent	0.3.500-rc2      	0.3.5-rc2      	Fleet Manager Agent - GitOps at Scale
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+hypper-charts/fleet-agent       0.3.500         0.3.5           Fleet Manager Agent - GitOps at Scale
 </code></pre>
 <h1><a class="header" href="#working-with-shared-dependencies" id="working-with-shared-dependencies">Working with shared dependencies</a></h1>
 <p>Hypper charts support the concept of shared dependency charts.</p>
@@ -621,12 +621,12 @@ version: 0.1.0
 appVersion: 1.16.0
 annotations:
 + hypper.cattle.io/shared-dependencies: |
-+   - name: postgresql
-+     version: &quot;~8.9.4&quot;
-+     repository: &quot;https://charts.bitnami.com/bitnami&quot;
-+   - name: prometheus
-+     version: &quot;~13.7.0&quot;
-+     repository: &quot;https://prometheus-community.github.io/helm-charts&quot;
++   - name: fleet
++     version: &quot;^0.3.500&quot;
++     repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
++   - name: rancher-tracing
++     version: &quot;^1.20.002&quot;
++     repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
 </code></pre>
 <p>Shared dependencies are just normal Helm
 <a href="https://helm.sh/docs/topics/charts/#chart-dependencies">Dependencies</a>. As
@@ -650,12 +650,12 @@ annotations:
 + hypper.cattle.io/namespace: hypper
 + hypper.cattle.io/release-name: our-app-name
   hypper.cattle.io/shared-dependencies: |
-    - name: postgresql
-      version: &quot;~8.9.4&quot;
-      repository: &quot;https://charts.bitnami.com/bitnami&quot;
-    - name: prometheus
-      version: &quot;~13.7.0&quot;
-      repository: &quot;https://prometheus-community.github.io/helm-charts&quot;
+    - name: fleet
+      version: &quot;^0.3.500&quot;
+      repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
+    - name: rancher-tracing
+      version: &quot;^1.20.002&quot;
+      repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
 </code></pre>
 <p>To verify that we did create the correctly, let's lint it:</p>
 <pre><code class="language-console">$ hypper lint ./our-app
@@ -667,40 +667,41 @@ annotations:
 <h2><a class="header" href="#listing-shared-dependencies" id="listing-shared-dependencies">Listing shared dependencies</a></h2>
 <p>Hypper's <code>shared-dep list</code> command will list the shared dependencies, its status, and other information:</p>
 <pre><code class="language-console">$ hypper shared-deps list ./our-app
-NAME            VERSION REPOSITORY                                              STATUS
-postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
-prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      not-installed
+NAME            VERSION         REPOSITORY                                              STATUS
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
 </code></pre>
 <h2><a class="header" href="#deploying-shared-dependencies" id="deploying-shared-dependencies">Deploying shared dependencies</a></h2>
-<p>First, add the repos of the shared dependencies, so they are found:</p>
-<pre><code class="language-console">$ hypper repo add bitnami 'https://charts.bitnami.com/bitnami'
-&quot;bitnami&quot; has been added to your repositories
-$ hypper repo add prometheus-community 'https://prometheus-community.github.io/helm-charts'
-&quot;prometheus-community&quot; has been added to your repositories
+<p>Now, let's pretend that we had <code>fleet</code> already installed, so let's install
+it by hand.</p>
+<p>First, add the repos of the <code>fleet</code> shared dependency, so they are found when
+installing manually.</p>
+<p>Note that, when hypper installs the shared dependency on its own, you don't need
+to add the repos.</p>
+<pre><code class="language-console">$ hypper repo add hypper-charts 'https://rancher-sandbox.github.io/hypper-charts/repo'
+&quot;hypper-charts&quot; has been added to your repositories
 $ hypper repo update
 Hang tight while we grab the latest from your chart repositories...
 ...Successfully got an update from the &quot;stable&quot; chart repository
-...Successfully got an update from the &quot;bitnami&quot; chart repository
-...Successfully got an update from the &quot;prometheus-community&quot; chart repository
+...Successfully got an update from the &quot;hypper-charts&quot; chart repository
 🛳  Update Complete.
 </code></pre>
-<p>Now, let's pretend that we had <code>prometheus</code> already installed, so let's install
-it by hand:</p>
-<pre><code class="language-console">$ hypper install prometheus-community/prometheus -n hypper --create-namespace
-Installing chart &quot;prometheus&quot; as &quot;prometheus&quot; in namespace &quot;hypper&quot;…
+<p>Now we install <code>fleet</code>:</p>
+<pre><code class="language-console">$ hypper install hypper-charts/fleet -n fleet-system --create-namespace
+Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
 Done! 👏
 </code></pre>
 <p>That satisfies one shared dependency of <code>our-app</code>:</p>
-<pre><code class="language-console">$ hypper shared-deps list ./our-app
-NAME            VERSION REPOSITORY                                              STATUS
-postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      not-installed
-prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      deployed
+<pre><code class="language-console">$ hypper shared-deps list ./our-app -n fleet-system
+NAME            VERSION         REPOSITORY                                              STATUS
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
 </code></pre>
 <p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies:</p>
 <pre><code class="language-console">$ hypper install ./our-app --create-namespace
 Installing shared dependencies for chart &quot;our-app&quot;:
-- Installing chart &quot;postgresql&quot; as &quot;postgresql&quot; in namespace &quot;hypper&quot;…
-- Shared dependency chart &quot;prometheus&quot; already installed, skipping
+- Shared dependency chart &quot;fleet&quot; already installed, skipping
+- Installing chart &quot;rancher-tracing&quot; as &quot;rancher-tracing&quot; in namespace &quot;istio-system&quot;…
 Installing chart &quot;our-app&quot; as &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
 Done! 👏
 </code></pre>
@@ -715,15 +716,11 @@ Hypper has installed <code>our-app</code> in the default release-name (<code>our
 and namespace (<code>hypper</code>) we specified in the Hypper annotations.</li>
 </ol>
 <p>Let's see:</p>
-<pre><code class="language-console">$ hypper shared-deps list ./our-app
-NAME            VERSION REPOSITORY                                              STATUS
-postgresql      ~8.9.4  https://charts.bitnami.com/bitnami                      deployed
-prometheus      ~13.7.0 https://prometheus-community.github.io/helm-charts      deployed
-$ hypper list -n hypper
-NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                   APP VERSION
-our-app-name    hypper          1               2021-04-15 17:21:32.697798439 +0200 CEST        deployed        our-app-0.1.0           1.16.0
-postgresql      hypper          1               2021-04-15 17:21:31.992593877 +0200 CEST        deployed        postgresql-10.3.17      11.11.0
-prometheus      hypper          1               2021-04-15 17:03:49.917821217 +0200 CEST        deployed        prometheus-13.7.0       2.26.0
+<pre><code class="language-console">$ hypper list -A
+NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                          APP VERSION
+fleet           fleet-system    1               2021-04-20 17:58:34.645015498 +0200 CEST        deployed        fleet-0.3.500                  0.3.5
+our-app-name    hypper          1               2021-04-20 17:59:34.466598447 +0200 CEST        deployed        our-app-0.0.1                  0.0.1
+rancher-tracing istio-system    1               2021-04-20 17:59:33.574983538 +0200 CEST        deployed        rancher-tracing-1.20.002       1.20.0
 </code></pre>
 <p>Yay! they are all installed.</p>
 <p>If you want, you can always install <code>our-app</code> without the shared-dependencies, by

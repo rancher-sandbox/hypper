@@ -184,13 +184,13 @@ example one with Helm charts:</p>
 </code></pre>
 <p>You can add several repositories. Let's add a repository containing charts
 with some Hypper functionality:</p>
-<pre><code class="language-console">$ hypper repo add rancher-charts https://charts.rancher.io
+<pre><code class="language-console">$ hypper repo add hypper-charts https://rancher-sandbox.github.io/hypper-charts/repo
 </code></pre>
 <p>Now, you can list the repositories that Hypper can install charts from:</p>
 <pre><code class="language-console">$ hypper repo list
 NAME            URL
 bitnami         https://charts.bitnami.com/bitnami
-rancher-charts  https://charts.rancher.io
+hypper-charts   https://rancher-sandbox.github.io/hypper-charts/repo
 </code></pre>
 <h2><a class="header" href="#install-an-example-helm-chart" id="install-an-example-helm-chart">Install an example Helm chart</a></h2>
 <p>To install a chart, you can run the <code>hypper install</code> command. Hypper has several
@@ -210,7 +210,7 @@ shared-dependency charts automatically.
 They are thought to be installed system-wide in the cluster: 1 Hypper chart for
 all users of the cluster. Think of them as typical system OS libraries/services.</p>
 <p>The commands are the same as you have already used:</p>
-<pre><code class="language-console">$ hypper install rancher-charts/fleet --create-namespace
+<pre><code class="language-console">$ hypper install hypper-charts/fleet --create-namespace
 Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
 Done! 👏
 </code></pre>
