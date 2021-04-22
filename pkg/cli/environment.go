@@ -24,7 +24,9 @@ package cli
 
 import (
 	"fmt"
+	"github.com/Masterminds/log-go"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -41,11 +43,8 @@ const defaultMaxHistory = 10
 // EnvSettings is a composite type of helm.pkg.env.EnvSettings.
 // describes all of the environment settings.
 type EnvSettings struct {
+	EnvSettings *cli.EnvSettings
 
-	// we use Helm's for all exported fields
-	*cli.EnvSettings
-
-	// unexported Helm's cli.EnvSettings fields are here:
 	namespace string
 	config    *genericclioptions.ConfigFlags
 
@@ -87,8 +86,6 @@ type EnvSettings struct {
 func New() *EnvSettings {
 	// TODO check with reflection that we are not missing any field
 	env := &EnvSettings{
-		EnvSettings: nil, // this is nil it gets overwritten below to ensure that it does not touch Helm's stuff
-
 		namespace:        os.Getenv("HYPPER_NAMESPACE"),
 		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
 		KubeContext:      os.Getenv("HYPPER_KUBECONTEXT"),
@@ -107,6 +104,10 @@ func New() *EnvSettings {
 		NoEmojis: false,
 	}
 
+	if err := env.checkCorrectHelmSettings(); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 	os.Setenv("HELM_NAMESPACE", env.namespace) // WHY???
 
 	// Create default helm settings and propagate our default hypper values
@@ -171,6 +172,22 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.RepositoryConfig, "repository-config", s.RepositoryConfig, "path to the file containing repository names and URLs")
 	fs.StringVar(&s.RepositoryCache, "repository-cache", s.RepositoryCache, "path to the file containing cached repository indexes")
 
+}
+
+// checkCorrectHelmSettings checks that we have the same fields in our hypper settings as
+// there are in the helm settings. If we are missing something we return an error
+func (s *EnvSettings) checkCorrectHelmSettings() error {
+	helmSettings := reflect.TypeOf(cli.EnvSettings{})
+	helmNumFields := helmSettings.NumField()
+	hypperSettings := reflect.TypeOf(EnvSettings{EnvSettings: nil})
+	for i := 0; i < helmNumFields; i++ {
+		field := helmSettings.Field(i)
+		_, found := hypperSettings.FieldByName(field.Name)
+		if !found {
+			return fmt.Errorf("field %v from Helm cli.Settings not found in our settings", field.Name)
+		}
+	}
+	return nil
 }
 
 func envOr(name, def string) string {
@@ -244,4 +261,9 @@ func (s *EnvSettings) Namespace() string {
 		return ns
 	}
 	return "default"
+}
+
+// RESTClientGetter gets the kubeconfig from EnvSettings
+func (s *EnvSettings) RESTClientGetter() genericclioptions.RESTClientGetter {
+	return s.config
 }
