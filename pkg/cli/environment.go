@@ -179,7 +179,7 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 func (s *EnvSettings) checkCorrectHelmSettings() error {
 	helmSettings := reflect.TypeOf(cli.EnvSettings{})
 	helmNumFields := helmSettings.NumField()
-	hypperSettings := reflect.TypeOf(EnvSettings{EnvSettings: nil})
+	hypperSettings := reflect.TypeOf(EnvSettings{})
 	for i := 0; i < helmNumFields; i++ {
 		field := helmSettings.Field(i)
 		_, found := hypperSettings.FieldByName(field.Name)
