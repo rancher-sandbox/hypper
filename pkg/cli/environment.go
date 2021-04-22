@@ -39,8 +39,10 @@ import (
 // defaultMaxHistory sets the maximum number of releases to 0: unlimited
 const defaultMaxHistory = 10
 
-// EnvSettings is a composite type of helm.pkg.env.EnvSettings.
-// describes all of the environment settings.
+// EnvSettings describes all of the environment settings.
+// It contains a pointer to Helm settings for functions that need that exact type
+// We overwrite all of the helm settings values with our own on New so it contains the same
+// config settings
 type EnvSettings struct {
 	EnvSettings *cli.EnvSettings
 
