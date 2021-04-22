@@ -24,7 +24,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/Masterminds/log-go"
 	"os"
 	"reflect"
 	"strconv"
@@ -104,10 +103,6 @@ func New() *EnvSettings {
 		NoEmojis: false,
 	}
 
-	if err := env.checkCorrectHelmSettings(); err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
 	os.Setenv("HELM_NAMESPACE", env.namespace) // WHY???
 
 	// Create default helm settings and propagate our default hypper values

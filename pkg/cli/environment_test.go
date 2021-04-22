@@ -113,6 +113,13 @@ func TestEnvSettings(t *testing.T) {
 	}
 }
 
+func TestHelmFields(t *testing.T) {
+	env := EnvSettings{}
+	if err := env.checkCorrectHelmSettings(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func resetEnv() func() {
 	origEnv := os.Environ()
 
