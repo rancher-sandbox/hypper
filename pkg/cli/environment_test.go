@@ -132,7 +132,7 @@ func TestHelmFields(t *testing.T) {
 	// Composite type of helm EnvSettings plus an extra field
 	type FakeSettings struct {
 		*cli.EnvSettings
-		missingField string
+		missingField string //nolint
 	}
 
 	helmSettings = reflect.TypeOf(FakeSettings{})
