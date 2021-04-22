@@ -25,7 +25,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -169,22 +168,6 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.RepositoryConfig, "repository-config", s.RepositoryConfig, "path to the file containing repository names and URLs")
 	fs.StringVar(&s.RepositoryCache, "repository-cache", s.RepositoryCache, "path to the file containing cached repository indexes")
 
-}
-
-// checkCorrectHelmSettings checks that we have the same fields in our hypper settings as
-// there are in the helm settings. If we are missing something we return an error
-func (s *EnvSettings) checkCorrectHelmSettings() error {
-	helmSettings := reflect.TypeOf(cli.EnvSettings{})
-	helmNumFields := helmSettings.NumField()
-	hypperSettings := reflect.TypeOf(EnvSettings{})
-	for i := 0; i < helmNumFields; i++ {
-		field := helmSettings.Field(i)
-		_, found := hypperSettings.FieldByName(field.Name)
-		if !found {
-			return fmt.Errorf("field %v from Helm cli.Settings not found in our settings", field.Name)
-		}
-	}
-	return nil
 }
 
 func envOr(name, def string) string {
