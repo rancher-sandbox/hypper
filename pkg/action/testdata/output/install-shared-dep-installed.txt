@@ -1,2 +1,2 @@
-Installing shared dependencies for chart "hello":
-- Shared dependency chart "testdata/charts/shared-dep" already installed, skipping
+🛳  Installing shared dependencies for chart "hello":
+ℹ️  - Shared dependency chart "testdata/charts/shared-dep" already installed, skipping

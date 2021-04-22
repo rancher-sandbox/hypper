@@ -26,6 +26,7 @@ import (
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/jinzhu/copier"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
+	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -81,7 +82,7 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *
 	if lvl > 0 {
 		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
 	}
-	logger.Infof("%sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace)
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship:: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
 	helmInstall := i.Install
 	i.Config.SetNamespace(i.Namespace)
 	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
@@ -135,7 +136,7 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		logger.Debugf("%sNo shared dependencies in chart \"%s\"\n", strings.Repeat("  ", lvl), chrt.Name())
 		return nil
 	}
-	logger.Infof("%sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name())
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name()))
 	depYaml := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
 	var deps dependencies
 	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
@@ -175,7 +176,7 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 
 		for _, r := range releases {
 			if r.Name == name && r.Namespace == ns {
-				logger.Infof("%sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name)
+				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name))
 				found = true
 				break // installed, don't keep looking
 			}

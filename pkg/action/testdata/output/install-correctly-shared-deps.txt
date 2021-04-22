@@ -1,2 +1,2 @@
-Installing shared dependencies for chart "hello":
-- Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…
+🛳  Installing shared dependencies for chart "hello":
+🛳 : - Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…

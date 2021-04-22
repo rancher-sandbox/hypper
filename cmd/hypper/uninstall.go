@@ -48,7 +48,7 @@ func newUninstallCmd(actionConfig *action.Configuration, logger log.Logger) *cob
 				if res != nil && res.Info != "" {
 					logger.Info(res.Info)
 				}
-				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":fire: release \"%s\" uninstalled", args[i]))
+				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":white_check_mark: release \"%s\" uninstalled", args[i]))
 			}
 			return nil
 		},

@@ -123,7 +123,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 				if _, err := histClient.Run(client.ReleaseName); err == driver.ErrReleaseNotFound {
 					// Only print this to stdout for table output
 					if outfmt == output.Table {
-						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q does not exist. Installing it now. :toolbox:\n", client.ReleaseName))
+						logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":toolbox: Release %q does not exist. Installing it now.\n", client.ReleaseName))
 					}
 					instClient := action.NewInstall(cfg)
 					// Set namespace for the install client
@@ -174,7 +174,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 			}
 
 			if outfmt == output.Table {
-				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, "Release %q has been upgraded :partying_face:", client.ReleaseName))
+				logger.Info(eyecandy.ESPrintf(settings.NoEmojis, ":partying_face: Release %q has been upgraded.", client.ReleaseName))
 			}
 
 			return outfmt.Write(wInfo, &statusPrinter{rel, settings.Debug, false})

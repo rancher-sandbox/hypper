@@ -1,4 +1,4 @@
-Release "funny-bunny" has been upgraded 🥳 
+🥳  Release "funny-bunny" has been upgraded.
 NAME: funny-bunny
 LAST DEPLOYED: Fri Sep  2 22:04:05 1977
 NAMESPACE: default

@@ -65,7 +65,7 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 			if err != nil {
 				return err
 			}
-			logger.Info(eyecandy.ESPrint(settings.NoEmojis, "Done! :clapping_hands:"))
+			logger.Info(eyecandy.ESPrint(settings.NoEmojis, ":clapping_hands: Done!"))
 			return nil
 		},
 	}

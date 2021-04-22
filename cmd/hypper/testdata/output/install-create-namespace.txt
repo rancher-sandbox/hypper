@@ -1,2 +1,2 @@
-Installing chart "empty" as "purple" in namespace "deep"…
-Done! 👏 
+🛳 : Installing chart "empty" as "purple" in namespace "deep"…
+👏  Done!
