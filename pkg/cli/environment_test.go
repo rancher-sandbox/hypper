@@ -17,7 +17,10 @@ limitations under the License.
 package cli
 
 import (
+	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/cli"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -110,6 +113,38 @@ func TestEnvSettings(t *testing.T) {
 				t.Errorf("on test %q expected debug %t, got %t", tt.name, tt.debug, settings.Debug)
 			}
 		})
+	}
+}
+
+func TestHelmFields(t *testing.T) {
+
+	helmSettings := reflect.TypeOf(cli.EnvSettings{})
+	helmNumFields := helmSettings.NumField()
+	hypperSettings := reflect.TypeOf(EnvSettings{})
+	for i := 0; i < helmNumFields; i++ {
+		field := helmSettings.Field(i)
+		_, found := hypperSettings.FieldByName(field.Name)
+		if !found {
+			t.Fatalf("field %v from Helm cli.Settings not found in our settings", field.Name)
+		}
+	}
+
+	// Composite type of helm EnvSettings plus an extra field
+	type FakeSettings struct {
+		*cli.EnvSettings
+		missingField string //nolint
+	}
+
+	helmSettings = reflect.TypeOf(FakeSettings{})
+	helmNumFields = helmSettings.NumField()
+	hypperSettings = reflect.TypeOf(EnvSettings{})
+	for i := 0; i < helmNumFields; i++ {
+		field := helmSettings.Field(i)
+		_, found := hypperSettings.FieldByName(field.Name)
+		if !found {
+			// If we fail, make sure that the error is due to our known missing field
+			assert.Equal(t, field.Name, "missingField")
+		}
 	}
 }
 

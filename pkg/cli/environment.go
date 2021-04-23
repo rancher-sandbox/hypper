@@ -38,14 +38,13 @@ import (
 // defaultMaxHistory sets the maximum number of releases to 0: unlimited
 const defaultMaxHistory = 10
 
-// EnvSettings is a composite type of helm.pkg.env.EnvSettings.
-// describes all of the environment settings.
+// EnvSettings describes all of the environment settings.
+// It contains a pointer to Helm settings for functions that need that exact type
+// We overwrite all of the helm settings values with our own on New so it contains the same
+// config settings
 type EnvSettings struct {
+	EnvSettings *cli.EnvSettings
 
-	// we use Helm's for all exported fields
-	*cli.EnvSettings
-
-	// unexported Helm's cli.EnvSettings fields are here:
 	namespace string
 	config    *genericclioptions.ConfigFlags
 
@@ -87,8 +86,6 @@ type EnvSettings struct {
 func New() *EnvSettings {
 	// TODO check with reflection that we are not missing any field
 	env := &EnvSettings{
-		EnvSettings: nil, // this is nil it gets overwritten below to ensure that it does not touch Helm's stuff
-
 		namespace:        os.Getenv("HYPPER_NAMESPACE"),
 		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
 		KubeContext:      os.Getenv("HYPPER_KUBECONTEXT"),
@@ -244,4 +241,9 @@ func (s *EnvSettings) Namespace() string {
 		return ns
 	}
 	return "default"
+}
+
+// RESTClientGetter gets the kubeconfig from EnvSettings
+func (s *EnvSettings) RESTClientGetter() genericclioptions.RESTClientGetter {
+	return s.config
 }
