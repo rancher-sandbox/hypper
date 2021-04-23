@@ -72,7 +72,32 @@ func TestSearchRepositoriesCmd(t *testing.T) {
 		name:   "search for 'alpine', expect valid yaml output",
 		cmd:    "search repo alpine --output yaml",
 		golden: "output/search-output-yaml.txt",
-	}}
+	}, {
+		name:   "search for hypper, expect latest version 0.2.0",
+		cmd:    "search repo hypper --output yaml",
+		golden: "output/search-hypper-latest.txt",
+	}, { // I use yaml for the output because its easier to create the golden files, sue me :p
+		// Should find version 0.1.0 as that is the only one with that annotation
+		name:   "search for hypper with annotation hypper.cattle.io/namespace:hyppernamespace",
+		cmd:    "search repo hypper -a 'hypper.cattle.io/namespace=hyppernamespace' --output yaml",
+		golden: "output/search-hypper-annotation.txt",
+	}, {
+		// Should find latest version 0.2.0 with that annotation
+		name:   "search for hypper with regexp annotation hypper.cattle.io/release-name:hypper*",
+		cmd:    "search repo hypper --regexp -a 'hypper.cattle.io/release-name=hypper*' --output yaml",
+		golden: "output/search-hypper-annotation-regexp.txt",
+	}, {
+		// Should find that exact version with the annotation, not the latest
+		name:   "search for hypper with version and annotation hypper.cattle.io/release-name:hyppername",
+		cmd:    "search repo hypper --version 0.1.0 -a 'hypper.cattle.io/release-name=hyppername' --output yaml",
+		golden: "output/search-hypper-annotation-version.txt",
+	}, {
+		// Now everything at the same time! regexp! version! annotations!
+		name:   "search for hypper with version and annotation hypper.cattle.io/release-name:hyppername",
+		cmd:    "search repo hypper --regexp --version 0.1.0 -a 'hypper.cattle.io/release-name=^hypper' --output yaml",
+		golden: "output/search-hypper-annotation-version-regexp.txt",
+	},
+	}
 
 	settings.Debug = true
 	defer func() { settings.Debug = false }()

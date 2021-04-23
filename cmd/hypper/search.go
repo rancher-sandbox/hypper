@@ -85,6 +85,7 @@ func newSearchRepoCmd(logger log.Logger) *cobra.Command {
 	f.BoolVarP(&o.Versions, "versions", "l", false, "show the long listing, with each version of each chart on its own line, for repositories you have added")
 	f.BoolVar(&o.Devel, "devel", false, "use development versions (alpha, beta, and release candidate releases), too. Equivalent to version '>0.0.0-0'. If --version is set, this is ignored")
 	f.StringVar(&o.Version, "version", "", "search using semantic versioning constraints on repositories you have added")
+	f.StringToStringVarP(&o.Annotations, "annotations", "a", map[string]string{}, "filter using annotations. The format is --annotations key=value")
 	f.UintVar(&o.MaxColWidth, "max-col-width", 50, "maximum column width for output table")
 	bindOutputFlag(cmd, &o.OutputFormat)
 
