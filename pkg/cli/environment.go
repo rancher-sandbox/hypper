@@ -84,7 +84,6 @@ type EnvSettings struct {
 
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
-	// TODO check with reflection that we are not missing any field
 	env := &EnvSettings{
 		namespace:        os.Getenv("HYPPER_NAMESPACE"),
 		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
