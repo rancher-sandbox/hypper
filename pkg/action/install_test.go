@@ -177,7 +177,7 @@ func TestInstallSharedDep(t *testing.T) {
 			name: "dep installed correctly",
 			dep: &chart.Dependency{
 				Name:       "testdata/charts/vanilla-helm",
-				Version:    "0.1.0",
+				Version:    "^0.1.0",
 				Repository: "",
 			},
 			status:  "deployed",
@@ -188,7 +188,7 @@ func TestInstallSharedDep(t *testing.T) {
 			name: "dep with annot installed correctly",
 			dep: &chart.Dependency{
 				Name:       "testdata/charts/shared-dep",
-				Version:    "0.1.0",
+				Version:    "~0.1.0",
 				Repository: "",
 			},
 			status:  "deployed",
@@ -204,6 +204,26 @@ func TestInstallSharedDep(t *testing.T) {
 			},
 			wantError: true,
 			error:     "failed to download \"nonexistent-chart\" (hint: running `helm repo update` may help)",
+		},
+		{
+			name: "shared-dep version cannot be found",
+			dep: &chart.Dependency{
+				Name:       "testdata/charts/shared-dep",
+				Version:    "1.1.0",
+				Repository: "",
+			},
+			wantError: true,
+			error:     "Satisfiable chart version not found; 0.1.0 is not equal to 1.1.0",
+		},
+		{
+			name: "shared-dep version non-parseable",
+			dep: &chart.Dependency{
+				Name:       "testdata/charts/shared-dep",
+				Version:    "foo0.1.0",
+				Repository: "",
+			},
+			wantError: true,
+			error:     "improper constraint: foo0.1.0",
 		},
 	} {
 		is := assert.New(t)
