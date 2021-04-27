@@ -152,75 +152,91 @@ func TestInstallAllSharedDeps(t *testing.T) {
 }
 
 func TestInstallSharedDep(t *testing.T) {
-	is := assert.New(t)
 
-	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
-	buf := new(bytes.Buffer)
-	logger := logcli.NewStandard()
-	logger.InfoOut = buf
-	logger.WarnOut = buf
-	logger.ErrorOut = buf
-	log.Current = logger
+	for _, tcase := range []struct {
+		name       string
+		dep        *chart.Dependency
+		wantError  bool
+		error      string
+		wantDryRun bool
+		status     string
+		relName    string
+		ns         string
+	}{
+		{
+			name: "dry-run-is-passed",
+			dep: &chart.Dependency{
+				Name:       "testdata/charts/vanilla-helm",
+				Version:    "0.1.0",
+				Repository: "",
+			},
+			wantDryRun: true,
+			status:     "pending-install",
+		},
+		{
+			name: "dep installed correctly",
+			dep: &chart.Dependency{
+				Name:       "testdata/charts/vanilla-helm",
+				Version:    "0.1.0",
+				Repository: "",
+			},
+			status:  "deployed",
+			ns:      "spaced",
+			relName: "empty",
+		},
+		{
+			name: "dep with annot installed correctly",
+			dep: &chart.Dependency{
+				Name:       "testdata/charts/shared-dep",
+				Version:    "0.1.0",
+				Repository: "",
+			},
+			status:  "deployed",
+			ns:      "my-shared-dep-ns",
+			relName: "my-shared-dep",
+		},
+		{
+			name: "install non-existent dep",
+			dep: &chart.Dependency{
+				Name:       "nonexistent-chart",
+				Version:    "0.1.0",
+				Repository: "",
+			},
+			wantError: true,
+			error:     "failed to download \"nonexistent-chart\" (hint: running `helm repo update` may help)",
+		},
+	} {
+		is := assert.New(t)
 
-	settings := cli.New()
+		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+		buf := new(bytes.Buffer)
+		logger := logcli.NewStandard()
+		logger.InfoOut = buf
+		logger.WarnOut = buf
+		logger.ErrorOut = buf
+		logger.DebugOut = buf
+		log.Current = logger
 
-	instAction := installAction(t)
+		settings := cli.New()
 
-	// TODO dependency version is not satisfied
+		instAction := installAction(t)
 
-	// check that install options such as DryRun are passed
-	instAction.DryRun = true
-	dep := &chart.Dependency{
-		Name:       "testdata/charts/vanilla-helm",
-		Repository: "",
-		Version:    "0.1.0",
-	}
-	res, err := instAction.InstallSharedDep(dep, settings, log.Current, 0)
-	instAction.DryRun = false
-	if err != nil {
-		t.Fatalf("Failed install: %s", err)
-	}
-	is.Equal(res.Info.Status.String(), "pending-install", "Expected status of the installed dependency.")
+		instAction.DryRun = tcase.wantDryRun
 
-	// install dependency correctly
-	dep = &chart.Dependency{
-		Name:       "testdata/charts/vanilla-helm",
-		Repository: "",
-		Version:    "0.1.0",
+		res, err := instAction.InstallSharedDep(tcase.dep, settings, log.Current, 0)
+		if (err != nil) != tcase.wantError {
+			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
+		}
+		if tcase.wantError {
+			is.Equal(tcase.error, err.Error())
+		} else {
+			is.Equal(res.Info.Status.String(), tcase.status, "Expected status of the installed dependency.")
+			if tcase.status == "deployed" {
+				is.Equal(res.Name, tcase.relName, "Expected release name from dependency.")
+				is.Equal(res.Namespace, tcase.ns, "Expected parent ns.")
+			}
+		}
 	}
-	res, err = instAction.InstallSharedDep(dep, settings, log.Current, 0)
-	if err != nil {
-		t.Fatalf("Failed install: %s", err)
-	}
-	is.Equal(res.Name, "empty", "Expected release name from dependency.")
-	is.Equal(res.Namespace, "spaced", "Expected parent ns.")
-	is.Equal(res.Info.Status.String(), "deployed", "Expected status of the installed dependency.")
-
-	// install dependency correctly, following its own annotations
-	dep = &chart.Dependency{
-		Name:       "testdata/charts/shared-dep",
-		Repository: "",
-		Version:    "0.1.0",
-	}
-	res, err = instAction.InstallSharedDep(dep, settings, log.Current, 0)
-	if err != nil {
-		t.Fatalf("Failed install: %s", err)
-	}
-	is.Equal(res.Name, "my-shared-dep", "Expected release name from dependency.")
-	is.Equal(res.Namespace, "my-shared-dep-ns", "Expected shared-dep ns.")
-	is.Equal(res.Info.Status.String(), "deployed", "Expected status of the installed dependency.")
-
-	// install non-existent dependency
-	dep = &chart.Dependency{
-		Name:       "nonexistent-chart",
-		Repository: "",
-		Version:    "0.1.0",
-	}
-	_, err = instAction.InstallSharedDep(dep, settings, log.Current, 0)
-	if err == nil {
-		t.Fatal(err)
-	}
-	is.Equal("failed to download \"nonexistent-chart\" (hint: running `helm repo update` may help)", err.Error())
 }
 
 func TestInstallSetNamespace(t *testing.T) {
