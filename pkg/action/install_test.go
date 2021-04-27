@@ -127,6 +127,7 @@ func TestInstallAllSharedDeps(t *testing.T) {
 				},
 				Version:   1,
 				Namespace: "my-shared-dep-ns",
+				Chart:     buildChart(),
 			}
 			instAction.Config.SetNamespace("spaced")
 			err := instAction.Config.Releases.Create(rel)
