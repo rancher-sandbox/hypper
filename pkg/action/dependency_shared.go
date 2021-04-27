@@ -21,7 +21,9 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/Masterminds/semver/v3"
 	"github.com/gosuri/uitable"
+	"github.com/pkg/errors"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"gopkg.in/yaml.v2"
 
@@ -79,7 +81,7 @@ func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, log
 
 // SharedDependencyStatus returns a string describing the status of a dependency
 // viz a viz the releases in depNS context.
-func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS string) (string, error) {
+func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS string, depVersion string) (string, error) {
 
 	// TODO refactor GetName() into GetName(){ret error} and GetNameFromAnnot()
 	depName, err := GetName(depChart, "")
@@ -95,11 +97,19 @@ func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS s
 	}
 
 	for _, r := range releases {
-		// For now, this is all we can check:
-		// Releases don't contain semver or repository info,
-		// checking RBAC to compare ns and error is not possible, as deps don't
-		// record ns and use the dependee namespace. So either we see them installed, or we don't.
 		if r.Name == depName && r.Namespace == depNS {
+			if r.Chart.Metadata.Version != depVersion {
+				constraint, err := semver.NewConstraint(depVersion)
+				if err != nil {
+					return "", errors.New("dependency version not parseable")
+				}
+
+				v, _ := semver.NewVersion(r.Chart.Metadata.Version)
+				// not needed to check err, gets validated on chart creation
+				if !constraint.Check(v) {
+					return "out-of-range", nil
+				}
+			}
 			return r.Info.Status.String(), nil
 		}
 	}
@@ -137,7 +147,7 @@ func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.
 			continue
 		}
 
-		depStatus, err := d.SharedDependencyStatus(depChart, depNS)
+		depStatus, err := d.SharedDependencyStatus(depChart, depNS, dep.Version)
 		if err != nil {
 			return err
 		}
