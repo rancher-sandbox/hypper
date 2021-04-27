@@ -69,7 +69,7 @@ func TestValidateChartHypperRelease(t *testing.T) {
 func TestValidateChartHypperSharedDepsCorrect(t *testing.T) {
 	annotations := map[string]string{
 		"hypper.cattle.io/release-name": "releaseTest",
-		"hypper.cattle.io/namespace": "namespaceTest",
+		"hypper.cattle.io/namespace":    "namespaceTest",
 		"hypper.cattle.io/shared-dependencies": "  - name: foo" + "\n" +
 			"    version: \"0.1.0\"" + "\n" +
 			"    repository: \"\"" + "\n",
@@ -83,7 +83,7 @@ func TestValidateChartHypperSharedDepsCorrect(t *testing.T) {
 
 	annotationsBad := map[string]string{
 		"hypper.cattle.io/release-name": "releaseTest",
-		"hypper.cattle.io/namespace": "namespaceTest",
+		"hypper.cattle.io/namespace":    "namespaceTest",
 		"hypper.cattle.io/shared-dependencies": "  - name: foo" + "\n" +
 			"    version: \"foo0.1.0\"" + "\n",
 	}
