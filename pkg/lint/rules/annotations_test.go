@@ -65,3 +65,33 @@ func TestValidateChartHypperRelease(t *testing.T) {
 	}
 
 }
+
+func TestValidateChartHypperSharedDepsCorrect(t *testing.T) {
+	annotations := map[string]string{
+		"hypper.cattle.io/release-name": "releaseTest",
+		"hypper.cattle.io/namespace": "namespaceTest",
+		"hypper.cattle.io/shared-dependencies": "  - name: foo" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"\"" + "\n",
+	}
+	chartMetadataGood := &chart.Metadata{Annotations: annotations}
+
+	err := validateChartHypperSharedDepsCorrect(chartMetadataGood)
+	if err != nil {
+		t.Errorf("validateChartHypperRelease to not return a linter error, got %v", err)
+	}
+
+	annotationsBad := map[string]string{
+		"hypper.cattle.io/release-name": "releaseTest",
+		"hypper.cattle.io/namespace": "namespaceTest",
+		"hypper.cattle.io/shared-dependencies": "  - name: foo" + "\n" +
+			"    version: \"foo0.1.0\"" + "\n",
+	}
+	chartMetadataBad := &chart.Metadata{Annotations: annotationsBad}
+
+	err = validateChartHypperSharedDepsCorrect(chartMetadataBad)
+	if err == nil {
+		t.Errorf("validateChartHypperSharedDepsCorrect to return a linter error, got no error")
+	}
+
+}
