@@ -10,3 +10,4 @@ annotations:
   "hypper.cattle.io/namespace": "namespace"
   "hypper.cattle.io/shared-dependencies": |
     - name: shareddep
+      version: "~0.1.0"

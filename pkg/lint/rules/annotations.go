@@ -22,12 +22,14 @@ as possible
 package rules
 
 import (
+	"path/filepath"
+
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/lint/support"
-	"path/filepath"
 )
 
 // Annotations runs a set of linter rules related to chart annotations
@@ -77,5 +79,24 @@ func validateChartHypperSharedDepsCorrect(chart *helmChart.Metadata) error {
 	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
 		return errors.New("Shared dependencies list is broken, please check the correct format")
 	}
+	for _, d := range deps {
+		if err := validateSharedDepVersion(d.Version); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validateSharedDepVersion checks that the shared dep version is an actual semver range
+func validateSharedDepVersion(depVersion string) error {
+	if depVersion == "" {
+		return errors.New("version is required")
+	}
+
+	_, err := semver.NewConstraint(depVersion)
+	if err != nil {
+		return errors.Wrap(err, "Shared dependency version is broken")
+	}
+
 	return nil
 }
