@@ -1,5 +1,5 @@
 🧰  Release "jojo" does not exist. Installing it now.
-🛳 : Installing chart "funny-bunny" as "jojo" in namespace "default"…
+🛳  Installing chart "funny-bunny" as "jojo" in namespace "default"…
 NAME: jojo
 LAST DEPLOYED: Fri Sep  2 22:04:05 1977
 NAMESPACE: default

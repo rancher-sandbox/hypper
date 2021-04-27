@@ -83,7 +83,7 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *
 	if lvl > 0 {
 		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
 	}
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship:: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
 	helmInstall := i.Install
 	i.Config.SetNamespace(i.Namespace)
 	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
