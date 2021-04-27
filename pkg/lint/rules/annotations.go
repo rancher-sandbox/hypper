@@ -72,9 +72,9 @@ func validateChartHypperSharedDeps(chart *helmChart.Metadata) error {
 
 // validateChartHypperSharedDepsCorrect checks that shared deps are in the correct format
 func validateChartHypperSharedDepsCorrect(chart *helmChart.Metadata) error {
-	depList := chart.Annotations["hypper.cattle.io/shared-dependencies"]
-	var yamlDeps []*helmChart.Dependency
-	if err := yaml.UnmarshalStrict([]byte(depList), &yamlDeps); err != nil {
+	depYaml := chart.Annotations["hypper.cattle.io/shared-dependencies"]
+	var deps []*helmChart.Dependency
+	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
 		return errors.New("Shared dependencies list is broken, please check the correct format")
 	}
 	return nil
