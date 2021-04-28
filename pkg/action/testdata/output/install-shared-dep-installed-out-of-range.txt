@@ -1,0 +1,2 @@
+🛳  Installing shared dependencies for chart "hello":
+ERROR: ❌  - Shared dependency chart "testdata/charts/shared-dep" already installed in an unsatisfiable version, aborting

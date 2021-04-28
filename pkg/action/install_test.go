@@ -97,6 +97,14 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			golden:     "output/install-shared-dep-installed.txt",
 			addRelStub: true,
 		},
+		{
+			name:       "dependencies are already installed in out-of-range ver",
+			chart:      buildChart(withHypperAnnotations(), withOutOfRangeSharedDeps()),
+			golden:     "output/install-shared-dep-installed-out-of-range.txt",
+			addRelStub: true,
+			wantError:  true,
+			error:      "Shared dep version out of range; 0.1.0 is not equal to 1.1.0",
+		},
 	} {
 		settings := cli.New()
 		settings.Debug = tcase.wantDebug
