@@ -25,6 +25,7 @@ import (
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/jinzhu/copier"
+	"github.com/manifoldco/promptui"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"gopkg.in/yaml.v2"
@@ -80,6 +81,18 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *
 		}
 	}
 
+	if !i.NoOptionalDeps {
+		if i.AllOptionalDeps {
+			if err := i.InstallAllOptionalDeps(chrt, settings, logger, lvl); err != nil {
+				return nil, err
+			}
+		} else {
+			if err := i.InstallOptionalDeps(chrt, settings, logger, lvl, false); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	prefix := ""
 	if lvl > 0 {
 		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
@@ -124,6 +137,104 @@ func CheckIfInstallable(ch *chart.Chart) error {
 		return nil
 	}
 	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
+}
+
+// InstallAllSharedDeps installs all optional dependencies listed in the passed
+// chart.
+//
+// It will check for malformed chart.Metadata.Annotations, and skip those shared
+// dependencies already deployed.
+// lvl is used for printing nested stagered output on recursion. Starts at 0.
+func (i *Install) InstallAllOptionalDeps(chrt *chart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
+	return i.InstallOptionalDeps(chrt, settings, logger, lvl, true)
+}
+
+// InstallAllSharedDeps installs all optional dependencies listed in the passed
+// chart.
+//
+// It will check for malformed chart.Metadata.Annotations, and skip those shared
+// dependencies already deployed.
+// lvl is used for printing nested stagered output on recursion. Starts at 0.
+func (i *Install) InstallOptionalDeps(chrt *chart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int, all bool) error {
+
+	if _, ok := chrt.Metadata.Annotations["hypper.cattle.io/optional-dependencies"]; !ok {
+		logger.Debugf("%sNo optional dependencies in chart \"%s\"\n", strings.Repeat("  ", lvl), chrt.Name())
+		return nil
+	}
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling optional dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name()))
+	depYaml := chrt.Metadata.Annotations["hypper.cattle.io/optional-dependencies"]
+	var deps dependencies
+	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
+		logger.Errorf("Chart.yaml metadata is malformed for chart \"%s\"\n", chrt.Name())
+		return err
+	}
+	// increment padding of output
+	lvl++
+	prefix := ""
+	if lvl > 0 {
+		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
+	}
+
+	for _, dep := range deps {
+		found := false
+		depChart, err := i.LoadChartFromDep(dep, settings, logger)
+		if err != nil {
+			return err
+		}
+		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
+		ns := GetNamespace(depChart, GetNamespace(chrt, settings.Namespace()))
+
+		name, err := GetName(depChart, "")
+		if err != nil {
+			return err
+		}
+
+		// obtain the releases for the specific ns that we are searching into
+		i.Config.SetNamespace(ns)
+		clientList := NewList(i.Config)
+		clientList.SetStateMask()
+		releases, err := clientList.Run()
+		if err != nil {
+			return err
+		}
+
+		for _, r := range releases {
+			if r.Name == name && r.Namespace == ns {
+				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %sOptional dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name))
+				found = true
+				break // installed, don't keep looking
+			}
+		}
+		if !found {
+			confirmed := false
+			if !all {
+				prompt := promptui.Prompt{
+					Label: "Install?",
+					Validate: func(input string) error {
+						if input != "y" && input != "n" {
+							return errors.New("Invalid input")
+						}
+						return nil
+					},
+				}
+				result, err := prompt.Run()
+				if err != nil {
+					logger.Errorf("Prompt failed %v\n", err)
+				}
+				if result == "y" {
+					confirmed = true
+				}
+			} else {
+				confirmed = true
+			}
+			if confirmed {
+				if _, err = i.InstallSharedDep(dep, settings, logger, lvl); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
 
 // InstallAllSharedDeps installs all shared dependencies listed in the passed
