@@ -88,7 +88,7 @@ verifySupported() {
 
 # checkDesiredVersion checks if the desired version is available.
 checkDesiredVersion() {
-  if [ "x$DESIRED_VERSION" == "x" ]; then
+  if [ "$DESIRED_VERSION" == "" ]; then
     # Get tag from release URL
     local latest_release_url="https://api.github.com/repos/rancher-sandbox/hypper/releases/latest"
     if [ "${HAS_CURL}" == "true" ]; then
