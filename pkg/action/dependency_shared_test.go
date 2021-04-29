@@ -21,10 +21,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/storage"
+	"helm.sh/helm/v3/pkg/storage/driver"
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/rancher-sandbox/hypper/internal/test"
+	hypperChart "github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 )
 
@@ -101,72 +106,103 @@ func TestSharedDepsSetNamespace(t *testing.T) {
 	is.Equal("fleet-system", instAction.Namespace)
 }
 
-// func TestSharedDependencyStatus(t *testing.T) {
-// 	mk := func(name string, vers int, status release.Status, namespace string) *release.Release {
-// 		return release.Mock(&release.MockReleaseOptions{
-// 			Name:      name,
-// 			Version:   vers,
-// 			Status:    status,
-// 			Namespace: namespace,
-// 		})
-// 	}
+func TestSharedDependencyStatus(t *testing.T) {
+	mk := func(name string, vers int, status release.Status, namespace string, chrtVer string) *release.Release {
+		return release.Mock(&release.MockReleaseOptions{
+			Name:      name,
+			Version:   vers,
+			Status:    status,
+			Namespace: namespace,
+			Chart: hypperChart.Mock(&hypperChart.MockChartOptions{
+				Name:    name,
+				Version: chrtVer,
+			}),
+		})
+	}
 
-// 	releasesFixture := []*release.Release{
-// 		mk("my-hypper-name", 3, release.StatusDeployed, "hypper"),
-// 		mk("musketeers", 10, release.StatusPendingInstall, "hypper"),
-// 		mk("dartagnan", 9, release.StatusSuperseded, "default"),
-// 	}
+	releasesFixture := []*release.Release{
+		mk("my-hypper-name", 10, release.StatusDeployed, "hypper", "0.1.0"),
+		mk("musketeers", 10, release.StatusPendingInstall, "hypper", "0.1.0"),
+		mk("dartagnan", 9, release.StatusFailed, "default", "0.1.0"),
+		mk("aramis", 3, release.StatusDeployed, "other-ns", "0.1.0"),
+	}
 
-// 	for _, tcase := range []struct {
-// 		name      string
-// 		chart     *chart.Chart
-// 		ns        string
-// 		output    string
-// 		wantError bool
-// 		error     string
-// 		releases  []*rspb.Release
-// 	}{
-// 		{
-// 			name:     "shared dep is installed and found",
-// 			chart:    buildChart(withHypperAnnotations()),
-// 			ns:       "hypper",
-// 			output:   "deployed",
-// 			releases: releasesFixture,
-// 		},
-// 		{
-// 			name:     "shared dep not installed",
-// 			chart:    buildChart(withHypperAnnotValues("cow", "other-ns")),
-// 			ns:       "hypper",
-// 			output:   "not-installed",
-// 			releases: releasesFixture,
-// 		},
-// 		{
-// 			name:     "shared dep without hypper annot, uses default ns",
-// 			chart:    buildChart(withName("dartagnan")),
-// 			ns:       "default",
-// 			output:   "superseeded",
-// 			releases: releasesFixture,
-// 		},
-// 	} {
-// 		is := assert.New(t)
-// 		sharedDepAction := newSharedDepFixture(t, tcase.ns)
+	for _, tcase := range []struct {
+		name       string
+		depChart   *chart.Chart
+		depNS      string
+		depVersion string
+		output     string
+		wantError  bool
+		err        string
+		releases   []*release.Release
+	}{
+		{
+			name:       "shared dep is installed and found",
+			depChart:   buildChart(withHypperAnnotations(), withChartVersion("0.1.0")),
+			depNS:      "hypper",
+			depVersion: "~0.1.0",
+			output:     "deployed",
+			releases:   releasesFixture,
+		},
+		{
+			name:       "shared dep not installed",
+			depChart:   buildChart(withHypperAnnotValues("cow", "hypper")),
+			depNS:      "hypper",
+			depVersion: "~0.1.0",
+			output:     "not-installed",
+			releases:   releasesFixture,
+		},
+		{
+			name:       "shared dep without hypper annot, uses default ns",
+			depChart:   buildChart(withName("dartagnan"), withChartVersion("0.1.0")),
+			depNS:      "default",
+			depVersion: "0.1.0",
+			output:     "failed",
+			releases:   releasesFixture,
+		},
+		{
+			name:       "shared dep version not parseable",
+			depChart:   buildChart(withName("dartagnan")),
+			depNS:      "default",
+			depVersion: "foo0.1.0",
+			wantError:  true,
+			err:        "dependency version not parseable",
+			releases:   releasesFixture,
+		},
+		{
+			name:       "shared dep version out-of-range",
+			depChart:   buildChart(withName("dartagnan")),
+			depNS:      "default",
+			depVersion: "~1.1.0",
+			output:     "out-of-range",
+			releases:   releasesFixture,
+		},
+	} {
+		is := assert.New(t)
+		sharedDepAction := newSharedDepFixture(t, tcase.depNS)
+		store := storage.Init(driver.NewMemory())
+		sharedDepAction.Config.Releases = store
 
-// 		storage := storage.Init(driver.NewMemory())
-// 		for _, r := range tcase.releases {
-// 			if err := storage.Create(r); err != nil {
-// 				t.Fatal(err)
-// 			}
-// 		}
+		for _, r := range tcase.releases {
+			if err := store.Create(r); err != nil {
+				t.Fatal(err)
+			}
+		}
 
-// 		// sharedDepAction.Config.SetNamespace(tcase.ns) // from the other day, but not needed, sharedDepAction should do it on its own
-// 		sharedDepAction.Config.Releases = storage
+		if mem, ok := store.Driver.(*driver.Memory); ok {
+			mem.SetNamespace(tcase.depNS)
+		}
 
-// 		depStatus, err := sharedDepAction.SharedDependencyStatus(tcase.chart, tcase.ns)
-// 		if (err != nil) != tcase.wantError {
-// 			t.Errorf("expected error, got '%v'", err)
-// 		}
-// 		if tcase.output != "" {
-// 			is.Equal(tcase.output, depStatus)
-// 		}
-// 	}
-// }
+		depStatus, err := sharedDepAction.SharedDependencyStatus(tcase.depChart, tcase.depNS, tcase.depVersion)
+		if (err != nil) != tcase.wantError {
+			t.Errorf("expected error, got '%v'", err)
+		}
+		if tcase.wantError {
+			is.Equal(tcase.err, err.Error())
+		}
+		if tcase.output != "" {
+			is.Equal(tcase.output, depStatus)
+		}
+	}
+}

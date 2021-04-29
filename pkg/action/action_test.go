@@ -153,18 +153,24 @@ func withTypeLibrary() chartOption {
 	}
 }
 
-// func withHypperAnnotValues(name string, ns string) chartOption {
-// 	return func(opts *chartOptions) {
-// 		if opts.Chart.Metadata.Annotations == nil {
-// 			opts.Chart.Metadata.Annotations = make(map[string]string)
-// 		}
-// 		opts.Chart.Metadata.Annotations["hypper.cattle.io/namespace"] = ns
-// 		opts.Chart.Metadata.Annotations["hypper.cattle.io/release-name"] = name
-// 	}
-// }
+func withHypperAnnotValues(name string, ns string) chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/namespace"] = ns
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/release-name"] = name
+	}
+}
 
-// func withName(name string) chartOption {
-// 	return func(opts *chartOptions) {
-// 		opts.Metadata.Name = name
-// 	}
-// }
+func withName(name string) chartOption {
+	return func(opts *chartOptions) {
+		opts.Metadata.Name = name
+	}
+}
+
+func withChartVersion(semver string) chartOption {
+	return func(opts *chartOptions) {
+		opts.Metadata.Version = semver
+	}
+}
