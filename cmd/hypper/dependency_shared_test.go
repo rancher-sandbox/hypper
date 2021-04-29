@@ -99,6 +99,20 @@ func TestSharedDependencyListCmd(t *testing.T) {
 		})},
 	}
 
+	sharedDependenciesInstalledVersionOutOfRange := cmdTestCase{
+		name:   "Shared dependencies installed, semver out of range",
+		cmd:    "shared-deps list testdata/testcharts/shared-deps -n my-shared-dep-ns",
+		golden: "output/shared-deps-list-installed-out-of-range.txt",
+		rels: []*release.Release{release.Mock(&release.MockReleaseOptions{
+			Name:      "my-shared-dep",
+			Namespace: "my-shared-dep-ns",
+			Chart: chart.Mock(&chart.MockChartOptions{
+				Name:    "my-shared-dep",
+				Version: "3.1.0",
+			}),
+		})},
+	}
+
 	if runtime.GOOS == "windows" {
 		noSuchChart.golden = "output/shared-deps-list-no-chart-windows.txt"
 		noSharedDependencies.golden = "output/shared-deps-list-no-shared-deps-windows.txt"
@@ -112,6 +126,7 @@ func TestSharedDependencyListCmd(t *testing.T) {
 		sharedDependenciesInstalledDiffNS,
 		sharedDependenciesInstalledDiffNSFlag,
 		sharedDependenciesInstalledDiffNSFlagNotFound,
+		sharedDependenciesInstalledVersionOutOfRange,
 	}
 	runTestCmd(t, tests)
 }

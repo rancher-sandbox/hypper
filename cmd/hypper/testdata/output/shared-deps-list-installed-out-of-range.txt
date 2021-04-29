@@ -1,0 +1,2 @@
+NAME            	VERSION	REPOSITORY	STATUS      	NAMESPACE       
+shared-dep-empty	~0.1.0 	          	out-of-range	my-shared-dep-ns
