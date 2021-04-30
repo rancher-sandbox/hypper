@@ -138,8 +138,14 @@ func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.
 			return err
 		}
 
-		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
-		depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+		// calculate which ns corresponds to the dependency
+		var depNS string
+		if settings.NamespaceFromFlag {
+			depNS = settings.Namespace()
+		} else {
+			// either shared-dep has annotations, or the parent has, or we use the default ns
+			depNS = GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+		}
 		d.Config.SetNamespace(depNS)
 
 		if settings.NamespaceFromFlag && settings.Namespace() != depNS {
