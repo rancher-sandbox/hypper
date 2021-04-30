@@ -1,0 +1,148 @@
+/*
+Copyright The Helm Authors, SUSE LLC.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package action
+
+import (
+	"fmt"
+
+	"github.com/Masterminds/log-go"
+	logio "github.com/Masterminds/log-go/io"
+	"github.com/gosuri/uitable"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
+	"gopkg.in/yaml.v2"
+
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
+)
+
+// OptionalDependency is the action for building a given chart's optional dependency tree.
+//
+// It provides the implementation of 'hypper optional-dependency' and its respective subcommands.
+type OptionalDependency struct {
+	*action.Dependency
+
+	// hypper specific:
+	Config *Configuration
+}
+
+// NewOptionalDependency creates a new OptionalDependency object with the given configuration.
+func NewOptionalDependency(cfg *Configuration) *OptionalDependency {
+	return &OptionalDependency{
+		action.NewDependency(),
+		cfg,
+	}
+}
+
+type optionalDependencies []*chart.Dependency
+
+// List executes 'hypper optional-dep list'.
+func (d *OptionalDependency) OptionalList(chartpath string, settings *cli.EnvSettings, logger log.Logger) error {
+
+	wWarn := logio.NewWriter(logger, log.WarnLevel)
+	wError := logio.NewWriter(logger, log.ErrorLevel)
+
+	c, err := loader.Load(chartpath)
+	if err != nil {
+		return err
+	}
+
+	_, ok := c.Metadata.Annotations["hypper.cattle.io/optional-dependencies"]
+	if !ok {
+		fmt.Fprintf(wWarn, "No optional dependencies in %s\n", chartpath)
+		return nil
+	}
+
+	depYaml := c.Metadata.Annotations["hypper.cattle.io/optional-dependencies"]
+	var deps dependencies
+	if err = yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
+		fmt.Fprintf(wError, "Chart.yaml metadata is malformed for chart %s\n", chartpath)
+		return err
+	}
+
+	return d.printOptionalDependencies(chartpath, logger, deps, settings)
+}
+
+// OptionalDependencyStatus returns a string describing the status of a dependency
+// viz a viz the releases in depNS context.
+func (d *OptionalDependency) OptionalDependencyStatus(depChart *chart.Chart, depNS string) (string, error) {
+
+	// TODO refactor GetName() into GetName(){ret error} and GetNameFromAnnot()
+	depName, err := GetName(depChart, "")
+	if err != nil {
+		return "", err
+	}
+
+	clientList := NewList(d.Config)
+	clientList.SetStateMask()
+	releases, err := clientList.Run()
+	if err != nil {
+		return "", err
+	}
+
+	for _, r := range releases {
+		// For now, this is all we can check:
+		// Releases don't contain semver or repository info,
+		// checking RBAC to compare ns and error is not possible, as deps don't
+		// record ns and use the dependee namespace. So either we see them installed, or we don't.
+		if r.Name == depName && r.Namespace == depNS {
+			return r.Info.Status.String(), nil
+		}
+	}
+
+	return "not-installed", nil
+}
+
+// printOptionalDependencies prints all of the optional dependencies in the yaml file.
+// It will respect settings.NamespaceFromFlag when iterating through releases.
+func (d *OptionalDependency) printOptionalDependencies(chartpath string, logger log.Logger, deps dependencies, settings *cli.EnvSettings) error {
+
+	table := uitable.New()
+	table.MaxColWidth = 80
+	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS", "NAMESPACE")
+	for _, dep := range deps {
+		chartPathOptions := action.ChartPathOptions{}
+		chartPathOptions.RepoURL = dep.Repository
+		cp, err := chartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+		if err != nil {
+			return err
+		}
+		logger.Debugf("CHART PATH: %s\n", cp)
+
+		depChart, err := loader.Load(cp)
+		if err != nil {
+			return err
+		}
+
+		// obtain the dep ns: either optional-dep has annotations, or the parent has, or we use the default ns
+		depNS := GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+		d.Config.SetNamespace(depNS)
+
+		if settings.NamespaceFromFlag && settings.Namespace() != depNS {
+			// skip listing this dep, it's not in the same namespace as the flag
+			continue
+		}
+
+		depStatus, err := d.OptionalDependencyStatus(depChart, depNS)
+		if err != nil {
+			return err
+		}
+		table.AddRow(depChart.Name(), dep.Version, dep.Repository, depStatus, depNS)
+	}
+	log.Infof(table.String())
+	return nil
+}
