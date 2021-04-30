@@ -71,6 +71,13 @@ func TestInstallCmd(t *testing.T) {
 			cmd:    "install testdata/testcharts/shared-deps",
 			golden: "output/install-with-shared-deps.txt",
 		},
+		// Install, with shared deps out-of-range
+		{
+			name:      "install, with shared deps out-of-range",
+			cmd:       "install testdata/testcharts/shared-deps-out-of-range",
+			golden:    "output/install-with-shared-deps-out-of-range.txt",
+			wantError: true,
+		},
 	}
 	runTestActionCmd(t, tests)
 }
