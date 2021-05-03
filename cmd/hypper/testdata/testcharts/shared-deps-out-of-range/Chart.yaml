@@ -12,5 +12,5 @@ annotations:
   catalog.cattle.io/release-name: fleet
   hypper.cattle.io/shared-dependencies: |
     - name: "testdata/testcharts/shared-dep"
-      version: "~0.1.0"
+      version: "~0.3.0"
       repository: ""

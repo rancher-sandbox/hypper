@@ -24,6 +24,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
@@ -82,7 +83,7 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *
 	if lvl > 0 {
 		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
 	}
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship:: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
 	helmInstall := i.Install
 	i.Config.SetNamespace(i.Namespace)
 	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
@@ -174,8 +175,26 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 			return err
 		}
 
+		// create constraint for version checking
+		constraint, err := semver.NewConstraint(dep.Version)
+		if err != nil {
+			return err
+		}
+
 		for _, r := range releases {
 			if r.Name == name && r.Namespace == ns {
+				v, err := semver.NewVersion(r.Chart.Metadata.Version)
+				if err != nil {
+					return err
+				}
+				if b, errs := constraint.Validate(v); !b {
+					logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: %sShared dependency chart \"%s\" already installed in an unsatisfiable version, aborting\n", prefix, dep.Name))
+					err := errors.New("Shared dep version out of range")
+					for _, e := range errs {
+						err = fmt.Errorf("%w; %s", err, e)
+					}
+					return err
+				}
 				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name))
 				found = true
 				break // installed, don't keep looking
@@ -237,7 +256,28 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 		logger.Debug("setting version to >0.0.0-0")
 		clientInstall.Version = ">0.0.0-0"
 	}
-	// TODO check if chartRequested satisfies version range specified in dep
+
+	// check if chartRequested satisfies version range specified in dep
+	if chartRequested.Metadata.Version != dep.Version {
+		constraint, err := semver.NewConstraint(dep.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		v, err := semver.NewVersion(chartRequested.Metadata.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		if b, errs := constraint.Validate(v); !b {
+			logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: Satisfiable version for chart \"%s\" not found, aborting\n", dep.Name))
+			err := errors.New("Satisfiable chart version not found")
+			for _, e := range errs {
+				err = fmt.Errorf("%w; %s", err, e)
+			}
+			return nil, err
+		}
+	}
 
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:

@@ -1,2 +1,2 @@
-🛳 : Installing chart "empty" as "empty" in namespace "default"…
-👏  Done!
+🛳  Installing chart "empty" as "empty" in namespace "default"…
+👏 Done!
