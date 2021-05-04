@@ -23,9 +23,11 @@ import (
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/rancher-sandbox/hypper/internal/test"
+	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/stretchr/testify/assert"
-	"helm.sh/helm/v3/pkg/chart"
+
+	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/time"
 )
@@ -65,7 +67,7 @@ func TestInstallAllSharedDeps(t *testing.T) {
 
 	for _, tcase := range []struct {
 		name       string
-		chart      *chart.Chart
+		chart      *helmChart.Chart
 		golden     string
 		wantError  bool
 		error      string
@@ -174,9 +176,12 @@ func TestInstallSharedDep(t *testing.T) {
 		{
 			name: "dry-run-is-passed",
 			dep: &chart.Dependency{
-				Name:       "testdata/charts/vanilla-helm",
-				Version:    "0.1.0",
-				Repository: "",
+				Dependency: &helmChart.Dependency{
+					Name:       "testdata/charts/vanilla-helm",
+					Version:    "0.1.0",
+					Repository: "",
+				},
+				IsOptional: false,
 			},
 			wantDryRun: true,
 			status:     "pending-install",
@@ -184,9 +189,12 @@ func TestInstallSharedDep(t *testing.T) {
 		{
 			name: "dep installed correctly",
 			dep: &chart.Dependency{
-				Name:       "testdata/charts/vanilla-helm",
-				Version:    "^0.1.0",
-				Repository: "",
+				Dependency: &helmChart.Dependency{
+					Name:       "testdata/charts/vanilla-helm",
+					Version:    "^0.1.0",
+					Repository: "",
+				},
+				IsOptional: false,
 			},
 			status:  "deployed",
 			ns:      "spaced",
@@ -195,9 +203,12 @@ func TestInstallSharedDep(t *testing.T) {
 		{
 			name: "dep with annot installed correctly",
 			dep: &chart.Dependency{
-				Name:       "testdata/charts/shared-dep",
-				Version:    "~0.1.0",
-				Repository: "",
+				Dependency: &helmChart.Dependency{
+					Name:       "testdata/charts/shared-dep",
+					Version:    "~0.1.0",
+					Repository: "",
+				},
+				IsOptional: false,
 			},
 			status:  "deployed",
 			ns:      "my-shared-dep-ns",
@@ -206,9 +217,12 @@ func TestInstallSharedDep(t *testing.T) {
 		{
 			name: "install non-existent dep",
 			dep: &chart.Dependency{
-				Name:       "nonexistent-chart",
-				Version:    "0.1.0",
-				Repository: "",
+				Dependency: &helmChart.Dependency{
+					Name:       "nonexistent-chart",
+					Version:    "0.1.0",
+					Repository: "",
+				},
+				IsOptional: false,
 			},
 			wantError: true,
 			error:     "failed to download \"nonexistent-chart\" (hint: running `helm repo update` may help)",
@@ -216,9 +230,12 @@ func TestInstallSharedDep(t *testing.T) {
 		{
 			name: "shared-dep version cannot be found",
 			dep: &chart.Dependency{
-				Name:       "testdata/charts/shared-dep",
-				Version:    "1.1.0",
-				Repository: "",
+				Dependency: &helmChart.Dependency{
+					Name:       "testdata/charts/shared-dep",
+					Version:    "1.1.0",
+					Repository: "",
+				},
+				IsOptional: false,
 			},
 			wantError: true,
 			error:     "Satisfiable chart version not found; 0.1.0 is not equal to 1.1.0",
@@ -226,9 +243,12 @@ func TestInstallSharedDep(t *testing.T) {
 		{
 			name: "shared-dep version non-parseable",
 			dep: &chart.Dependency{
-				Name:       "testdata/charts/shared-dep",
-				Version:    "foo0.1.0",
-				Repository: "",
+				Dependency: &helmChart.Dependency{
+					Name:       "testdata/charts/shared-dep",
+					Version:    "foo0.1.0",
+					Repository: "",
+				},
+				IsOptional: false,
 			},
 			wantError: true,
 			error:     "improper constraint: foo0.1.0",

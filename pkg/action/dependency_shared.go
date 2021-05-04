@@ -17,18 +17,15 @@ limitations under the License.
 package action
 
 import (
-	"fmt"
-
 	"github.com/Masterminds/log-go"
-	logio "github.com/Masterminds/log-go/io"
 	"github.com/Masterminds/semver/v3"
 	"github.com/gosuri/uitable"
 	"github.com/pkg/errors"
+	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
-	"gopkg.in/yaml.v2"
 
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chart"
+	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
@@ -50,38 +47,25 @@ func NewSharedDependency(cfg *Configuration) *SharedDependency {
 	}
 }
 
-type dependencies []*chart.Dependency
-
 // List executes 'hypper shared-dep list'.
 func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, logger log.Logger) error {
-
-	wWarn := logio.NewWriter(logger, log.WarnLevel)
-	wError := logio.NewWriter(logger, log.ErrorLevel)
 
 	c, err := loader.Load(chartpath)
 	if err != nil {
 		return err
 	}
 
-	_, ok := c.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
-	if !ok {
-		fmt.Fprintf(wWarn, "No shared dependencies in %s\n", chartpath)
-		return nil
-	}
-
-	depYaml := c.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
-	var deps dependencies
-	if err = yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
-		fmt.Fprintf(wError, "Chart.yaml metadata is malformed for chart %s\n", chartpath)
+	sharedDeps, err := chart.GetSharedDeps(c, logger)
+	if err != nil {
 		return err
 	}
 
-	return d.printSharedDependencies(chartpath, logger, deps, settings)
+	return d.printSharedDependencies(chartpath, logger, sharedDeps, settings)
 }
 
 // SharedDependencyStatus returns a string describing the status of a dependency
 // viz a viz the releases in depNS context.
-func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS string, depVersion string) (string, error) {
+func (d *SharedDependency) SharedDependencyStatus(depChart *helmChart.Chart, depNS string, depVersion string) (string, error) {
 
 	// TODO refactor GetName() into GetName(){ret error} and GetNameFromAnnot()
 	depName, err := GetName(depChart, "")
@@ -119,7 +103,7 @@ func (d *SharedDependency) SharedDependencyStatus(depChart *chart.Chart, depNS s
 
 // printSharedDependencies prints all of the shared dependencies in the yaml file.
 // It will respect settings.NamespaceFromFlag when iterating through releases.
-func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.Logger, deps dependencies, settings *cli.EnvSettings) error {
+func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.Logger, deps []*chart.Dependency, settings *cli.EnvSettings) error {
 
 	table := uitable.New()
 	table.MaxColWidth = 80

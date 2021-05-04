@@ -26,11 +26,13 @@ import (
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
+
+	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
-	"gopkg.in/yaml.v2"
+
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chart"
+	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
@@ -59,7 +61,7 @@ func NewInstall(cfg *Configuration) *Install {
 
 // CheckDependencies checks the dependencies for a chart.
 // by wrapping action.CheckDependencies
-func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
+func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error {
 	return action.CheckDependencies(ch, reqs)
 }
 
@@ -67,7 +69,7 @@ func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
 //
 // If DryRun is set to true, this will prepare the release, but not install it
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
+func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	if lvl >= 10 {
 		return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
@@ -117,7 +119,7 @@ func (i *Install) NameAndChart(args []string) (string, string, error) {
 // checkIfInstallable validates if a chart can be installed
 //
 // Application chart type is only installable
-func CheckIfInstallable(ch *chart.Chart) error {
+func CheckIfInstallable(ch *helmChart.Chart) error {
 	switch ch.Metadata.Type {
 	case "", "application":
 		return nil
@@ -131,17 +133,15 @@ func CheckIfInstallable(ch *chart.Chart) error {
 // It will check for malformed chart.Metadata.Annotations, and skip those shared
 // dependencies already deployed.
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
+func (i *Install) InstallAllSharedDeps(chrt *helmChart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
 
-	if _, ok := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]; !ok {
-		logger.Debugf("%sNo shared dependencies in chart \"%s\"\n", strings.Repeat("  ", lvl), chrt.Name())
+	sharedDeps, err := chart.GetSharedDeps(chrt, logger)
+	if err == nil && len(sharedDeps) == 0 {
 		return nil
 	}
+
 	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name()))
-	depYaml := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
-	var deps dependencies
-	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
-		logger.Errorf("Chart.yaml metadata is malformed for chart \"%s\"\n", chrt.Name())
+	if err != nil {
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
 	}
 
-	for _, dep := range deps {
+	for _, dep := range sharedDeps {
 		found := false
 		depChart, err := i.LoadChartFromDep(dep, settings, logger)
 		if err != nil {
@@ -209,10 +209,10 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 	return nil
 }
 
-func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*chart.Chart, error) {
+func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
 	i.ChartPathOptions.RepoURL = dep.Repository
 	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
-	if err != nil {
+	if err != nil && !dep.IsOptional {
 		return nil, err
 	}
 
