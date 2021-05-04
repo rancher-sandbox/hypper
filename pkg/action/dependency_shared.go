@@ -107,7 +107,7 @@ func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.
 
 	table := uitable.New()
 	table.MaxColWidth = 80
-	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS", "NAMESPACE")
+	table.AddRow("NAME", "VERSION", "REPOSITORY", "STATUS", "NAMESPACE", "TYPE")
 	for _, dep := range deps {
 		chartPathOptions := action.ChartPathOptions{}
 		chartPathOptions.RepoURL = dep.Repository
@@ -141,7 +141,14 @@ func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.
 		if err != nil {
 			return err
 		}
-		table.AddRow(depChart.Name(), dep.Version, dep.Repository, depStatus, depNS)
+		var depType string
+		switch dep.IsOptional {
+		case true:
+			depType = "shared-optional"
+		case false:
+			depType = "shared"
+		}
+		table.AddRow(depChart.Name(), dep.Version, dep.Repository, depStatus, depNS, depType)
 	}
 	log.Infof(table.String())
 	return nil

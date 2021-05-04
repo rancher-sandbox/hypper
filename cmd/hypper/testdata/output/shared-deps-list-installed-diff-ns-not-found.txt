@@ -1,2 +1,2 @@
-NAME            	VERSION	REPOSITORY	STATUS       	NAMESPACE   
-shared-dep-empty	~0.1.0 	          	not-installed	ns-from-flag
+NAME            	VERSION	REPOSITORY	STATUS       	NAMESPACE   	TYPE  
+shared-dep-empty	~0.1.0 	          	not-installed	ns-from-flag	shared
