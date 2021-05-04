@@ -47,6 +47,7 @@ type Install struct {
 
 	// hypper specific
 	NoSharedDeps bool
+	OptionalDeps string
 
 	// Config stores the actionconfig so it can be retrieved and used again
 	Config *Configuration
@@ -155,25 +156,34 @@ func (i *Install) InstallAllSharedDeps(chrt *helmChart.Chart, settings *cli.EnvS
 	}
 
 	for _, dep := range sharedDeps {
-		if dep.IsOptional {
-			prompt := promptui.Prompt{
-				Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
-				Validate: func(input string) error {
-					if strings.ToLower(input) != "y" &&
-						strings.ToLower(input) != "n" &&
-						strings.ToLower(input) != "yes" &&
-						strings.ToLower(input) != "no" {
-						return errors.New("Invalid input")
-					}
-					return nil
-				},
-			}
-			result, err := prompt.Run()
-			if err != nil {
-				logger.Errorf("Prompt failed %v\n", err)
-			}
-			if result != "y" {
+		switch i.OptionalDeps {
+		case "all":
+			// install all deps, optional or not
+		case "none":
+			if dep.IsOptional {
 				continue
+			}
+		default: // ask
+			if dep.IsOptional {
+				prompt := promptui.Prompt{
+					Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
+					Validate: func(input string) error {
+						if strings.ToLower(input) != "y" &&
+							strings.ToLower(input) != "n" &&
+							strings.ToLower(input) != "yes" &&
+							strings.ToLower(input) != "no" {
+							return errors.New("Invalid input")
+						}
+						return nil
+					},
+				}
+				result, err := prompt.Run()
+				if err != nil {
+					logger.Errorf("Prompt failed %v\n", err)
+				}
+				if result != "y" {
+					continue
+				}
 			}
 		}
 

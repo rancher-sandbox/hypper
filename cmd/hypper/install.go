@@ -80,6 +80,7 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Install, valueOpts *values.Options) {
 	f.BoolVar(&client.CreateNamespace, "create-namespace", false, "create the release namespace if not present")
 	f.BoolVar(&client.NoSharedDeps, "no-shared-deps", false, "skip installation of shared dependencies")
+	f.StringVar(&client.OptionalDeps, "optional-deps", "ask", "install optional shared dependencies [default=ask|all|none]")
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
