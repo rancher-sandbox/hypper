@@ -37,6 +37,8 @@ import (
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
+
+	"github.com/manifoldco/promptui"
 )
 
 // Install is a composite type of Helm's Install type
@@ -153,6 +155,28 @@ func (i *Install) InstallAllSharedDeps(chrt *helmChart.Chart, settings *cli.EnvS
 	}
 
 	for _, dep := range sharedDeps {
+		if dep.IsOptional {
+			prompt := promptui.Prompt{
+				Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
+				Validate: func(input string) error {
+					if strings.ToLower(input) != "y" &&
+						strings.ToLower(input) != "n" &&
+						strings.ToLower(input) != "yes" &&
+						strings.ToLower(input) != "no" {
+						return errors.New("Invalid input")
+					}
+					return nil
+				},
+			}
+			result, err := prompt.Run()
+			if err != nil {
+				logger.Errorf("Prompt failed %v\n", err)
+			}
+			if result != "y" {
+				continue
+			}
+		}
+
 		found := false
 		depChart, err := i.LoadChartFromDep(dep, settings, logger)
 		if err != nil {
