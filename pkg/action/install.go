@@ -136,14 +136,14 @@ func CheckIfInstallable(ch *helmChart.Chart) error {
 // It will check for malformed chart.Metadata.Annotations, and skip those shared
 // dependencies already deployed.
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) InstallAllSharedDeps(chrt *helmChart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
+func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
 
-	sharedDeps, err := chart.GetSharedDeps(chrt, logger)
+	sharedDeps, err := chart.GetSharedDeps(parentChart, logger)
 	if err == nil && len(sharedDeps) == 0 {
 		return nil
 	}
 
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name()))
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), parentChart.Name()))
 	if err != nil {
 		return err
 	}
@@ -192,8 +192,16 @@ func (i *Install) InstallAllSharedDeps(chrt *helmChart.Chart, settings *cli.EnvS
 		if err != nil {
 			return err
 		}
-		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
-		ns := GetNamespace(depChart, GetNamespace(chrt, settings.Namespace()))
+
+		// calculate which ns corresponds to the dependency
+		var ns string
+		if settings.NamespaceFromFlag {
+			ns = settings.Namespace()
+		} else {
+			// either shared-dep has annotations, or the parent has, or we use the default ns
+			ns = GetNamespace(depChart, GetNamespace(parentChart, settings.Namespace()))
+		}
+		i.Config.SetNamespace(ns)
 
 		name, err := GetName(depChart, "")
 		if err != nil {
@@ -201,7 +209,6 @@ func (i *Install) InstallAllSharedDeps(chrt *helmChart.Chart, settings *cli.EnvS
 		}
 
 		// obtain the releases for the specific ns that we are searching into
-		i.Config.SetNamespace(ns)
 		clientList := NewList(i.Config)
 		clientList.SetStateMask()
 		releases, err := clientList.Run()

@@ -60,7 +60,7 @@ func (d *SharedDependency) List(chartpath string, settings *cli.EnvSettings, log
 		return err
 	}
 
-	return d.printSharedDependencies(chartpath, logger, sharedDeps, settings)
+	return d.printSharedDependencies(c, logger, sharedDeps, settings)
 }
 
 // SharedDependencyStatus returns a string describing the status of a dependency
@@ -103,7 +103,7 @@ func (d *SharedDependency) SharedDependencyStatus(depChart *helmChart.Chart, dep
 
 // printSharedDependencies prints all of the shared dependencies in the yaml file.
 // It will respect settings.NamespaceFromFlag when iterating through releases.
-func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.Logger, deps []*chart.Dependency, settings *cli.EnvSettings) error {
+func (d *SharedDependency) printSharedDependencies(parentChart *helmChart.Chart, logger log.Logger, deps []*chart.Dependency, settings *cli.EnvSettings) error {
 
 	table := uitable.New()
 	table.MaxColWidth = 80
@@ -128,7 +128,7 @@ func (d *SharedDependency) printSharedDependencies(chartpath string, logger log.
 			depNS = settings.Namespace()
 		} else {
 			// either shared-dep has annotations, or the parent has, or we use the default ns
-			depNS = GetNamespace(depChart, GetNamespace(depChart, settings.Namespace()))
+			depNS = GetNamespace(depChart, GetNamespace(parentChart, settings.Namespace()))
 		}
 		d.Config.SetNamespace(depNS)
 
