@@ -163,7 +163,7 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 			if dep.IsOptional {
 				continue
 			}
-		default: // ask
+		case "ask":
 			if dep.IsOptional {
 				prompt := promptui.Prompt{
 					Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
@@ -185,6 +185,8 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 					continue
 				}
 			}
+		default:
+			return errors.New("Incorrect value for --optional-deps. Valid values: [default=ask|all|none]")
 		}
 
 		found := false
