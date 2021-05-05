@@ -6,6 +6,7 @@
 [WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is recommended
 
 ==> Linting testdata/testcharts/chart-with-bad-subcharts/charts/bad-subchart
 [ERROR] Chart.yaml: name is required
@@ -18,6 +19,7 @@
 [WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is recommended
 
 ==> Linting testdata/testcharts/chart-with-bad-subcharts/charts/good-subchart
 [INFO] Chart.yaml: icon is recommended
@@ -25,5 +27,6 @@
 [WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is recommended
 
 Error: 3 chart(s) linted, 2 chart(s) failed

@@ -6,5 +6,6 @@
 [WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
 [WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+[WARNING] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is recommended
 
 Error: 1 chart(s) linted, 1 chart(s) failed

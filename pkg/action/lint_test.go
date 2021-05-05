@@ -149,7 +149,7 @@ func TestLint_ChartWithWarnings(t *testing.T) {
 		testCharts := []string{chartWithNoTemplatesDir}
 		testLint := NewLint()
 		testLint.Strict = true
-		if result := testLint.Run(testCharts, values); len(result.Errors) != 4 {
+		if result := testLint.Run(testCharts, values); len(result.Errors) != 5 {
 			t.Error("expected 4 error, but got", len(result.Errors))
 		}
 	})

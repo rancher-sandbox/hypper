@@ -34,7 +34,7 @@ const goodChartDir = "rules/testdata/goodchart"
 
 func TestBadChart(t *testing.T) {
 	m := All(badChartDir, values, namespace, strict).Messages
-	if len(m) != 4 {
+	if len(m) != 5 {
 		t.Errorf("Number of errors %v", len(m))
 		t.Errorf("All didn't fail with expected errors, got %#v", m)
 	}
@@ -58,6 +58,11 @@ func TestBadChart(t *testing.T) {
 		}
 		if msg.Severity == support.WarningSev {
 			if strings.Contains(msg.Err.Error(), "Setting hypper.cattle.io/shared-dependencies in annotations is recommended") {
+				w3 = true
+			}
+		}
+		if msg.Severity == support.WarningSev {
+			if strings.Contains(msg.Err.Error(), "Setting hypper.cattle.io/optional-dependencies in annotations is recommended") {
 				w3 = true
 			}
 		}

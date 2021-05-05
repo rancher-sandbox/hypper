@@ -11,3 +11,6 @@ annotations:
   "hypper.cattle.io/shared-dependencies": |
     - name: shareddep
       version: "~0.1.0"
+  "hypper.cattle.io/optional-dependencies": |
+    - name: shareddep2
+      version: "~0.1.0"
