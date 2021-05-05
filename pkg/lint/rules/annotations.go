@@ -40,6 +40,7 @@ func Annotations(linter *support.Linter) {
 	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperRelease(chartFile))
 	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperNamespace(chartFile))
 	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperSharedDeps(chartFile))
+	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperOptionalSharedDeps(chartFile))
 	// If we have shared deps annotations then check its correct formatting
 	// This is an Error severity check!
 	if _, ok := chartFile.Annotations["hypper.cattle.io/shared-dependencies"]; ok {
@@ -72,12 +73,35 @@ func validateChartHypperSharedDeps(chart *helmChart.Metadata) error {
 	return nil
 }
 
+// validateChartHypperOptionalSharedDeps checks that optiona-dependencies hypper annotation is set
+func validateChartHypperOptionalSharedDeps(chart *helmChart.Metadata) error {
+	if _, ok := chart.Annotations["hypper.cattle.io/optional-dependencies"]; !ok {
+		return errors.New("Setting hypper.cattle.io/optional-dependencies in annotations is recommended")
+	}
+	return nil
+}
+
 // validateChartHypperSharedDepsCorrect checks that shared deps are in the correct format
 func validateChartHypperSharedDepsCorrect(chart *helmChart.Metadata) error {
 	depYaml := chart.Annotations["hypper.cattle.io/shared-dependencies"]
 	var deps []*helmChart.Dependency
 	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
 		return errors.New("Shared dependencies list is broken, please check the correct format")
+	}
+	for _, d := range deps {
+		if err := validateSharedDepVersion(d.Version); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validateChartHypperOptionalSharedDepsCorrect checks that optional shared deps are in the correct format
+func validateChartHypperOptionalSharedDepsCorrect(chart *helmChart.Metadata) error {
+	depYaml := chart.Annotations["hypper.cattle.io/optional-dependencies"]
+	var deps []*helmChart.Dependency
+	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
+		return errors.New("Optional shared dependencies list is broken, please check the correct format")
 	}
 	for _, d := range deps {
 		if err := validateSharedDepVersion(d.Version); err != nil {
