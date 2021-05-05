@@ -137,7 +137,9 @@ func TestInstallAllSharedDeps(t *testing.T) {
 		log.Current = logger
 
 		instAction := installAction(t)
-		if tcase.optionalDeps != "" {
+		if tcase.optionalDeps == "" {
+			instAction.OptionalDeps = "all"
+		} else {
 			instAction.OptionalDeps = tcase.optionalDeps
 		}
 
