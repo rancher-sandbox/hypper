@@ -1,0 +1,2 @@
+🛳  Installing shared dependencies for chart "hello":
+🛳  - Installing chart "empty" as "empty" in namespace "spaced"…

@@ -66,14 +66,15 @@ func TestInstallReleaseCycle(t *testing.T) {
 func TestInstallAllSharedDeps(t *testing.T) {
 
 	for _, tcase := range []struct {
-		name       string
-		chart      *helmChart.Chart
-		golden     string
-		wantError  bool
-		error      string
-		wantDebug  bool
-		debug      string
-		addRelStub bool
+		name         string
+		chart        *helmChart.Chart
+		golden       string
+		wantError    bool
+		error        string
+		wantDebug    bool
+		debug        string
+		addRelStub   bool
+		optionalDeps string
 	}{
 		{
 			name:      "chart has no shared-deps",
@@ -107,6 +108,18 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			wantError:  true,
 			error:      "Shared dep version out of range; 0.1.0 is not equal to 1.1.0",
 		},
+		{
+			name:         "optional dependencies get correctly installed",
+			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
+			golden:       "output/install-correctly-optional-shared-deps.txt",
+			optionalDeps: "all",
+		},
+		{
+			name:         "optional dependencies get correctly skipped",
+			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
+			golden:       "output/skip-optional-shared-deps.txt",
+			optionalDeps: "none",
+		},
 	} {
 		settings := cli.New()
 		settings.Debug = tcase.wantDebug
@@ -124,6 +137,9 @@ func TestInstallAllSharedDeps(t *testing.T) {
 		log.Current = logger
 
 		instAction := installAction(t)
+		if tcase.optionalDeps != "" {
+			instAction.OptionalDeps = tcase.optionalDeps
+		}
 
 		if tcase.addRelStub {
 			now := time.Now()
