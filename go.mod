@@ -17,6 +17,7 @@ require (
 	github.com/gosuri/uitable v0.0.4
 	github.com/jinzhu/copier v0.2.8
 	github.com/kyokomi/emoji/v2 v2.2.8
+	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
@@ -31,3 +32,6 @@ require (
 	k8s.io/client-go v0.20.4
 	sigs.k8s.io/yaml v1.2.0
 )
+
+// manifoldcos code is not thread safe
+replace github.com/manifoldco/promptui => github.com/1lann/promptui v0.8.1-0.20201231190244-d8f2159af2b2
