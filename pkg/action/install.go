@@ -230,7 +230,7 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 			}
 		}
 		if !found {
-			if _, err = i.InstallSharedDep(dep, settings, logger, lvl); err != nil {
+			if _, err = i.InstallSharedDep(dep, ns, settings, logger, lvl); err != nil {
 				return err
 			}
 		}
@@ -259,7 +259,7 @@ func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSetti
 // It does this by creating a new action.Install and setting it correctly,
 // loading the chart, checking for constraints, and delegating the install.Run()
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
+func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
@@ -310,7 +310,7 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:
-	SetNamespace(clientInstall, chartRequested, i.Namespace, false)
+	SetNamespace(clientInstall, chartRequested, ns, settings.NamespaceFromFlag)
 	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, dep.Name)
 	if err != nil {
 		return nil, err

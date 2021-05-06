@@ -291,7 +291,7 @@ func TestInstallSharedDep(t *testing.T) {
 
 		instAction.DryRun = tcase.wantDryRun
 
-		res, err := instAction.InstallSharedDep(tcase.dep, settings, log.Current, 0)
+		res, err := instAction.InstallSharedDep(tcase.dep, tcase.ns, settings, log.Current, 0)
 		if (err != nil) != tcase.wantError {
 			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
 		}
