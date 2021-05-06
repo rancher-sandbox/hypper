@@ -18,6 +18,8 @@ package action
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -165,23 +167,7 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 			}
 		case "ask":
 			if dep.IsOptional {
-				prompt := promptui.Prompt{
-					Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
-					Validate: func(input string) error {
-						if strings.ToLower(input) != "y" &&
-							strings.ToLower(input) != "n" &&
-							strings.ToLower(input) != "yes" &&
-							strings.ToLower(input) != "no" {
-							return errors.New("Invalid input")
-						}
-						return nil
-					},
-				}
-				result, err := prompt.Run()
-				if err != nil {
-					logger.Errorf("Prompt failed %v\n", err)
-				}
-				if result != "y" {
+				if !promptUserForOptionalDependencyInstall(dep, logger, os.Stdin) {
 					continue
 				}
 			}
@@ -383,4 +369,32 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 		return res, err
 	}
 	return res, nil
+}
+
+// promptUserForOptionalDependencyInstall prompts interactively to install optional
+// dependencies and returns a boolean if so.
+// This code is encapsulated here for easier testing for now, and will be moved
+// out of pkg/ in the future.
+func promptUserForOptionalDependencyInstall(dep *chart.Dependency, logger log.Logger, stdin io.ReadCloser) bool {
+	prompt := promptui.Prompt{
+		Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
+		Validate: func(input string) error {
+			if strings.ToLower(input) != "y" &&
+				strings.ToLower(input) != "n" &&
+				strings.ToLower(input) != "yes" &&
+				strings.ToLower(input) != "no" {
+				return errors.New("Invalid input")
+			}
+			return nil
+		},
+		Stdin: stdin,
+	}
+	result, err := prompt.Run()
+	if err != nil {
+		logger.Fatalf("Prompt failed %v\n", err)
+	}
+	if strings.ToLower(result) == "y" || strings.ToLower(result) == "yes" {
+		return true
+	}
+	return false
 }

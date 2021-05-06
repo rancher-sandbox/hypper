@@ -18,6 +18,8 @@ package action
 
 import (
 	"bytes"
+	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/Masterminds/log-go"
@@ -421,4 +423,61 @@ func TestCheckIfInstallable(t *testing.T) {
 		t.Fatal("expected an error")
 	}
 	is.Equal("library charts are not installable", err.Error())
+}
+
+func TestPromptUserForOptionalDependencyInstall(t *testing.T) {
+	defaultDep := &chart.Dependency{
+		Dependency: &helmChart.Dependency{
+			Name:       "testdata/charts/vanilla-helm",
+			Version:    "^0.1.0",
+			Repository: "",
+		},
+	}
+	for _, tcase := range []struct {
+		name      string
+		dep       *chart.Dependency
+		input     string
+		doInstall bool
+	}{
+		{
+			name:      "prompt for yes",
+			dep:       defaultDep,
+			input:     "yes",
+			doInstall: true,
+		},
+		{
+			name:      "prompt for y",
+			dep:       defaultDep,
+			input:     "y",
+			doInstall: true,
+		},
+		{
+			name:      "prompt for no",
+			dep:       defaultDep,
+			input:     "no",
+			doInstall: false,
+		},
+		{
+			name:      "prompt for n",
+			dep:       defaultDep,
+			input:     "n",
+			doInstall: false,
+		},
+		{
+			name:      "prompt for yEs",
+			dep:       defaultDep,
+			input:     "yEs",
+			doInstall: true,
+		},
+	} {
+		is := assert.New(t)
+
+		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+		buf := new(bytes.Buffer)
+		logger := logcli.NewStandard()
+		logger.FatalOut = buf
+		log.Current = logger
+
+		is.Equal(tcase.doInstall, promptUserForOptionalDependencyInstall(tcase.dep, logger, ioutil.NopCloser(strings.NewReader(tcase.input+"\n"))))
+	}
 }
