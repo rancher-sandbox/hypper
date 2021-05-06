@@ -139,7 +139,6 @@ func TestSharedDependencyListCmd(t *testing.T) {
 
 	if runtime.GOOS == "windows" {
 		noSuchChart.golden = "output/shared-deps-list-no-chart-windows.txt"
-		noSharedDependencies.golden = "output/shared-deps-list-no-shared-deps-windows.txt"
 	}
 
 	tests := []cmdTestCase{
