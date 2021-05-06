@@ -68,15 +68,16 @@ func TestInstallReleaseCycle(t *testing.T) {
 func TestInstallAllSharedDeps(t *testing.T) {
 
 	for _, tcase := range []struct {
-		name         string
-		chart        *helmChart.Chart
-		golden       string
-		wantError    bool
-		error        string
-		wantDebug    bool
-		debug        string
-		addRelStub   bool
-		optionalDeps string
+		name           string
+		chart          *helmChart.Chart
+		golden         string
+		wantError      bool
+		error          string
+		wantDebug      bool
+		debug          string
+		addRelStub     bool
+		optionalDeps   string
+		wantNSFromFlag string
 	}{
 		{
 			name:      "chart has no shared-deps",
@@ -95,6 +96,17 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			name:   "dependencies get correctly installed",
 			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
 			golden: "output/install-correctly-shared-deps.txt",
+		},
+		{
+			name:   "dependencies without annotations get correctly installed",
+			chart:  buildChart(withHypperAnnotations(), withSharedDepsWithoutAnnotations()),
+			golden: "output/install-shared-deps-without-annotations.txt",
+		},
+		{
+			name:           "dependencies with NamespaceFromFlag get correctly installed",
+			chart:          buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:         "output/install-shared-deps-with-ns-from-flag.txt",
+			wantNSFromFlag: "ns-from-flag",
 		},
 		{
 			name:       "dependencies are already installed",
@@ -123,7 +135,13 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			optionalDeps: "none",
 		},
 	} {
-		settings := cli.New()
+		var settings *cli.EnvSettings
+		if tcase.wantNSFromFlag != "" {
+			settings = cli.NewWithNamespace(tcase.wantNSFromFlag)
+			settings.NamespaceFromFlag = true
+		} else {
+			settings = cli.New()
+		}
 		settings.Debug = tcase.wantDebug
 
 		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
