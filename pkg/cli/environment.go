@@ -84,8 +84,14 @@ type EnvSettings struct {
 
 // New is a constructor of EnvSettings
 func New() *EnvSettings {
+	return NewWithNamespace(os.Getenv("HYPPER_NAMESPACE"))
+}
+
+// NewWithNamespace is a constructor of EnvSettings, that accepts a ns
+// Shouldn't be used outside of tests.
+func NewWithNamespace(ns string) *EnvSettings {
 	env := &EnvSettings{
-		namespace:        os.Getenv("HYPPER_NAMESPACE"),
+		namespace:        ns,
 		MaxHistory:       envIntOr("HYPPER_MAX_HISTORY", defaultMaxHistory),
 		KubeContext:      os.Getenv("HYPPER_KUBECONTEXT"),
 		KubeToken:        os.Getenv("HYPPER_KUBETOKEN"),
