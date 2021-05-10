@@ -26,6 +26,8 @@ type Dependency struct {
 	IsOptional bool `json:"-"`
 }
 
+// GetSharedDeps returns a *[] of all shared and optional dependencies in a
+// chart, read from annotations.
 func GetSharedDeps(c *helmChart.Chart, logger log.Logger) ([]*Dependency, error) {
 
 	sharedDeps := make([]*Dependency, 0)
