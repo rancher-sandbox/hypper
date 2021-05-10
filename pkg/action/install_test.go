@@ -17,8 +17,9 @@ limitations under the License.
 package action
 
 import (
+	"bufio"
 	"bytes"
-	"io/ioutil"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -439,7 +440,7 @@ func TestCheckIfInstallable(t *testing.T) {
 	is.Equal("library charts are not installable", err.Error())
 }
 
-func TestPromptUserForOptionalDependencyInstall(t *testing.T) {
+func TestPromptBool(t *testing.T) {
 	defaultDep := &chart.Dependency{
 		Dependency: &helmChart.Dependency{
 			Name:       "testdata/charts/vanilla-helm",
@@ -483,15 +484,24 @@ func TestPromptUserForOptionalDependencyInstall(t *testing.T) {
 			input:     "yEs",
 			doInstall: true,
 		},
+		{
+			name:      "prompt for enter",
+			dep:       defaultDep,
+			input:     "",
+			doInstall: true,
+		},
 	} {
 		is := assert.New(t)
 
 		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 		buf := new(bytes.Buffer)
 		logger := logcli.NewStandard()
-		logger.FatalOut = buf
+		logger.InfoOut = buf
 		log.Current = logger
 
-		is.Equal(tcase.doInstall, promptUserForOptionalDependencyInstall(tcase.dep, logger, ioutil.NopCloser(strings.NewReader(tcase.input+"\n"))))
+		reader := bufio.NewReader(strings.NewReader(tcase.input + "\n"))
+		question := fmt.Sprintf("Install optional shared dependency \"%s\" ?", tcase.dep.Name)
+
+		is.Equal(tcase.doInstall, promptBool(question, reader, logger))
 	}
 }

@@ -17,8 +17,8 @@ limitations under the License.
 package action
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -33,7 +33,6 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 
-	"github.com/manifoldco/promptui"
 	"helm.sh/helm/v3/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -178,7 +177,9 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 			}
 		case OptionalDepsAsk:
 			if dep.IsOptional {
-				if !promptUserForOptionalDependencyInstall(dep, logger, os.Stdin) {
+				reader := bufio.NewReader(os.Stdin)
+				question := eyecandy.ESPrintf(settings.NoEmojis, ":red_question_mark:Install optional shared dependency \"%s\" ?", dep.Name)
+				if !promptBool(question, reader, logger) {
 					continue
 				}
 			}
@@ -380,30 +381,21 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *c
 	return res, nil
 }
 
-// promptUserForOptionalDependencyInstall prompts interactively to install optional
-// dependencies and returns a boolean if so.
-// This code is encapsulated here for easier testing for now, and will be moved
-// out of pkg/ in the future.
-func promptUserForOptionalDependencyInstall(dep *chart.Dependency, logger log.Logger, stdin io.ReadCloser) bool {
-	prompt := promptui.Prompt{
-		Label: fmt.Sprintf("Install optional shared dependency \"%s\" ?", dep.Name),
-		Validate: func(input string) error {
-			if strings.ToLower(input) != "y" &&
-				strings.ToLower(input) != "n" &&
-				strings.ToLower(input) != "yes" &&
-				strings.ToLower(input) != "no" {
-				return errors.New("Invalid input")
-			}
-			return nil
-		},
-		Stdin: stdin,
+func promptBool(question string, reader *bufio.Reader, logger log.Logger) bool {
+	for {
+		log.Infof("%s [Y/n]:", question)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" || response == "" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
 	}
-	result, err := prompt.Run()
-	if err != nil {
-		logger.Fatalf("Prompt failed %v\n", err)
-	}
-	if strings.ToLower(result) == "y" || strings.ToLower(result) == "yes" {
-		return true
-	}
-	return false
 }
