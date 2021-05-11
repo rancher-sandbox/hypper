@@ -32,7 +32,26 @@ import (
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
+	"github.com/thediveo/enumflag"
 )
+
+type OptionalDepsMode enumflag.Flag
+
+// define enum values of --optional-deps flag
+const (
+	OptionalDepsAsk OptionalDepsMode = iota
+	OptionalDepsAll
+	OptionalDepsNone
+)
+
+// map enum values of --optional-deps flag to string representation
+var OptionalDepsModeIds = map[OptionalDepsMode][]string{
+	OptionalDepsAsk:  {"ask"},
+	OptionalDepsAll:  {"all"},
+	OptionalDepsNone: {"none"},
+}
+
+var optionaldepsmode = OptionalDepsAsk
 
 const installDesc = `
 This command installs a chart.
@@ -80,7 +99,8 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Install, valueOpts *values.Options) {
 	f.BoolVar(&client.CreateNamespace, "create-namespace", false, "create the release namespace if not present")
 	f.BoolVar(&client.NoSharedDeps, "no-shared-deps", false, "skip installation of shared dependencies")
-	f.StringVar(&client.OptionalDeps, "optional-deps", "ask", "install optional shared dependencies [default=ask|all|none]")
+	f.Var(enumflag.New(&optionaldepsmode, "option", OptionalDepsModeIds, enumflag.EnumCaseInsensitive),
+		"optional-deps", "install optional shared dependencies [ask|all|none]")
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
@@ -92,6 +112,16 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	if client.Version == "" && client.Devel {
 		logger.Debug("setting version to >0.0.0-0")
 		client.Version = ">0.0.0-0"
+	}
+
+	// map flag to action.OptionalDeps strategy
+	switch optionaldepsmode {
+	case OptionalDepsAsk:
+		client.OptionalDeps = action.OptionalDepsAsk
+	case OptionalDepsAll:
+		client.OptionalDeps = action.OptionalDepsAll
+	case OptionalDepsNone:
+		client.OptionalDeps = action.OptionalDepsNone
 	}
 
 	chart, err := client.Chart(args)

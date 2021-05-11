@@ -1,2 +1,1 @@
-🛳  Installing shared dependencies for chart "empty":
-Error: Incorrect value for --optional-deps. Valid values: [default=ask|all|none]
+Error: invalid argument "foo" for "--optional-deps" flag: must be 'all', 'ask', 'none'
