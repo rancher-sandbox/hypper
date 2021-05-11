@@ -76,7 +76,7 @@ func TestInstallAllSharedDeps(t *testing.T) {
 		wantDebug      bool
 		debug          string
 		addRelStub     bool
-		optionalDeps   string
+		optionalDeps   optionalDepsStrategy
 		wantNSFromFlag string
 	}{
 		{
@@ -126,13 +126,13 @@ func TestInstallAllSharedDeps(t *testing.T) {
 			name:         "optional dependencies get correctly installed",
 			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
 			golden:       "output/install-correctly-optional-shared-deps.txt",
-			optionalDeps: "all",
+			optionalDeps: OptionalDepsAll,
 		},
 		{
 			name:         "optional dependencies get correctly skipped",
 			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
 			golden:       "output/skip-optional-shared-deps.txt",
-			optionalDeps: "none",
+			optionalDeps: OptionalDepsNone,
 		},
 	} {
 		var settings *cli.EnvSettings
@@ -157,11 +157,7 @@ func TestInstallAllSharedDeps(t *testing.T) {
 		log.Current = logger
 
 		instAction := installAction(t)
-		if tcase.optionalDeps == "" {
-			instAction.OptionalDeps = "all"
-		} else {
-			instAction.OptionalDeps = tcase.optionalDeps
-		}
+		instAction.OptionalDeps = tcase.optionalDeps
 
 		if tcase.addRelStub {
 			now := time.Now()
