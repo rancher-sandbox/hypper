@@ -22,6 +22,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
+	"github.com/rancher-sandbox/hypper/internal/test"
 	"github.com/stretchr/testify/assert"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 )
@@ -49,6 +50,23 @@ func TestGetSharedDeps(t *testing.T) {
 		"    version: \"0.1.0\"" + "\n" +
 		"    repository: \"\"" + "\n"
 
+	chrtWithMalformedSharedDeps := Mock(&MockChartOptions{
+		Name:    "chartname",
+		Version: "0.1.0",
+	})
+	chrtWithMalformedSharedDeps.Metadata.Annotations = make(map[string]string)
+	chrtWithMalformedSharedDeps.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = `- name: vanilla-helm
+			version: "0.1.0"
+		repository: "file://testdata/vanilla-helm"`
+	chrtWithMalformedOptionalDeps := Mock(&MockChartOptions{
+		Name:    "chartname",
+		Version: "0.1.0",
+	})
+	chrtWithMalformedOptionalDeps.Metadata.Annotations = make(map[string]string)
+	chrtWithMalformedOptionalDeps.Metadata.Annotations["hypper.cattle.io/optional-dependencies"] = `- name: vanilla-helm
+			version: "0.1.0"
+		repository: "file://testdata/vanilla-helm"`
+
 	for _, tcase := range []struct {
 		name       string
 		chart      *helmChart.Chart
@@ -66,16 +84,36 @@ func TestGetSharedDeps(t *testing.T) {
 				Version: "0.1.0",
 			}),
 			depsNumber: 0,
+			wantDebug:  true,
+			golden:     "output/get-shared-deps-no-deps.txt",
 		},
 		{
 			name:       "chart has only shared-deps",
 			chart:      chrtWithSharedDeps,
 			depsNumber: 1,
+			wantDebug:  true,
+			golden:     "output/get-shared-deps-no-optional-deps.txt",
 		},
 		{
 			name:       "chart has shared and optional deps",
 			chart:      chrtWithSharedAndOptionalDeps,
 			depsNumber: 2,
+		},
+		{
+			name:       "chart has malformed shared deps",
+			chart:      chrtWithMalformedSharedDeps,
+			depsNumber: 0,
+			golden:     "output/get-shared-deps-malformed-shared-deps.txt",
+			err:        "yaml: line 2: found a tab character that violates indentation",
+			wantError:  true,
+		},
+		{
+			name:       "chart has malformed optional deps",
+			chart:      chrtWithMalformedOptionalDeps,
+			depsNumber: 0,
+			golden:     "output/get-shared-deps-malformed-optional-deps.txt",
+			err:        "yaml: line 2: found a tab character that violates indentation",
+			wantError:  true,
 		},
 	} {
 		is := assert.New(t)
@@ -95,12 +133,14 @@ func TestGetSharedDeps(t *testing.T) {
 		deps, err := GetSharedDeps(tcase.chart, logger)
 
 		if (err != nil) != tcase.wantError {
-			t.Errorf("expected error, got '%v'", err)
+			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
 		}
 		if tcase.wantError {
 			is.Equal(tcase.err, err.Error())
 		}
-
+		if tcase.golden != "" {
+			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
+		}
 		is.Equal(tcase.depsNumber, len(deps))
 	}
 }
