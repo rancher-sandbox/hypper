@@ -33,14 +33,25 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 
+	"github.com/manifoldco/promptui"
 	"helm.sh/helm/v3/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
+)
 
-	"github.com/manifoldco/promptui"
+// OptionalDepsStrategy defines a strategy for determining wether to use optional deps
+type optionalDepsStrategy int
+
+const (
+	// OptionalDepsAll will use all the optional deps
+	OptionalDepsAll optionalDepsStrategy = iota
+	// OptionalDepsAsk will interactively prompt on each optional dep
+	OptionalDepsAsk
+	// OptionalDepsNone with skip all the optional deps
+	OptionalDepsNone
 )
 
 // Install is a composite type of Helm's Install type
@@ -49,7 +60,7 @@ type Install struct {
 
 	// hypper specific
 	NoSharedDeps bool
-	OptionalDeps string
+	OptionalDeps optionalDepsStrategy
 
 	// Config stores the actionconfig so it can be retrieved and used again
 	Config *Configuration
@@ -159,20 +170,18 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 
 	for _, dep := range sharedDeps {
 		switch i.OptionalDeps {
-		case "all":
+		case OptionalDepsAll:
 			// install all deps, optional or not
-		case "none":
+		case OptionalDepsNone:
 			if dep.IsOptional {
 				continue
 			}
-		case "ask":
+		case OptionalDepsAsk:
 			if dep.IsOptional {
 				if !promptUserForOptionalDependencyInstall(dep, logger, os.Stdin) {
 					continue
 				}
 			}
-		default:
-			return errors.New("Incorrect value for --optional-deps. Valid values: [default=ask|all|none]")
 		}
 
 		found := false
