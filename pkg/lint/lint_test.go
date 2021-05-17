@@ -56,12 +56,12 @@ func TestBadChart(t *testing.T) {
 				w2 = true
 			}
 		}
-		if msg.Severity == support.WarningSev {
+		if msg.Severity == support.InfoSev {
 			if strings.Contains(msg.Err.Error(), "Setting hypper.cattle.io/shared-dependencies in annotations is recommended") {
 				w3 = true
 			}
 		}
-		if msg.Severity == support.WarningSev {
+		if msg.Severity == support.InfoSev {
 			if strings.Contains(msg.Err.Error(), "Setting hypper.cattle.io/optional-dependencies in annotations is recommended") {
 				w3 = true
 			}

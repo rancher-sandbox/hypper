@@ -39,8 +39,8 @@ func Annotations(linter *support.Linter) {
 	chartFile, _ := chartutil.LoadChartfile(chartPath)
 	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperRelease(chartFile))
 	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperNamespace(chartFile))
-	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperSharedDeps(chartFile))
-	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperOptionalSharedDeps(chartFile))
+	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartHypperSharedDeps(chartFile))
+	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartHypperOptionalSharedDeps(chartFile))
 	// If we have shared deps annotations then check its correct formatting
 	// This is an Error severity check!
 	if _, ok := chartFile.Annotations["hypper.cattle.io/shared-dependencies"]; ok {
