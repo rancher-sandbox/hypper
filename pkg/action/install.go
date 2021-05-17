@@ -168,21 +168,8 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 	}
 
 	for _, dep := range sharedDeps {
-		switch i.OptionalDeps {
-		case OptionalDepsAll:
-			// install all deps, optional or not
-		case OptionalDepsNone:
-			if dep.IsOptional {
-				continue
-			}
-		case OptionalDepsAsk:
-			if dep.IsOptional {
-				reader := bufio.NewReader(os.Stdin)
-				question := eyecandy.ESPrintf(settings.NoEmojis, ":red_question_mark:Install optional shared dependency \"%s\" ?", dep.Name)
-				if !promptBool(question, reader, logger) {
-					continue
-				}
-			}
+		if dep.IsOptional && i.OptionalDeps == OptionalDepsNone {
+			continue
 		}
 
 		found := false
@@ -221,25 +208,43 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 		}
 
 		for _, r := range releases {
+			sharedType := "Shared"
+			if dep.IsOptional {
+				sharedType = "Optional-shared"
+			}
 			if r.Name == name && r.Namespace == ns {
 				v, err := semver.NewVersion(r.Chart.Metadata.Version)
 				if err != nil {
 					return err
 				}
 				if b, errs := constraint.Validate(v); !b {
-					logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: %sShared dependency chart \"%s\" already installed in an unsatisfiable version, aborting\n", prefix, dep.Name))
+					logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: %s%s dependency chart \"%s\" already installed in an unsatisfiable version, aborting\n", prefix, sharedType, dep.Name))
 					err := errors.New("Shared dep version out of range")
 					for _, e := range errs {
 						err = fmt.Errorf("%w; %s", err, e)
 					}
 					return err
 				}
-				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name))
+				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %s%s dependency chart \"%s\" already installed, skipping\n", prefix, sharedType, dep.Name))
 				found = true
 				break // installed, don't keep looking
 			}
 		}
+
 		if !found {
+			if dep.IsOptional {
+				if i.OptionalDeps == OptionalDepsNone {
+					continue // skip this dependency
+				}
+				if i.OptionalDeps == OptionalDepsAsk {
+					reader := bufio.NewReader(os.Stdin)
+					question := eyecandy.ESPrintf(settings.NoEmojis, ":red_question_mark:Install optional shared dependency \"%s\" ?", dep.Name)
+					if !promptBool(question, reader, logger) {
+						continue // skip this dependency
+					}
+				}
+			}
+
 			if _, err = i.InstallSharedDep(dep, ns, settings, logger, lvl); err != nil {
 				return err
 			}
