@@ -37,8 +37,8 @@ func Annotations(linter *support.Linter) {
 	chartFileName := "Chart.yaml"
 	chartPath := filepath.Join(linter.ChartDir, chartFileName)
 	chartFile, _ := chartutil.LoadChartfile(chartPath)
-	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperRelease(chartFile))
-	linter.RunLinterRule(support.WarningSev, chartFileName, validateChartHypperNamespace(chartFile))
+	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartHypperRelease(chartFile))
+	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartHypperNamespace(chartFile))
 	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartHypperSharedDeps(chartFile))
 	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartHypperOptionalSharedDeps(chartFile))
 	// If we have shared deps annotations then check its correct formatting
@@ -68,7 +68,7 @@ func validateChartHypperNamespace(chart *helmChart.Metadata) error {
 // validateChartHypperSharedDeps checks that shared-dependencies hypper annotation is set
 func validateChartHypperSharedDeps(chart *helmChart.Metadata) error {
 	if _, ok := chart.Annotations["hypper.cattle.io/shared-dependencies"]; !ok {
-		return errors.New("Setting hypper.cattle.io/shared-dependencies in annotations is recommended")
+		return errors.New("Setting hypper.cattle.io/shared-dependencies in annotations is optional")
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func validateChartHypperSharedDeps(chart *helmChart.Metadata) error {
 // validateChartHypperOptionalSharedDeps checks that optiona-dependencies hypper annotation is set
 func validateChartHypperOptionalSharedDeps(chart *helmChart.Metadata) error {
 	if _, ok := chart.Annotations["hypper.cattle.io/optional-dependencies"]; !ok {
-		return errors.New("Setting hypper.cattle.io/optional-dependencies in annotations is recommended")
+		return errors.New("Setting hypper.cattle.io/optional-dependencies in annotations is optional")
 	}
 	return nil
 }
