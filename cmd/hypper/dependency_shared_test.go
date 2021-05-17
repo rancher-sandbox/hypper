@@ -113,9 +113,32 @@ func TestSharedDependencyListCmd(t *testing.T) {
 		})},
 	}
 
+	optionalSharedDependenciesInstalled := cmdTestCase{
+		name:   "Optional and normal shared dependencies installed in correct ns",
+		cmd:    "shared-deps list testdata/testcharts/shared-and-optional-deps",
+		golden: "output/shared-and-optional-deps-list-installed.txt",
+		rels: []*release.Release{
+			release.Mock(&release.MockReleaseOptions{
+				Name:      "my-shared-dep",
+				Namespace: "my-shared-dep-ns",
+				Chart: chart.Mock(&chart.MockChartOptions{
+					Name:    "shared-dep-empty",
+					Version: "0.1.1",
+				}),
+			}),
+			release.Mock(&release.MockReleaseOptions{
+				Name:      "empty",
+				Namespace: "hypper",
+				Chart: chart.Mock(&chart.MockChartOptions{
+					Name:    "empty",
+					Version: "0.1.0",
+				}),
+			}),
+		},
+	}
+
 	if runtime.GOOS == "windows" {
 		noSuchChart.golden = "output/shared-deps-list-no-chart-windows.txt"
-		noSharedDependencies.golden = "output/shared-deps-list-no-shared-deps-windows.txt"
 	}
 
 	tests := []cmdTestCase{
@@ -127,6 +150,7 @@ func TestSharedDependencyListCmd(t *testing.T) {
 		sharedDependenciesInstalledDiffNSFlag,
 		sharedDependenciesInstalledDiffNSFlagNotFound,
 		sharedDependenciesInstalledVersionOutOfRange,
+		optionalSharedDependenciesInstalled,
 	}
 	runTestCmd(t, tests)
 }

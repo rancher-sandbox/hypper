@@ -78,6 +78,28 @@ func TestInstallCmd(t *testing.T) {
 			golden:    "output/install-with-shared-deps-out-of-range.txt",
 			wantError: true,
 		},
+		// Install, with all optional shared deps
+		{
+			name:   "install, with all optional shared deps",
+			cmd:    "install testdata/testcharts/shared-and-optional-deps --optional-deps all",
+			golden: "output/install-with-all-optional-deps.txt",
+		},
+		// Install, skip optional shared deps
+		{
+			name:   "install, skip optional shared deps",
+			cmd:    "install testdata/testcharts/shared-and-optional-deps --optional-deps none",
+			golden: "output/install-skip-all-optional-deps.txt",
+		},
+
+		// Install, ask for optional shared deps (default), tested in pkg/action/install_test.go
+
+		// Install, incorrect flag value for optional shared deps
+		{
+			name:      "install, incorrect flag value for optional shared deps",
+			cmd:       "install testdata/testcharts/shared-and-optional-deps --optional-deps foo",
+			golden:    "output/install-incorrect-flag-optional-deps.txt",
+			wantError: true,
+		},
 	}
 	runTestActionCmd(t, tests)
 }

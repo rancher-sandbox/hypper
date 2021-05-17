@@ -17,7 +17,9 @@ limitations under the License.
 package action
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -26,15 +28,29 @@ import (
 	logio "github.com/Masterminds/log-go/io"
 	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
+
+	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
-	"gopkg.in/yaml.v2"
+
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chart"
+	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
+)
+
+// OptionalDepsStrategy defines a strategy for determining wether to use optional deps
+type optionalDepsStrategy int
+
+const (
+	// OptionalDepsAll will use all the optional deps
+	OptionalDepsAll optionalDepsStrategy = iota
+	// OptionalDepsAsk will interactively prompt on each optional dep
+	OptionalDepsAsk
+	// OptionalDepsNone with skip all the optional deps
+	OptionalDepsNone
 )
 
 // Install is a composite type of Helm's Install type
@@ -43,6 +59,7 @@ type Install struct {
 
 	// hypper specific
 	NoSharedDeps bool
+	OptionalDeps optionalDepsStrategy
 
 	// Config stores the actionconfig so it can be retrieved and used again
 	Config *Configuration
@@ -59,7 +76,7 @@ func NewInstall(cfg *Configuration) *Install {
 
 // CheckDependencies checks the dependencies for a chart.
 // by wrapping action.CheckDependencies
-func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
+func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error {
 	return action.CheckDependencies(ch, reqs)
 }
 
@@ -67,7 +84,7 @@ func CheckDependencies(ch *chart.Chart, reqs []*chart.Dependency) error {
 //
 // If DryRun is set to true, this will prepare the release, but not install it
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
+func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	if lvl >= 10 {
 		return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
@@ -117,7 +134,7 @@ func (i *Install) NameAndChart(args []string) (string, string, error) {
 // checkIfInstallable validates if a chart can be installed
 //
 // Application chart type is only installable
-func CheckIfInstallable(ch *chart.Chart) error {
+func CheckIfInstallable(ch *helmChart.Chart) error {
 	switch ch.Metadata.Type {
 	case "", "application":
 		return nil
@@ -131,17 +148,15 @@ func CheckIfInstallable(ch *chart.Chart) error {
 // It will check for malformed chart.Metadata.Annotations, and skip those shared
 // dependencies already deployed.
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
+func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *cli.EnvSettings, logger log.Logger, lvl int) error {
 
-	if _, ok := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]; !ok {
-		logger.Debugf("%sNo shared dependencies in chart \"%s\"\n", strings.Repeat("  ", lvl), chrt.Name())
+	sharedDeps, err := chart.GetSharedDeps(parentChart, logger)
+	if err == nil && len(sharedDeps) == 0 {
 		return nil
 	}
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), chrt.Name()))
-	depYaml := chrt.Metadata.Annotations["hypper.cattle.io/shared-dependencies"]
-	var deps dependencies
-	if err := yaml.UnmarshalStrict([]byte(depYaml), &deps); err != nil {
-		logger.Errorf("Chart.yaml metadata is malformed for chart \"%s\"\n", chrt.Name())
+
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling shared dependencies for chart \"%s\":", strings.Repeat("  ", lvl), parentChart.Name()))
+	if err != nil {
 		return err
 	}
 
@@ -152,14 +167,26 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
 	}
 
-	for _, dep := range deps {
+	for _, dep := range sharedDeps {
+		if dep.IsOptional && i.OptionalDeps == OptionalDepsNone {
+			continue
+		}
+
 		found := false
 		depChart, err := i.LoadChartFromDep(dep, settings, logger)
 		if err != nil {
 			return err
 		}
-		// obtain the dep ns: either shared-dep has annotations, or the parent has, or we use the default ns
-		ns := GetNamespace(depChart, GetNamespace(chrt, settings.Namespace()))
+
+		// calculate which ns corresponds to the dependency
+		var ns string
+		if settings.NamespaceFromFlag {
+			ns = settings.Namespace()
+		} else {
+			// either shared-dep has annotations, or the parent has, or we use the default ns
+			ns = GetNamespace(depChart, GetNamespace(parentChart, settings.Namespace()))
+		}
+		i.Config.SetNamespace(ns)
 
 		name, err := GetName(depChart, "")
 		if err != nil {
@@ -167,7 +194,6 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		}
 
 		// obtain the releases for the specific ns that we are searching into
-		i.Config.SetNamespace(ns)
 		clientList := NewList(i.Config)
 		clientList.SetStateMask()
 		releases, err := clientList.Run()
@@ -182,26 +208,44 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 		}
 
 		for _, r := range releases {
+			sharedType := "Shared"
+			if dep.IsOptional {
+				sharedType = "Optional-shared"
+			}
 			if r.Name == name && r.Namespace == ns {
 				v, err := semver.NewVersion(r.Chart.Metadata.Version)
 				if err != nil {
 					return err
 				}
 				if b, errs := constraint.Validate(v); !b {
-					logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: %sShared dependency chart \"%s\" already installed in an unsatisfiable version, aborting\n", prefix, dep.Name))
+					logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: %s%s dependency chart \"%s\" already installed in an unsatisfiable version, aborting\n", prefix, sharedType, dep.Name))
 					err := errors.New("Shared dep version out of range")
 					for _, e := range errs {
 						err = fmt.Errorf("%w; %s", err, e)
 					}
 					return err
 				}
-				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %sShared dependency chart \"%s\" already installed, skipping\n", prefix, dep.Name))
+				logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":information_source: %s%s dependency chart \"%s\" already installed, skipping\n", prefix, sharedType, dep.Name))
 				found = true
 				break // installed, don't keep looking
 			}
 		}
+
 		if !found {
-			if _, err = i.InstallSharedDep(dep, settings, logger, lvl); err != nil {
+			if dep.IsOptional {
+				if i.OptionalDeps == OptionalDepsNone {
+					continue // skip this dependency
+				}
+				if i.OptionalDeps == OptionalDepsAsk {
+					reader := bufio.NewReader(os.Stdin)
+					question := eyecandy.ESPrintf(settings.NoEmojis, ":red_question_mark:Install optional shared dependency \"%s\" ?", dep.Name)
+					if !promptBool(question, reader, logger) {
+						continue // skip this dependency
+					}
+				}
+			}
+
+			if _, err = i.InstallSharedDep(dep, ns, settings, logger, lvl); err != nil {
 				return err
 			}
 		}
@@ -209,10 +253,10 @@ func (i *Install) InstallAllSharedDeps(chrt *chart.Chart, settings *cli.EnvSetti
 	return nil
 }
 
-func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*chart.Chart, error) {
+func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
 	i.ChartPathOptions.RepoURL = dep.Repository
 	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
-	if err != nil {
+	if err != nil && !dep.IsOptional {
 		return nil, err
 	}
 
@@ -230,7 +274,7 @@ func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSetti
 // It does this by creating a new action.Install and setting it correctly,
 // loading the chart, checking for constraints, and delegating the install.Run()
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
+func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
@@ -281,7 +325,7 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:
-	SetNamespace(clientInstall, chartRequested, i.Namespace, false)
+	SetNamespace(clientInstall, chartRequested, ns, settings.NamespaceFromFlag)
 	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, dep.Name)
 	if err != nil {
 		return nil, err
@@ -340,4 +384,23 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, settings *cli.EnvSetti
 		return res, err
 	}
 	return res, nil
+}
+
+func promptBool(question string, reader *bufio.Reader, logger log.Logger) bool {
+	for {
+		log.Infof("%s [Y/n]:", question)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" || response == "" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
 }

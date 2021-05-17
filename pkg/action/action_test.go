@@ -141,6 +141,29 @@ func withOutOfRangeSharedDeps() chartOption {
 	}
 }
 
+func withOptionalSharedDeps() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/namespace"] = "luke-skywalker"
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/optional-dependencies"] = "  - name: \"testdata/charts/vanilla-helm\"" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"\"" + "\n"
+	}
+}
+
+func withSharedDepsWithoutAnnotations() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"testdata/charts/vanilla-helm\"" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"\"" + "\n"
+	}
+}
+
 func withTypeApplication() chartOption {
 	return func(opts *chartOptions) {
 		opts.Chart.Metadata.Type = "application"

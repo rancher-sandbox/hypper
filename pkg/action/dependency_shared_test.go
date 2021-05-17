@@ -62,6 +62,14 @@ func TestSharedDepsList(t *testing.T) {
 			chart:  "testdata/charts/shared-deps",
 			golden: "output/shared-deps-some-deps.txt",
 		},
+		{
+			chart:  "testdata/charts/optional-deps",
+			golden: "output/shared-deps-only-opt-deps.txt",
+		},
+		{
+			chart:  "testdata/charts/shared-and-optional-deps",
+			golden: "output/shared-and-optional-deps.txt",
+		},
 	} {
 		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 		buf := new(bytes.Buffer)

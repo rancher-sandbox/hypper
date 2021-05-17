@@ -1,1 +1,2 @@
-DEBUG: No shared dependencies in chart "hello"
+DEBUG: No shared dependencies in "hello"
+DEBUG: No optional shared dependencies in "hello"

@@ -1,1 +1,1 @@
-WARNING: No shared dependencies in testdata/charts/vanilla-helm
+NAME	VERSION	REPOSITORY	STATUS	NAMESPACE	TYPE

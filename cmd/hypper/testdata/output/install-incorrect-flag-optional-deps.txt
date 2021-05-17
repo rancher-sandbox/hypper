@@ -1,0 +1,1 @@
+Error: invalid argument "foo" for "--optional-deps" flag: must be 'all', 'ask', 'none'

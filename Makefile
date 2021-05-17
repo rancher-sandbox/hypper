@@ -57,7 +57,7 @@ test-unit:
 # Generate golden files used in unit tests
 .PHONY: gen-test-golden
 gen-test-golden:
-gen-test-golden: PKG = ./cmd/hypper ./pkg/action
+gen-test-golden: PKG = ./cmd/hypper ./pkg/action ./pkg/chart
 gen-test-golden: TESTFLAGS = -update
 gen-test-golden: test-unit
 

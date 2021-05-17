@@ -9,4 +9,5 @@ annotations:
   "hypper.cattle.io/namespace": "namespace"
   "hypper.cattle.io/shared-dependencies": |
     - what: ever
-
+  "hypper.cattle.io/optional-dependencies": |
+    - what: ever

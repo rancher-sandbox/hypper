@@ -1,0 +1,2 @@
+DEBUG: No shared dependencies in "chartname"
+DEBUG: No optional shared dependencies in "chartname"
