@@ -70,14 +70,20 @@ all users of the cluster. Think of them as typical system OS libraries/services.
 The commands are the same as you have already used:
 
 ```console
-$ hypper install hypper-charts/fleet --create-namespace
-🛳  Installing chart "fleet" as "fleet" in namespace "fleet-system"…
+$ hypper install hypper-charts/our-app --create-namespace
+🛳  Installing shared dependencies for chart "our-app":
+🛳  - Installing chart "fleet" as "fleet" in namespace "fleet-system"…
+❓ Install optional shared dependency "rancher-tracing" ? [Y/n]:
+y
+🛳  - Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
+🛳  Installing chart "our-app" as "our-app-name" in namespace "hypper"…
 👏 Done!
 ```
 
-This time, the chart got installed with a default name `fleet`, and into a
-default namespace  `fleet-system`. We passed the flag `--create-namespace` to
-tell Hypper to create the namespace if it doesn't exist.
+This time, the chart got installed with a default name `our-app-name`, and into
+a default namespace  `hypper`. We passed the flag `--create-namespace` to tell
+Hypper to create the namespace if it doesn't exist. It also installed its
+defined shared and optional shared dependencies.
 
 ## Learn about releases
 
@@ -85,9 +91,11 @@ It's easy to see what has been released with hypper:
 
 ```console
 $ hypper ls --all-namespaces
-NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
-fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
-mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
+NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                           APP VERSION
+fleet           fleet-system    1               2021-05-18 15:44:16.11805509 +0200 CEST         deployed        fleet-0.3.500                   0.3.5
+mariadb         default         1               2021-05-18 15:44:43.106328879 +0200 CEST        deployed        mariadb-9.3.11                  10.5.10
+our-app-name    hypper          1               2021-05-18 15:44:18.687033582 +0200 CEST        deployed        our-app-0.0.2                   0.0.1
+rancher-tracing istio-system    1               2021-05-18 15:44:18.592656807 +0200 CEST        deployed        rancher-tracing-1.20.002        1.20.0
 ```
 
 ## Uninstall a release
