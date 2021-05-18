@@ -32,6 +32,7 @@ annotations:
 +   - name: fleet
 +     version: "^0.3.500"
 +     repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
++ hypper.cattle.io/optional-dependencies: |
 +   - name: rancher-tracing
 +     version: "^1.20.002"
 +     repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
@@ -63,6 +64,7 @@ annotations:
     - name: fleet
       version: "^0.3.500"
       repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
+  hypper.cattle.io/optional-dependencies: |
     - name: rancher-tracing
       version: "^1.20.002"
       repository: "https://rancher-sandbox.github.io/hypper-charts/repo"
@@ -84,9 +86,9 @@ Hypper's `shared-dep list` command will list the shared dependencies, its status
 
 ```console
 $ hypper shared-deps list ./our-app
-NAME            VERSION         REPOSITORY                                              STATUS
-fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
-rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE       TYPE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    not-installed   fleet-system    shared
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed   istio-system    shared-optional
 ```
 
 
@@ -106,7 +108,6 @@ $ hypper repo add hypper-charts 'https://rancher-sandbox.github.io/hypper-charts
 "hypper-charts" has been added to your repositories
 $ hypper repo update
 Hang tight while we grab the latest from your chart repositories...
-...Successfully got an update from the "stable" chart repository
 ...Successfully got an update from the "hypper-charts" chart repository
 🛳  Update Complete.
 ```
@@ -122,27 +123,32 @@ Done! 👏
 That satisfies one shared dependency of `our-app`:
 
 ```console
-$ hypper shared-deps list ./our-app -n fleet-system
-NAME    VERSION         REPOSITORY                                              STATUS          NAMESPACE
-fleet   ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
+$ hypper shared-deps list ./our-app
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE       TYPE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system    shared
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed   istio-system    shared-optional
 ```
 
-Then, we can install `our-app`, and any of its missing shared dependencies:
+Then, we can install `our-app`, and any of its missing shared dependencies.
+By default, Hypper asks for each optional shared dependency if we want to
+install it or not:
 
 ```console
 $ hypper install ./our-app --create-namespace
-Installing shared dependencies for chart "our-app":
-- Shared dependency chart "fleet" already installed, skipping
-- Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
-Installing chart "our-app" as "our-app-name" in namespace "hypper"…
-Done! 👏
+🛳  Installing shared dependencies for chart "our-app":
+ℹ️  - Shared dependency chart "fleet" already installed, skipping
+❓ Install optional shared dependency "rancher-tracing" ? [Y/n]:
+y
+🛳  - Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
+🛳  Installing chart "our-app" as "our-app-name" in namespace "hypper"…
+👏 Done!
 ```
 
 What has happened?
 1. Hypper has made sure that all declared shared dependencies of `our-app` are
-   satisfied, installing those that are missing. Since the chart of the shared
-   dependency didn't have annotations for default namespace, it will install
-   them on the dependent namespace.
+   satisfied, installing those that are missing, and skipping those present.
+   Since the chart of the shared dependency didn't have annotations for default
+   namespace, it will install them on the dependent namespace.
 2. Since we haven't specified the release name or namespace in the command,
    Hypper has installed `our-app` in the default release-name (`our-app-name`)
    and namespace (`hypper`) we specified in the Hypper annotations.
@@ -151,17 +157,20 @@ Let's see:
 
 ```console
 $ ./bin/hypper shared-deps list ./our-app
-NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE
-fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
-rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    deployed        istio-system
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE       TYPE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system    shared
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    deployed        istio-system    shared-optional
+
 $ hypper list -A
-NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                          APP VERSION
-fleet           fleet-system    1               2021-04-20 17:58:34.645015498 +0200 CEST        deployed        fleet-0.3.500                  0.3.5
-our-app-name    hypper          1               2021-04-20 17:59:34.466598447 +0200 CEST        deployed        our-app-0.0.1                  0.0.1
-rancher-tracing istio-system    1               2021-04-20 17:59:33.574983538 +0200 CEST        deployed        rancher-tracing-1.20.002       1.20.0
+NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                           APP VERSION
+fleet           fleet-system    1               2021-05-17 17:32:45.889083671 +0200 CEST        deployed        fleet-0.3.500                   0.3.5
+our-app-name    hypper          1               2021-05-17 17:35:13.517422915 +0200 CEST        deployed        our-app-0.0.2                   0.0.1
+rancher-tracing istio-system    1               2021-05-17 17:35:13.311231418 +0200 CEST        deployed        rancher-tracing-1.20.002        1.20.0
 ```
 
 Yay! they are all installed.
 
-If you want, you can always install `our-app` without the shared-dependencies, by
-passing the flag `--no-shared-deps`.
+If you want, you can always install `our-app` without the shared-dependencies,
+by passing the flag `--no-shared-deps`. And you can either install all optional
+dependencies by default with `--optional-deps=all`, or skip them with
+`--optional-deps=none`.

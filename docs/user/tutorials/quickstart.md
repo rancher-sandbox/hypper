@@ -51,8 +51,8 @@ this case the Bitnami chart repository.
 
 ```console
 $ hypper install mariadb bitnami/mariadb
-Installing chart "mariadb" in namespace "default"…
-Done! 👏
+🛳  Installing chart "mariadb" as "mariadb" in namespace "default"…
+👏 Done!
 ```
 
 Whenever you install a chart, a new release is created. So one Helm chart can be
@@ -71,8 +71,8 @@ The commands are the same as you have already used:
 
 ```console
 $ hypper install hypper-charts/fleet --create-namespace
-Installing chart "fleet" as "fleet" in namespace "fleet-system"…
-Done! 👏
+🛳  Installing chart "fleet" as "fleet" in namespace "fleet-system"…
+👏 Done!
 ```
 
 This time, the chart got installed with a default name `fleet`, and into a
@@ -97,7 +97,7 @@ To uninstall a release, use the hypper uninstall command:
 ```console
 $ hypper uninstall fleet -n fleet-system
 🔥  uninstalling fleet
-🔥  release "fleet" uninstalled
+✅  release "fleet" uninstalled
 ```
 
 This will uninstall fleet from Kubernetes, which will remove all resources
