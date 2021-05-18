@@ -374,8 +374,8 @@ hypper-charts   https://rancher-sandbox.github.io/hypper-charts/repo
 ways to find and install a chart, but the easiest is to use a repository, in
 this case the Bitnami chart repository.</p>
 <pre><code class="language-console">$ hypper install mariadb bitnami/mariadb
-Installing chart &quot;mariadb&quot; in namespace &quot;default&quot;…
-Done! 👏
+🛳  Installing chart &quot;mariadb&quot; as &quot;mariadb&quot; in namespace &quot;default&quot;…
+👏 Done!
 </code></pre>
 <p>Whenever you install a chart, a new release is created. So one Helm chart can be
 installed multiple times into the same cluster. And each can be independently
@@ -387,25 +387,33 @@ shared-dependency charts automatically.
 They are thought to be installed system-wide in the cluster: 1 Hypper chart for
 all users of the cluster. Think of them as typical system OS libraries/services.</p>
 <p>The commands are the same as you have already used:</p>
-<pre><code class="language-console">$ hypper install hypper-charts/fleet --create-namespace
-Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
-Done! 👏
+<pre><code class="language-console">$ hypper install hypper-charts/our-app --create-namespace
+🛳  Installing shared dependencies for chart &quot;our-app&quot;:
+🛳  - Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
+❓ Install optional shared dependency &quot;rancher-tracing&quot; ? [Y/n]:
+y
+🛳  - Installing chart &quot;rancher-tracing&quot; as &quot;rancher-tracing&quot; in namespace &quot;istio-system&quot;…
+🛳  Installing chart &quot;our-app&quot; as &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
+👏 Done!
 </code></pre>
-<p>This time, the chart got installed with a default name <code>fleet</code>, and into a
-default namespace  <code>fleet-system</code>. We passed the flag <code>--create-namespace</code> to
-tell Hypper to create the namespace if it doesn't exist.</p>
+<p>This time, the chart got installed with a default name <code>our-app-name</code>, and into
+a default namespace  <code>hypper</code>. We passed the flag <code>--create-namespace</code> to tell
+Hypper to create the namespace if it doesn't exist. It also installed its
+defined shared and optional shared dependencies.</p>
 <h2><a class="header" href="#learn-about-releases" id="learn-about-releases">Learn about releases</a></h2>
 <p>It's easy to see what has been released with hypper:</p>
 <pre><code class="language-console">$ hypper ls --all-namespaces
-NAME       NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                 APP VERSION
-fleet      fleet-system    1               2021-03-12 12:06:35.951012048 +0100 CET deployed        fleet-0.3.400         0.3.4
-mariadb    default         1               2021-03-12 12:09:46.670491535 +0100 CET deployed        mariadb-9.3.5         10.5.9
+NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                           APP VERSION
+fleet           fleet-system    1               2021-05-18 15:44:16.11805509 +0200 CEST         deployed        fleet-0.3.500                   0.3.5
+mariadb         default         1               2021-05-18 15:44:43.106328879 +0200 CEST        deployed        mariadb-9.3.11                  10.5.10
+our-app-name    hypper          1               2021-05-18 15:44:18.687033582 +0200 CEST        deployed        our-app-0.0.2                   0.0.1
+rancher-tracing istio-system    1               2021-05-18 15:44:18.592656807 +0200 CEST        deployed        rancher-tracing-1.20.002        1.20.0
 </code></pre>
 <h2><a class="header" href="#uninstall-a-release" id="uninstall-a-release">Uninstall a release</a></h2>
 <p>To uninstall a release, use the hypper uninstall command:</p>
 <pre><code class="language-console">$ hypper uninstall fleet -n fleet-system
 🔥  uninstalling fleet
-🔥  release &quot;fleet&quot; uninstalled
+✅  release &quot;fleet&quot; uninstalled
 </code></pre>
 <p>This will uninstall fleet from Kubernetes, which will remove all resources
 associated with the release as well as the release history.</p>
@@ -490,7 +498,7 @@ sources:
   - https://mysql.com
 version: 8.5.1
 </code></pre>
-<p>But we want to install it always on the same namespace called <code>databases</code></p>
+<p>But we want to install it always on the same namespace called <code>databases</code>.</p>
 <p>So we will expand the <code>Chart.yaml</code> to look like this:</p>
 <pre><code class="language-diff">annotations:
   category: Database
@@ -523,9 +531,8 @@ version: 8.5.1
 </code></pre>
 <p>We added the <code>hypper.cattle.io/namespace: databases</code> to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:</p>
 <pre><code class="language-console">$ hypper install mysql/                 
-Installing chart &quot;mysql&quot; as &quot;mysql&quot; in namespace &quot;databases&quot;…
-Done! 👏 
-
+🛳  Installing chart &quot;mysql&quot; as &quot;mysql&quot; in namespace &quot;databases&quot;…
+👏 Done!
 </code></pre>
 <p>See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the <code>Chart.yaml</code></p>
 <p>If we wanted to specify the release name in the annotations as well, we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it!</p>
@@ -533,42 +540,102 @@ Done! 👏
 <p>We just created or modified our chart or added annotations to take advantage of Hypper features but...how do we know those annotations are correct?</p>
 <p>It's very simple, just run <code>hypper lint</code> against your chart, and it will verify that the chart is well-formed.</p>
 <p><code>hypper lint</code> runs both Helm checks and Hypper checks against the chart.</p>
-<p>If the linter encounters things that will cause the chart to fail installation, it will emit <code>[ERROR]</code> messages. If it encounters issues that break with convention or recommendation, it will emit <code>[WARNING]</code> messages.</p>
-<p>For example, running it against one of our test charts with Hypper annotations should produce a warning due to a missing icon:</p>
-<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
-==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
+<p>If the linter encounters things that will cause the chart to fail installation,
+it will emit <code>[ERROR]</code> messages. If it encounters issues that break with
+convention or recommendation, it will emit <code>[WARNING]</code> messages. For optional
+features, it will emit <code>[INFO]</code> messages.</p>
+<p>First, lets add the hypper-charts repo, to obtain some chart examples:</p>
+<pre><code class="language-console">$ hypper repo add hypper-charts 'https://rancher-sandbox.github.io/hypper-charts/repo'
+&quot;hypper-charts&quot; has been added to your repositories
+$ hypper repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the &quot;hypper-charts&quot; chart repository
+🛳  Update Complete.
+$ hypper pull hypper-charts/our-app --untar
+
+</code></pre>
+<p>Now, let's lint. For example, linting against one of our test charts with
+Hypper annotations should produce a warning due to a missing icon:</p>
+<pre><code class="language-console">$ hypper lint ./our-app
+==&gt; Linting our-app/
 [INFO] Chart.yaml: icon is recommended
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
-<p>While running it against a vanilla Helm chart with no extra Hypper annotations will emit several <code>[WARNING]</code>, recommending to set certain values that Hypper supports:</p>
-<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/vanilla-helm 
-==&gt; Linting cmd/hypper/testdata/testcharts/vanilla-helm
-[INFO] Chart.yaml: icon is recommended
+<p>While running it against a vanilla Helm chart with no extra Hypper annotations
+will emit several <code>[INFO]</code>, recommending to set certain values that Hypper
+supports:</p>
+<pre><code class="language-console">$ hypper repo add bitnami https://charts.bitnami.com/bitnami
+&quot;bitnami&quot; has been added to your repositories
+
+$ hypper repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the &quot;hypper-charts&quot; chart repository
+...Successfully got an update from the &quot;bitnami&quot; chart repository
+🛳  Update Complete.
+
+$ hypper pull bitnami/mariadb --untar
+
+$ hypper lint ./mariadb
+==&gt; Linting ./mariadb
 [INFO] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
 [INFO] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
-[INFO] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
+[INFO] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is optional
+[INFO] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is optional
 
 1 chart(s) linted, 0 chart(s) failed
 </code></pre>
-<p>Running against a shared-dependencies annotation that is malformed will emit an <code>[ERROR]</code>:</p>
-<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/hypper-annot
-==&gt; Linting cmd/hypper/testdata/testcharts/hypper-annot
-[INFO] Chart.yaml: icon is recommended
-[ERROR] Chart.yaml: Shared dependencies list is broken, please check the correct format
+<p>Running against a shared-dependencies annotation that is malformed will emit an <code>[ERROR]</code>. Let's edit the MariaDB chart, so it has a wrong <code>shared-dependencies</code> stanza, for example. Make the ./mariadb/Chart.yaml look like this:</p>
+<pre><code class="language-diff"># this is a diff of ./mariadb/Cahrt.yaml
+
+annotations:
+  category: Database
++  hypper.cattle.io/shared-dependencies: |
++    - name: fleet
++      version: &quot;this-is-incorrect-0.3.500&quot;
++      repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
+apiVersion: v2
+appVersion: 10.5.10
+dependencies:
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  tags:
+  - bitnami-common
+  version: 1.x.x
+description: Fast, reliable, scalable, and easy to use open-source relational database
+  system. MariaDB Server is intended for mission-critical, heavy-load production systems
+  as well as for embedding into mass-deployed software. Highly available MariaDB cluster.
+home: https://github.com/bitnami/charts/tree/master/bitnami/mariadb
+icon: https://bitnami.com/assets/stacks/mariadb/img/mariadb-stack-220x234.png
+keywords:
+- mariadb
+- mysql
+- database
+- sql
+- prometheus
+maintainers:
+- email: containers@bitnami.com
+  name: Bitnami
+name: mariadb
+sources:
+- https://github.com/bitnami/bitnami-docker-mariadb
+- https://github.com/prometheus/mysqld_exporter
+- https://mariadb.org
+version: 9.3.11
+
+</code></pre>
+<pre><code class="language-console">$ hypper lint ./mariadb
+==&gt; Linting ./mariadb
+[INFO] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
+[INFO] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
+[INFO] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is optional
+[ERROR] Chart.yaml: Shared dependency version is broken: improper constraint: this-is-incorrect-0.3.500
 
 Error: 1 chart(s) linted, 1 chart(s) failed
 </code></pre>
-<p>Now if you were to set some kind of automated CI in place to check for linting and are required to have Hypper annotations as mandatory, you can run <code>hypper lint</code> with the <code>--strict</code> flag so all warnings are marked as errors.</p>
-<pre><code class="language-console">$ hypper lint cmd/hypper/testdata/testcharts/fallback-annot --strict
-==&gt; Linting cmd/hypper/testdata/testcharts/fallback-annot
-[INFO] Chart.yaml: icon is recommended
-[WARNING] Chart.yaml: Setting hypper.cattle.io/release-name in annotations is recommended
-[WARNING] Chart.yaml: Setting hypper.cattle.io/namespace in annotations is recommended
-[WARNING] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is recommended
-
-Error: 1 chart(s) linted, 1 chart(s) failed
-</code></pre>
+<p>Now if you were to set some kind of automated CI in place to check for linting
+and are required to have Hypper annotations as mandatory, you can run <code>hypper lint</code> with the <code>--strict</code> flag so all warnings are marked as errors. For now, we
+don't have warning-level messages.</p>
 <h2><a class="header" href="#searching-for-charts-in-repos" id="searching-for-charts-in-repos">Searching for charts in repos</a></h2>
 <p>Search reads through all the repositories configured on the system, and looks for matches. Searching on these repositories uses the metadata stored on the system.</p>
 <p>It will display the latest stable versions of the charts found.</p>
@@ -624,6 +691,7 @@ annotations:
 +   - name: fleet
 +     version: &quot;^0.3.500&quot;
 +     repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
++ hypper.cattle.io/optional-dependencies: |
 +   - name: rancher-tracing
 +     version: &quot;^1.20.002&quot;
 +     repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
@@ -653,6 +721,7 @@ annotations:
     - name: fleet
       version: &quot;^0.3.500&quot;
       repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
+  hypper.cattle.io/optional-dependencies: |
     - name: rancher-tracing
       version: &quot;^1.20.002&quot;
       repository: &quot;https://rancher-sandbox.github.io/hypper-charts/repo&quot;
@@ -667,9 +736,9 @@ annotations:
 <h2><a class="header" href="#listing-shared-dependencies" id="listing-shared-dependencies">Listing shared dependencies</a></h2>
 <p>Hypper's <code>shared-dep list</code> command will list the shared dependencies, its status, and other information:</p>
 <pre><code class="language-console">$ hypper shared-deps list ./our-app
-NAME            VERSION         REPOSITORY                                              STATUS
-fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
-rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE       TYPE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    not-installed   fleet-system    shared
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed   istio-system    shared-optional
 </code></pre>
 <h2><a class="header" href="#deploying-shared-dependencies" id="deploying-shared-dependencies">Deploying shared dependencies</a></h2>
 <p>Now, let's pretend that we had <code>fleet</code> already installed, so let's install
@@ -682,7 +751,6 @@ to add the repos.</p>
 &quot;hypper-charts&quot; has been added to your repositories
 $ hypper repo update
 Hang tight while we grab the latest from your chart repositories...
-...Successfully got an update from the &quot;stable&quot; chart repository
 ...Successfully got an update from the &quot;hypper-charts&quot; chart repository
 🛳  Update Complete.
 </code></pre>
@@ -692,42 +760,50 @@ Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet
 Done! 👏
 </code></pre>
 <p>That satisfies one shared dependency of <code>our-app</code>:</p>
-<pre><code class="language-console">$ hypper shared-deps list ./our-app -n fleet-system
-NAME    VERSION         REPOSITORY                                              STATUS          NAMESPACE
-fleet   ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
+<pre><code class="language-console">$ hypper shared-deps list ./our-app
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE       TYPE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system    shared
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    not-installed   istio-system    shared-optional
 </code></pre>
-<p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies:</p>
+<p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies.
+By default, Hypper asks for each optional shared dependency if we want to
+install it or not:</p>
 <pre><code class="language-console">$ hypper install ./our-app --create-namespace
-Installing shared dependencies for chart &quot;our-app&quot;:
-- Shared dependency chart &quot;fleet&quot; already installed, skipping
-- Installing chart &quot;rancher-tracing&quot; as &quot;rancher-tracing&quot; in namespace &quot;istio-system&quot;…
-Installing chart &quot;our-app&quot; as &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
-Done! 👏
+🛳  Installing shared dependencies for chart &quot;our-app&quot;:
+ℹ️  - Shared dependency chart &quot;fleet&quot; already installed, skipping
+❓ Install optional shared dependency &quot;rancher-tracing&quot; ? [Y/n]:
+y
+🛳  - Installing chart &quot;rancher-tracing&quot; as &quot;rancher-tracing&quot; in namespace &quot;istio-system&quot;…
+🛳  Installing chart &quot;our-app&quot; as &quot;our-app-name&quot; in namespace &quot;hypper&quot;…
+👏 Done!
 </code></pre>
 <p>What has happened?</p>
 <ol>
 <li>Hypper has made sure that all declared shared dependencies of <code>our-app</code> are
-satisfied, installing those that are missing. Since the chart of the shared
-dependency didn't have annotations for default namespace, it will install
-them on the dependent namespace.</li>
+satisfied, installing those that are missing, and skipping those present.
+Since the chart of the shared dependency didn't have annotations for default
+namespace, it will install them on the dependent namespace.</li>
 <li>Since we haven't specified the release name or namespace in the command,
 Hypper has installed <code>our-app</code> in the default release-name (<code>our-app-name</code>)
 and namespace (<code>hypper</code>) we specified in the Hypper annotations.</li>
 </ol>
 <p>Let's see:</p>
 <pre><code class="language-console">$ ./bin/hypper shared-deps list ./our-app
-NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE
-fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system
-rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    deployed        istio-system
+NAME            VERSION         REPOSITORY                                              STATUS          NAMESPACE       TYPE
+fleet           ^0.3.500        https://rancher-sandbox.github.io/hypper-charts/repo    deployed        fleet-system    shared
+rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/repo    deployed        istio-system    shared-optional
+
 $ hypper list -A
-NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                          APP VERSION
-fleet           fleet-system    1               2021-04-20 17:58:34.645015498 +0200 CEST        deployed        fleet-0.3.500                  0.3.5
-our-app-name    hypper          1               2021-04-20 17:59:34.466598447 +0200 CEST        deployed        our-app-0.0.1                  0.0.1
-rancher-tracing istio-system    1               2021-04-20 17:59:33.574983538 +0200 CEST        deployed        rancher-tracing-1.20.002       1.20.0
+NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                           APP VERSION
+fleet           fleet-system    1               2021-05-17 17:32:45.889083671 +0200 CEST        deployed        fleet-0.3.500                   0.3.5
+our-app-name    hypper          1               2021-05-17 17:35:13.517422915 +0200 CEST        deployed        our-app-0.0.2                   0.0.1
+rancher-tracing istio-system    1               2021-05-17 17:35:13.311231418 +0200 CEST        deployed        rancher-tracing-1.20.002        1.20.0
 </code></pre>
 <p>Yay! they are all installed.</p>
-<p>If you want, you can always install <code>our-app</code> without the shared-dependencies, by
-passing the flag <code>--no-shared-deps</code>.</p>
+<p>If you want, you can always install <code>our-app</code> without the shared-dependencies,
+by passing the flag <code>--no-shared-deps</code>. And you can either install all optional
+dependencies by default with <code>--optional-deps=all</code>, or skip them with
+<code>--optional-deps=none</code>.</p>
 <h1><a class="header" href="#reference-guides" id="reference-guides">Reference guides</a></h1>
 <p>You can find Golang reference guides in
 <a href="https://pkg.go.dev/github.com/rancher-sandbox/hypper">pkg.go.dev/github.com/rancher-sandbox/hypper</a>,

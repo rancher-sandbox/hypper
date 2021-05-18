@@ -196,7 +196,7 @@ sources:
   - https://mysql.com
 version: 8.5.1
 </code></pre>
-<p>But we want to install it always on the same namespace called <code>databases</code></p>
+<p>But we want to install it always on the same namespace called <code>databases</code>.</p>
 <p>So we will expand the <code>Chart.yaml</code> to look like this:</p>
 <pre><code class="language-diff">annotations:
   category: Database
@@ -229,9 +229,8 @@ version: 8.5.1
 </code></pre>
 <p>We added the <code>hypper.cattle.io/namespace: databases</code> to the annotation, so now when we install this chart with Hypper it will install into the proper namespace without any need to passing the value on the CLI:</p>
 <pre><code class="language-console">$ hypper install mysql/                 
-Installing chart &quot;mysql&quot; as &quot;mysql&quot; in namespace &quot;databases&quot;…
-Done! 👏 
-
+🛳  Installing chart &quot;mysql&quot; as &quot;mysql&quot; in namespace &quot;databases&quot;…
+👏 Done!
 </code></pre>
 <p>See also how we didn't to specify any name for the release? Hypper is smart enough to try to obtain the name from the annotations (like the namespace!) and if it doesn't find it, it uses the name value on the <code>Chart.yaml</code></p>
 <p>If we wanted to specify the release name in the annotations as well, we just need to add <code>hypper.cattle.io/release-name</code> to the annotations as we did above with the namespace and hypper will take care of setting it!</p>
