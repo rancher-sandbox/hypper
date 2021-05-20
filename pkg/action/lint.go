@@ -104,7 +104,7 @@ func lintChart(path string, vals map[string]interface{}, namespace string, stric
 
 	// Guard: Error out if this is not a chart.
 	if _, err := os.Stat(filepath.Join(chartPath, "Chart.yaml")); err != nil {
-		return linter, nil
+		return linter, errors.Wrap(err, "unable to check Chart.yaml file in chart")
 	}
 
 	return lint.All(chartPath, vals, namespace, strict), nil
