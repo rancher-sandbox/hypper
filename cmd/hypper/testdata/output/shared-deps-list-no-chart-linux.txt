@@ -1,1 +1,1 @@
-Error: stat /no/such/chart: no such file or directory
+ERROR: stat /no/such/chart: no such file or directory

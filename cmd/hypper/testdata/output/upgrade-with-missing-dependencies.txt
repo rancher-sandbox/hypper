@@ -1,1 +1,1 @@
-Error: found in Chart.yaml, but missing in charts/ directory: reqsubchart2
+ERROR: found in Chart.yaml, but missing in charts/ directory: reqsubchart2

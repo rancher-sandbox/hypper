@@ -34,10 +34,11 @@ A package manager built on Helm charts and Helm itself.
 
 func newRootCmd(actionConfig *action.Configuration, logger log.Logger, args []string) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:          "hypper",
-		Short:        "A package manager built on Helm charts and Helm itself",
-		Long:         globalUsage,
-		SilenceUsage: true,
+		Use:           "hypper",
+		Short:         "A package manager built on Helm charts and Helm itself",
+		Long:          globalUsage,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	flags := cmd.PersistentFlags()

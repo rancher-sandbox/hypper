@@ -1,1 +1,1 @@
-Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress
+ERROR: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress
