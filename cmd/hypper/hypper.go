@@ -25,7 +25,6 @@ import (
 	logcli "github.com/Masterminds/log-go/impl/cli"
 	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
-	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	helmAction "helm.sh/helm/v3/pkg/action"
@@ -57,7 +56,7 @@ func main() {
 	}
 
 	if err != nil {
-		logger.Debug(eyecandy.Magenta("%v"), err)
+		logger.Error(err)
 		os.Exit(1)
 	}
 
@@ -72,7 +71,7 @@ func main() {
 	})
 
 	if err := cmd.Execute(); err != nil {
-		logger.Debug(eyecandy.Magenta("%v"), err)
+		logger.Error(err)
 		os.Exit(1)
 	}
 }
