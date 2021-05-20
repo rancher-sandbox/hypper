@@ -150,6 +150,10 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 		mem.SetNamespace(settings.Namespace())
 	}
 	c, err := root.ExecuteC()
+	if err != nil {
+		logger.Error(err)
+	}
+
 	result := buf.String()
 	os.Stdin = oldStdin
 
@@ -214,6 +218,10 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 	oldStdin := os.Stdin
 
 	c, err := root.ExecuteC()
+	if err != nil {
+		logger.Error(err)
+	}
+
 	result := buf.String()
 	os.Stdin = oldStdin
 
