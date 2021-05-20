@@ -100,6 +100,13 @@ func TestInstallCmd(t *testing.T) {
 			golden:    "output/install-incorrect-flag-optional-deps.txt",
 			wantError: true,
 		},
+
+		// dry-run, with all optional shared deps
+		{
+			name:   "install dry-run, with all optional shared deps",
+			cmd:    "install testdata/testcharts/shared-and-optional-deps --optional-deps all --dry-run",
+			golden: "output/install-dry-run-with-all-optional-deps.txt",
+		},
 	}
 	runTestActionCmd(t, tests)
 }

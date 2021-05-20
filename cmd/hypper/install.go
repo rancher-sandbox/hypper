@@ -101,6 +101,7 @@ func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Instal
 	f.BoolVar(&client.NoSharedDeps, "no-shared-deps", false, "skip installation of shared dependencies")
 	f.Var(enumflag.New(&optionaldepsmode, "option", OptionalDepsModeIds, enumflag.EnumCaseInsensitive),
 		"optional-deps", "install optional shared dependencies [ask|all|none]")
+	f.BoolVar(&client.DryRun, "dry-run", false, "simulate an install")
 }
 
 func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {

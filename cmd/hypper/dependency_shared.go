@@ -36,12 +36,13 @@ For example, this Chart.yaml declares two shared dependencies:
     # Chart.yaml
     annotations:
       hypper.cattle.io/shared-dependencies: |
-	- name: prometheus
-	  version: "13.3.1"
-      repository: "https://example.com/charts"
-	- name: postgresql
-	  version: "10.3.11"
-      repository: "https://another.example.com/charts"
+        - name: prometheus
+          version: "13.3.1"
+          repository: "https://example.com/charts"
+      hypper.cattle.io/optional-dependencies: |
+        - name: postgresql
+          version: "10.3.11"
+          repository: "https://another.example.com/charts"
 
 
 The 'name' should be the name of a chart, where that name must match the name
@@ -70,7 +71,8 @@ supported for this case.
 `
 
 const sharedDependencyListDesc = `
-List all of the shared dependencies declared in a chart, showing their statuses.
+List all of the shared dependencies declared in a chart, showing their statuses,
+and type (shared, shared-optional)
 
 This can take chart archives and chart directories as input. It will not alter
 the contents of a chart.
