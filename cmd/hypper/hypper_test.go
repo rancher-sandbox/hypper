@@ -122,9 +122,13 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 	buf := new(bytes.Buffer)
 	logger := logcli.NewStandard()
+	logger.TraceOut = buf
+	logger.DebugOut = buf
 	logger.InfoOut = buf
 	logger.WarnOut = buf
 	logger.ErrorOut = buf
+	logger.FatalOut = buf
+	logger.PanicOut = buf
 	log.Current = logger
 
 	root, err := newRootCmd(actionConfig, log.Current, args)
@@ -146,6 +150,10 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 		mem.SetNamespace(settings.Namespace())
 	}
 	c, err := root.ExecuteC()
+	if err != nil {
+		logger.Error(err)
+	}
+
 	result := buf.String()
 	os.Stdin = oldStdin
 
@@ -189,8 +197,13 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 	// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
 	buf := new(bytes.Buffer)
 	logger := logcli.NewStandard()
+	logger.TraceOut = buf
+	logger.DebugOut = buf
 	logger.InfoOut = buf
+	logger.WarnOut = buf
 	logger.ErrorOut = buf
+	logger.FatalOut = buf
+	logger.PanicOut = buf
 	log.Current = logger
 
 	root, err := newRootCmd(actionConfig, log.Current, args)
@@ -205,6 +218,10 @@ func executeCommandStdinC(cmd string) (*cobra.Command, string, error) {
 	oldStdin := os.Stdin
 
 	c, err := root.ExecuteC()
+	if err != nil {
+		logger.Error(err)
+	}
+
 	result := buf.String()
 	os.Stdin = oldStdin
 

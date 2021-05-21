@@ -29,4 +29,4 @@
 [INFO] Chart.yaml: Setting hypper.cattle.io/shared-dependencies in annotations is optional
 [INFO] Chart.yaml: Setting hypper.cattle.io/optional-dependencies in annotations is optional
 
-Error: 3 chart(s) linted, 2 chart(s) failed
+ERROR: 3 chart(s) linted, 2 chart(s) failed
