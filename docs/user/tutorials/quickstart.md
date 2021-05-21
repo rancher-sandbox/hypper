@@ -70,7 +70,7 @@ all users of the cluster. Think of them as typical system OS libraries/services.
 The commands are the same as you have already used:
 
 ```console
-$ hypper install hypper-charts/our-app --create-namespace
+$ hypper install hypper-charts/our-app
 🛳  Installing shared dependencies for chart "our-app":
 🛳  - Installing chart "fleet" as "fleet" in namespace "fleet-system"…
 ❓ Install optional shared dependency "rancher-tracing" ? [Y/n]:
@@ -81,9 +81,9 @@ y
 ```
 
 This time, the chart got installed with a default name `our-app-name`, and into
-a default namespace  `hypper`. We passed the flag `--create-namespace` to tell
-Hypper to create the namespace if it doesn't exist. It also installed its
-defined shared and optional shared dependencies.
+a default namespace  `hypper`. Hypper to creates the namespace if it doesn't
+exist (you can pass `--no-create-namespace` if you don't want that). It also
+installed its defined shared and optional shared dependencies.
 
 ## Learn about releases
 
