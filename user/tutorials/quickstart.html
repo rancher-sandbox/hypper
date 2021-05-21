@@ -210,7 +210,7 @@ shared-dependency charts automatically.
 They are thought to be installed system-wide in the cluster: 1 Hypper chart for
 all users of the cluster. Think of them as typical system OS libraries/services.</p>
 <p>The commands are the same as you have already used:</p>
-<pre><code class="language-console">$ hypper install hypper-charts/our-app --create-namespace
+<pre><code class="language-console">$ hypper install hypper-charts/our-app
 🛳  Installing shared dependencies for chart &quot;our-app&quot;:
 🛳  - Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
 ❓ Install optional shared dependency &quot;rancher-tracing&quot; ? [Y/n]:
@@ -220,9 +220,9 @@ y
 👏 Done!
 </code></pre>
 <p>This time, the chart got installed with a default name <code>our-app-name</code>, and into
-a default namespace  <code>hypper</code>. We passed the flag <code>--create-namespace</code> to tell
-Hypper to create the namespace if it doesn't exist. It also installed its
-defined shared and optional shared dependencies.</p>
+a default namespace  <code>hypper</code>. Hypper to creates the namespace if it doesn't
+exist (you can pass <code>--no-create-namespace</code> if you don't want that). It also
+installed its defined shared and optional shared dependencies.</p>
 <h2><a class="header" href="#learn-about-releases" id="learn-about-releases">Learn about releases</a></h2>
 <p>It's easy to see what has been released with hypper:</p>
 <pre><code class="language-console">$ hypper ls --all-namespaces

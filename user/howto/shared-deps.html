@@ -251,7 +251,7 @@ Hang tight while we grab the latest from your chart repositories...
 🛳  Update Complete.
 </code></pre>
 <p>Now we install <code>fleet</code>:</p>
-<pre><code class="language-console">$ hypper install hypper-charts/fleet -n fleet-system --create-namespace
+<pre><code class="language-console">$ hypper install hypper-charts/fleet -n fleet-system
 Installing chart &quot;fleet&quot; as &quot;fleet&quot; in namespace &quot;fleet-system&quot;…
 Done! 👏
 </code></pre>
@@ -264,7 +264,7 @@ rancher-tracing ^1.20.002       https://rancher-sandbox.github.io/hypper-charts/
 <p>Then, we can install <code>our-app</code>, and any of its missing shared dependencies.
 By default, Hypper asks for each optional shared dependency if we want to
 install it or not:</p>
-<pre><code class="language-console">$ hypper install ./our-app --create-namespace
+<pre><code class="language-console">$ hypper install ./our-app
 🛳  Installing shared dependencies for chart &quot;our-app&quot;:
 ℹ️  - Shared dependency chart &quot;fleet&quot; already installed, skipping
 ❓ Install optional shared dependency &quot;rancher-tracing&quot; ? [Y/n]:
