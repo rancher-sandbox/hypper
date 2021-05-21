@@ -46,7 +46,9 @@ func Annotations(linter *support.Linter) {
 	if _, ok := chartFile.Annotations["hypper.cattle.io/shared-dependencies"]; ok {
 		linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartHypperSharedDepsCorrect(chartFile))
 	}
-
+	if _, ok := chartFile.Annotations["hypper.cattle.io/optional-dependencies"]; ok {
+		linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartHypperOptionalSharedDepsCorrect(chartFile))
+	}
 }
 
 // validateChartHypperRelease checks that hypper release-name annotation is set

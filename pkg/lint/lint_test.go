@@ -74,12 +74,12 @@ func TestBadChart(t *testing.T) {
 
 func TestBadChartBrokenDeps(t *testing.T) {
 	m := All(badChartDirWithBrokenHypperDeps, values, namespace, strict).Messages
-	if len(m) != 2 {
+	if len(m) != 3 {
 		t.Errorf("Number of errors %v", len(m))
 		t.Errorf("All didn't fail with expected errors, got %#v", m)
 	}
-	// There should be 1 INFO and 1 ERROR, check for it
-	var i1, e1 bool
+	// There should be 1 INFO and 2 ERROR, check for it
+	var i1, e1, e2 bool
 	for _, msg := range m {
 		if msg.Severity == support.InfoSev {
 			if strings.Contains(msg.Err.Error(), "icon is recommended") {
@@ -91,8 +91,13 @@ func TestBadChartBrokenDeps(t *testing.T) {
 				e1 = true
 			}
 		}
+		if msg.Severity == support.ErrorSev {
+			if strings.Contains(msg.Err.Error(), "Optional shared dependencies list is broken, please check the correct format") {
+				e2 = true
+			}
+		}
 	}
-	if !i1 || !e1 {
+	if !i1 || !e1 || !e2 {
 		t.Errorf("Didn't find all the expected errors, got %#v", m)
 	}
 }
