@@ -35,11 +35,12 @@ func TestInstallCmd(t *testing.T) {
 			cmd:    "install zeppelin testdata/testcharts/hypper-annot -n led --no-shared-deps",
 			golden: "output/install-name-ns-args.txt",
 		},
-		// Install, name and namespace as args, create ns
+		// Install, name and namespace as args, no create ns
 		{
-			name:   "install, name and ns as args",
-			cmd:    "install purple testdata/testcharts/hypper-annot --namespace deep --create-namespace --no-shared-deps",
-			golden: "output/install-create-namespace.txt",
+			name:   "install, name and ns as args, don't create ns",
+			cmd:    "install purple testdata/testcharts/hypper-annot --namespace deep --no-create-namespace --no-shared-deps",
+			golden: "output/install-no-create-namespace.txt",
+			// wantError: true, there's no error, the client allows targetting any ns
 		},
 		// Install, hypper annot have priority over fallback annot
 		{

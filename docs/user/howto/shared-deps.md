@@ -115,7 +115,7 @@ Hang tight while we grab the latest from your chart repositories...
 Now we install `fleet`:
 
 ```console
-$ hypper install hypper-charts/fleet -n fleet-system --create-namespace
+$ hypper install hypper-charts/fleet -n fleet-system
 Installing chart "fleet" as "fleet" in namespace "fleet-system"…
 Done! 👏
 ```
@@ -134,7 +134,7 @@ By default, Hypper asks for each optional shared dependency if we want to
 install it or not:
 
 ```console
-$ hypper install ./our-app --create-namespace
+$ hypper install ./our-app
 🛳  Installing shared dependencies for chart "our-app":
 ℹ️  - Shared dependency chart "fleet" already installed, skipping
 ❓ Install optional shared dependency "rancher-tracing" ? [Y/n]:
