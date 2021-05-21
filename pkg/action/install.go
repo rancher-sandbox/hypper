@@ -58,8 +58,9 @@ type Install struct {
 	*action.Install
 
 	// hypper specific
-	NoSharedDeps bool
-	OptionalDeps optionalDepsStrategy
+	NoSharedDeps      bool
+	OptionalDeps      optionalDepsStrategy
+	NoCreateNamespace bool
 
 	// Config stores the actionconfig so it can be retrieved and used again
 	Config *Configuration
