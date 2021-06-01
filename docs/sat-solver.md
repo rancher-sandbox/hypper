@@ -174,7 +174,7 @@ Although <img src="https://render.githubusercontent.com/render/math?math=x_{1}">
 installed without <img src="https://render.githubusercontent.com/render/math?math=p_{1}">.
 
 
-### Depends on multiple versions
+### Depends that can be satisfied by multiple versions
 
 If <img src="https://render.githubusercontent.com/render/math?math=p_{1}">
 depends on multiple versions of _x_, for example,
