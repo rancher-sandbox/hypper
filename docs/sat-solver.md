@@ -308,7 +308,7 @@ Then, the objective function is defined as:
 
 <img src="https://render.githubusercontent.com/render/math?math=f_{4} = min( (W_{1} * f_{1}(P) %2B (W_{2} * f_{2}(P)) %2B (W_{3} * f_{3}(P))">
 
-# Existing solver libraries in Golang that we considered
+# Considered solver libraries
 
 Ideally, we want a MAXSAT/Pseudo-Boolean SAT solver library with ample feature
 support, good docs, good API, a thriving community, verbose output, in Golang,
@@ -373,10 +373,12 @@ See also their [docs](https://luet-lab.github.io/docs/docs/concepts/overview/con
 # literature
 
 PBO problem:
+
 - https://arxiv.org/pdf/1007.1022.pdf (CC BY-ND 3.0, yet contains minor errors)
 - https://ths.rwth-aachen.de/wp-content/uploads/sites/4/teaching/theses/grobelna_bachelor.pdf (PB equations optimization)
 
 General literature:
+
 - https://research.swtch.com/version-sat
 - https://arxiv.org/pdf/2011.07851.pdf
 - http://www.lifl.fr/LION9/presentation_orator/lion9.pdf
