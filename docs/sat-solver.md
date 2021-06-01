@@ -189,7 +189,7 @@ depends on multiple versions of _x_, for example,
 If <img src="https://render.githubusercontent.com/render/math?math=y_{2}"> conflicts with
 <img src="https://render.githubusercontent.com/render/math?math=x_{1}">:
 
-<img src="https://render.githubusercontent.com/render/math?math=x_{1} %2B y_{3} \leq 1">
+<img src="https://render.githubusercontent.com/render/math?math=x_{1} %2B y_{2} \leq 1">
 
 
 ### Provides
