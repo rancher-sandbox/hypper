@@ -118,11 +118,11 @@ Over _n_ Boolean variables
 In our case, whether package _x_ is present (installed) in the final solution.
 The optimization problem form is in the following function to minimize:
 
-<img src="https://render.githubusercontent.com/render/math?math=min \sum_{j \in N} c_{j}*x_{j}">
+<img src="https://render.githubusercontent.com/render/math?math=min \sum_{j \in \mathbb{N}} c_{j}*x_{j}">
 
 subject to:
 
-<img src="https://render.githubusercontent.com/render/math?math=\sum_{j \in N} a_{ij}*l_{j} \geq b_{i}">
+<img src="https://render.githubusercontent.com/render/math?math=\sum_{j \in \mathbb{N}} a_{ij}*l_{j} \geq b_{i}">
 
 <img src="https://render.githubusercontent.com/render/math?math=x_{j} \in \{0,1\}, a_{ij},b_{i}, c_{j} \in N_{0}^{+}, i \in M">
 
@@ -132,7 +132,7 @@ Where:
 
 - Each <img src="https://render.githubusercontent.com/render/math?math=c_{j}">
   is a non-negative integer cost, associated with variable
-  <img src="https://render.githubusercontent.com/render/math?math=x_{j}, j \in N">.
+  <img src="https://render.githubusercontent.com/render/math?math=x_{j}, j \in \mathbb{N}">.
 - <img src="https://render.githubusercontent.com/render/math?math=a_{ij}">
   denotes the coefficients of the literals
   <img src="https://render.githubusercontent.com/render/math?math=l_{j}">
