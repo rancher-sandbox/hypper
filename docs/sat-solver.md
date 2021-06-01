@@ -277,7 +277,9 @@ E.g:
 
 The distance
 <img src="https://render.githubusercontent.com/render/math?math=d((a.b.c),(x.y.z))">
-between 2 semvers is the Euclidean distance between their normalized values.
+between 2 semvers is the Euclidean distance between their normalized values,
+which satisfies the triangle inequality and the definition of metric.
+(this is an efficient definition, see addendum 1).
 
 The objective function will be:
 
@@ -388,3 +390,48 @@ General literature:
 - https://arxiv.org/pdf/1007.1022.pdf?origin=publicationDetail
 - https://github.com/operator-framework/enhancements/pull/7/files
 - https://hal.inria.fr/hal-00697463/document
+
+---
+
+# Addendum 1: finding the best semver distance definition
+
+We have a set of tuples of versions _(Major,Minor,Patch)_. The definition of
+distance between 2 tuples of versions _(a,b,c)_ and _(m,n,o)_ is such that the
+distance between the first component of the tuples, _a_ and _m_, if that
+distance is _> 1_, needs to be always bigger than the distance between _b_ and
+_n_, whatever that value is.
+
+That is, a major version change is always larger than any minor or patch version
+range: distance from _4.5.1_ to _5.0.0_ is greater than _4.0.0_ to _4.5.1_.
+
+Intuitively, we will need "separation buffers" between the distance value of 1
+version component, and whatever components come afterwards.
+
+Our distance function goes to
+<img src="https://render.githubusercontent.com/render/math?math=\mathbb{N}">
+(as we want to feed it to the Pseudo-Boolean SAT solver).
+
+Whatever integer you pick for the distance between _1.0.0_ and _2.0.0_, there
+would need to be infinitely many possible distances less than that (but each
+increasingly far from _1.0.0_) so we can fit all possible distances between
+_1.0.0_ and _1.X.Y_. Since there is no infinite increasing sequence of integers
+with an upper bound, it cannot be done.
+
+As a curiosity, if we define our distance function as
+<img src="https://render.githubusercontent.com/render/math?math=d: (a,b,c) \mapsto \Re">,
+instead of to
+<img src="https://render.githubusercontent.com/render/math?math=\mathbb{N}">,
+we could find a desired metric function:
+
+<img src="https://render.githubusercontent.com/render/math?math=d(a,b)=((|a_{i} - b_{i}|)/(|a_{i} - b_{i}| %2B 1)) * 1 / 2^{i}">
+           
+with _i_ being the smallest index for which
+<img src="https://render.githubusercontent.com/render/math?math=a_{i} \neq n_{i}">.
+
+Then, the "separation buffer" between component _i_ and _i+1_ is 
+<img src="https://render.githubusercontent.com/render/math?math=1 / 2^{i %2B 1}">, as
+<img src="https://render.githubusercontent.com/render/math?math=1 / 2^{i} > d(a,b) \geq 1 / 2^{i %2B 1}">.
+
+In an infinite-component definition of semantic versions, the semver "tuple" set
+would be homoemorphic to the Cantor set, and the metric function would be
+analogous to the Cantor metric.
