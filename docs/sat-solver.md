@@ -8,10 +8,10 @@ various ways. A **package** is comprised of:
   when deployed.
 - Kubernetes **namespace**. Either where to install it, or where are they
   installed, if already installed.
-- Defined relations to other packages (**Depends**, **Optional-Depends**,
-  **Provides**, **Conflicts**).
+- Defined relations to other packages: **Depends**, **Optional-Depends**.
 
 Also, not considered now but could be considered in the future:
+- Relations to other packages: **Provides**, **Conflicts**.
 - **Information about charts containing only CRDs**. Given how CRD objects
   behave on remove and update in the cluster, this may mean to never uninstall
   them in normal operations, and pinning versions for them to not get updated
