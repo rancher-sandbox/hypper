@@ -324,13 +324,13 @@ from SAT competitions. We want a solver that handles optimization problems
 
 ## [Luet](https://github.com/mudler/luet)
 
-- GPLv3, which would force us to move to GPLv3 given that Golang is usually
-  statically compiled.
 - It defines a pure SAT problem (with constraints and literals inspired by OPIUM)
 (see [here](https://github.com/mudler/luet/blob/56e9c6f82ecb1aeffe5f7d0f152c6210cd6fe4ed/pkg/solver/solver.go#L37-L54)).
 - It uses the pure SAT solving of Gophersat, and, if there's some failure, it uses
 Q-Learning to recover (see [here](https://github.com/mudler/luet/blob/master/pkg/solver/resolver.go)).
 See also their [docs](https://luet-lab.github.io/docs/docs/concepts/overview/constraints/).
+- GPLv3, would need re-licensing of either Luet or Hypper (if we re-license
+  Hypper, then upstreaming to Helm is hindered).
 
 ## [Go-sat](https://github.com/mitchellh/go-sat)
 
