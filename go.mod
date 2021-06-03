@@ -2,12 +2,9 @@ module github.com/rancher-sandbox/hypper
 
 go 1.15
 
-replace (
-	// WARNING! Do NOT replace these without also replacing their lines in the `require` stanza below.
-	// These `replace` stanzas are IGNORED when this is imported as a library
-	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
-	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
-)
+// WARNING! Do NOT replace this without also replacing their lines in the `require` stanza below.
+// These `replace` stanzas are IGNORED when this is imported as a library
+replace github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 
 require (
 	github.com/Masterminds/log-go v0.4.0
@@ -25,10 +22,10 @@ require (
 	github.com/thediveo/enumflag v0.10.1
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.5.3
-	k8s.io/api v0.20.4
-	k8s.io/apimachinery v0.20.4
-	k8s.io/cli-runtime v0.20.4
-	k8s.io/client-go v0.20.4
+	helm.sh/helm/v3 v3.6.0
+	k8s.io/api v0.21.0
+	k8s.io/apimachinery v0.21.0
+	k8s.io/cli-runtime v0.21.0
+	k8s.io/client-go v0.21.0
 	sigs.k8s.io/yaml v1.2.0
 )
