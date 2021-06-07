@@ -2,13 +2,14 @@
 
 The problem space is defined by a set of packages that depend on each other in
 various ways. A **package** is comprised of:
-- An implicit **chart**.
-- **URI** (repo + name)
-- **semver ranges** (e.g: `~`, `^`). They get collapsed into a specific semver
-  when deployed.
-- Kubernetes **namespace**. Either where to install it, or where are they
+- A **ReleaseName**, either where to installed it, or where it is already
+  installed.
+- A **semver** version.
+- A Kubernetes **namespace**. Either where to install it, or where is it
   installed, if already installed.
-- Defined relations to other packages: **Depends**, **Optional-Depends**.
+- A **Helm Digest** (hash) of the Hypper **chart**.
+- Implicitly, defined relations to other packages: **Depends**,
+  **Optional-Depends**.
 
 Also, not considered now but could be considered in the future:
 - Relations to other packages: **Provides**, **Conflicts**.
