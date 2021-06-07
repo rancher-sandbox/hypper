@@ -191,6 +191,8 @@ If <img src="https://render.githubusercontent.com/render/math?math=y_{2}"> confl
 
 <img src="https://render.githubusercontent.com/render/math?math=x_{1} %2B y_{2} \leq 1">
 
+A corner case of conflicting packages is each package version conflicting with
+each other version, when being installed on the same namespace.
 
 ### Provides
 
