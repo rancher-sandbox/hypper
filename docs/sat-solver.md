@@ -263,17 +263,16 @@ With semver _(a,b,c)_, where
 <img src="https://render.githubusercontent.com/render/math?math=a,b,c \in \mathbb{N}">,
 <img src="https://render.githubusercontent.com/render/math?math=0 \leq a,b,c \leq 10^{3}">,
 the normalized semantic version
-<img src="https://render.githubusercontent.com/render/math?math=\overline{semver}">
-is calculated by constructing a fractional number such that:
+<img src="https://render.githubusercontent.com/render/math?math=\overline{semver}: (a,b,c) \mapsto \mathbb{N}">,
+is defined as:
 
-- the integer part is equal to <img src="https://render.githubusercontent.com/render/math?math=a * 10^{3} %2B b * 10^{0}">
-- the fractional part is equal to _c_.
+<img src="https://render.githubusercontent.com/render/math?math=\overline{semver} = a * 10^{6} %2B b * 10^{3} %2B c * 10^{0}">
 
 E.g:
 
-- `1.2.1 -> 1000 + 2 + 0,1 = 1002,1`
-- `0.46.3 -> 0,463 = 46,3`
-- `7.10.1 -> 7,101 = 7010,1`
+- `1.2.1 -> 1000000 + 2000 + 1 = 1002001`
+- `0.46.3 -> 0 + 46000 + 3 = 46003`
+- `7.10.1 -> 7000000 + 10000 + 1 = 7010001`
 
 The distance
 <img src="https://render.githubusercontent.com/render/math?math=d((a.b.c),(x.y.z))">
