@@ -37,9 +37,15 @@ installed packages just create a new hard constraint to be added, etc.
 
 ## Pure SAT, MaxSAT, Pseudo-Boolean SAT problem?
 
+A SAT solver is an algorithm that gets fed with facts of a problem, and it
+finds a combination of facts that can satisfy the problem, or a demonstration
+that such combination doesn't exist.
+
 In the past, dependency problems have been solved either by custom heuristics or
 by using a SAT solver and pruning results with ad-hoc heuristics after the
-resolution. Nowadays, more and more dependency problems are solved either by
+resolution.
+
+Nowadays, more and more dependency problems are solved either by
 reducing the problem space (eg: go modules) or by using a SAT solver, with or
 without heuristics to help reduce the problem space.
 
@@ -116,7 +122,8 @@ kind of problem is an optimization problem in
 <img src="https://render.githubusercontent.com/render/math?math=f: \{0,1\}^n \mapsto \Re">,
 Over _n_ Boolean variables
 <img src="https://render.githubusercontent.com/render/math?math=x_{1}, \dots ,x_{n}">.
-In our case, whether package _x_ is present (installed) in the final solution.
+In our case, whether package _x_ is present (installed, boolean _x == true_)
+or not (equals _false_) in the final solution.
 The optimization problem form is in the following function to minimize:
 
 <img src="https://render.githubusercontent.com/render/math?math=min \sum_{j \in \mathbb{N}} c_{j}*x_{j}">
