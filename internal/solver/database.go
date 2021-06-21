@@ -38,6 +38,7 @@ type PkgDB struct {
 	// map: BaseFingerprint -> Semver version -> PbId
 	mapBaseFingerprintToVersions map[string]map[string]int
 	lastElem                     int
+	// TODO maxSemverDistance    int
 }
 
 var PkgDBInstance *PkgDB
@@ -185,12 +186,17 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
 	// TODO this is broken, depending in the order of pkgs being added
 	bfp := p.GetBaseFingerPrint()
 	_, ok := pkgdb.mapBaseFingerprintToVersions[bfp]
-	if !ok {
+	if !ok { // if pkg first of all packages that differ only in version
 		pkgdb.mapBaseFingerprintToVersions[bfp] = make(map[string]int)
 	}
 	_, ok = pkgdb.mapBaseFingerprintToVersions[bfp][p.Version]
 	if !ok {
+		// add pkg to map of pkgs that differ only in version:
 		pkgdb.mapBaseFingerprintToVersions[bfp][p.Version] = pkgdb.lastElem
+		// TODO calculate maximum semver distance between this package and installed package?
+		// if pkgdb.maxSemverDistance < distance {
+		// 	pkgdb.maxSemverDistance = distance
+		// }
 	}
 
 	return pkgdb.lastElem
