@@ -117,6 +117,14 @@ func TestSolver(t *testing.T) {
 			pkgs:         loopPkgs,
 			resultStatus: "SAT",
 		},
+		{
+			name:   "remove package",
+			golden: "output/solve-sat-remove-package.txt",
+			pkgs: []*pkg.Pkg{
+				pkg.NewPkgMock(1, "wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
+			},
+			resultStatus: "SAT",
+		},
 	} {
 		t.Run(tcase.name, func(t *testing.T) {
 			s := New()
