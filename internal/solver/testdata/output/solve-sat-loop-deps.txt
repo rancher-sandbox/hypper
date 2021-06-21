@@ -1,0 +1,43 @@
+presentunchanged: []
+toinstall:
+- id: 1
+  name: wantedfoo
+  version: 1.0.0
+  digest: 010f2891d9e750b36f77fdce13067b4fed0d891efa0af96d655e7ac388c8a741c76b8400ee9704d5443881c1249ba16c98c81395a408b0e28952c41d3caa9b9b
+  namespace: targetns
+  dependsrel:
+  - targetid: 2
+    name: wantedbar
+    version: 1.0.0
+    namespace: targetns
+  dependsoptionalrel: []
+  currentstate: 2
+  desiredstate: 1
+- id: 2
+  name: wantedbar
+  version: 1.0.0
+  digest: 37bc4432f30dd2c8ee3eff74af29efbd1135598d8453dcf0f009f55f5b0758df2caa1c69d5bfe1b20eead4c6771466780460ad46ac0abe9b81fc1b15e2543986
+  namespace: targetns
+  dependsrel:
+  - targetid: 3
+    name: wantedbaz
+    version: 1.0.0
+    namespace: targetns
+  dependsoptionalrel: []
+  currentstate: 2
+  desiredstate: 0
+- id: 3
+  name: wantedbaz
+  version: 1.0.0
+  digest: 4b7af25a1c5b5f1a44a017c430e9a19ee257bb8fe137e1766f428acaa49e9f35d3f67708350ce36caad3bc7eb4e30662f2623ecef913aaecd3f0d2eb3a83bc0f
+  namespace: targetns
+  dependsrel:
+  - targetid: 1
+    name: wantedfoo
+    version: 1.0.0
+    namespace: targetns
+  dependsoptionalrel: []
+  currentstate: 2
+  desiredstate: 0
+toremove: []
+status: SAT

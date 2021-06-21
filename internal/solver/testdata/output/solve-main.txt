@@ -1,0 +1,35 @@
+presentunchanged:
+- id: 5
+  name: installedfoo
+  version: 1.0.0
+  digest: 409d7e18c1619ac0bc8047fe51b6653bb9b56b8ae9c3bce0492c930cab80fffc5976e8611df5e6933173802587b0e46e1b195d1ccf922fbcc3210d2de2c283b3
+  namespace: installedns
+  dependsrel: []
+  dependsoptionalrel: []
+  currentstate: 1
+  desiredstate: 0
+toinstall:
+- id: 3
+  name: myawesomedep
+  version: 0.1.100
+  digest: ffd1851f6d069d3230cb3712425831222480d07ea7dc5de7c5677b1a400c6053d760deb2f39559d45150ecb34659dccaf9e1604685de33e1049d92e356ceac20
+  namespace: myawesomedependencytargetns
+  dependsrel: []
+  dependsoptionalrel: []
+  currentstate: 0
+  desiredstate: 0
+- id: 4
+  name: wantedbaz
+  version: 1.0.0
+  digest: 4b7af25a1c5b5f1a44a017c430e9a19ee257bb8fe137e1766f428acaa49e9f35d3f67708350ce36caad3bc7eb4e30662f2623ecef913aaecd3f0d2eb3a83bc0f
+  namespace: wantedbazns
+  dependsrel:
+  - targetid: 3
+    name: myawesomedep
+    version: 0.1.100
+    namespace: myawesomedependencytargetns
+  dependsoptionalrel: []
+  currentstate: 0
+  desiredstate: 1
+toremove: []
+status: SAT
