@@ -9,6 +9,7 @@ replace github.com/docker/distribution => github.com/docker/distribution v0.0.0-
 require (
 	github.com/Masterminds/log-go v0.4.0
 	github.com/Masterminds/semver/v3 v3.1.1
+	github.com/crillab/gophersat v1.3.1
 	github.com/fatih/color v1.10.0
 	github.com/gofrs/flock v0.8.0
 	github.com/gosuri/uitable v0.0.4
