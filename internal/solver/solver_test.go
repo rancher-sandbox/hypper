@@ -112,7 +112,7 @@ func TestSolver(t *testing.T) {
 			resultStatus: "UNSAT",
 		},
 		{
-			name:         "satisfiable, loop deps",
+			name:         "install several looped deps",
 			golden:       "output/solve-sat-loop-deps.txt",
 			pkgs:         loopPkgs,
 			resultStatus: "SAT",

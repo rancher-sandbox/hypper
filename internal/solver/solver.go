@@ -102,10 +102,11 @@ func (s *Solver) BuildConstraints(id int) (constrs []gsolver.PBConstr) {
 	packageConstrs := buildConstraintRelations(p)
 	constrs = append(constrs, packageConstrs...)
 
-	if p.CurrentState == pkg.Present || p.DesiredState != pkg.Absent {
-		// p is a release, and is not going to be changed
+	if p.CurrentState == pkg.Present && p.DesiredState != pkg.Absent {
+		// p is a release, and is not directly going to be changed
 		packageConstrs := buildConstraintPresent(p)
 		constrs = append(constrs, packageConstrs...)
+		// TODO p is a release, and is not going to be upgraded
 	}
 
 	if p.DesiredState != pkg.Unknown {
