@@ -125,6 +125,18 @@ func TestSolver(t *testing.T) {
 			},
 			resultStatus: "SAT",
 		},
+		{
+			name:   "update package",
+			golden: "output/solve-sat-update-package.txt",
+			pkgs: []*pkg.Pkg{
+				// releases:
+				pkg.NewPkgMock(1, "toupdatebar", "1.0.0", "toupdatebarns", nil, nil, pkg.Present, pkg.Unknown),
+				pkg.NewPkgMock(2, "installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
+				// package to update:
+				pkg.NewPkgMock(3, "toupdatebar", "1.3.0", "toupdatebarns", nil, nil, pkg.Unknown, pkg.Present),
+			},
+			resultStatus: "SAT",
+		},
 	} {
 		t.Run(tcase.name, func(t *testing.T) {
 			s := New()
