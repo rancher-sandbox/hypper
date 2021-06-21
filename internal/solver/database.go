@@ -79,6 +79,30 @@ func (pkgdb *PkgDB) GetPackageIDsThatDifferOnVersionByPackage(p *pkg.Pkg) (ids [
 	return ids
 }
 
+// needed to find if a pkg is a dependency, to skip when i.NoSharedDeps
+func (pkgdb *PkgDB) IsDependency(ID int) bool {
+	for _, p := range pkgdb.mapFingerprintToPkg {
+		for _, pr := range p.DependsRel {
+			if pr.TargetID == ID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// needed to find if a pkg is an optional dependency, to skip when i.NoSharedDeps
+func (pkgdb *PkgDB) IsDependencyOptional(ID int) bool {
+	for _, p := range pkgdb.mapFingerprintToPkg {
+		for _, pr := range p.DependsOptionalRel {
+			if pr.TargetID == ID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func CreatePkgDBInstance() *PkgDB {
 	PkgDBInstance = &PkgDB{
 		mapFingerprintToPkg:          make(map[string]*pkg.Pkg),
