@@ -143,7 +143,7 @@ func TestSolver(t *testing.T) {
 			s.BuildWorldMock(tcase.pkgs)
 			s.Solve()
 			is := assert.New(t)
-			is.Equal(s.pkgResultSet.Status, tcase.resultStatus)
+			is.Equal(tcase.resultStatus, s.pkgResultSet.Status)
 
 			str := s.FormatOutput(YAML)
 			if tcase.golden != "" {
