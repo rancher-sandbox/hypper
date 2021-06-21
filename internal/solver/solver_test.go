@@ -70,15 +70,6 @@ func TestSolver(t *testing.T) {
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	unsatDep := pkg.NewPkgMock(1, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Present, pkg.Absent)
-	unsatDeps := []*pkg.Pkg{unsatDep}
-
-	unsatDependencies := []*pkg.Pkg{
-		pkg.NewPkgMock(1, "wantedbaz", "1.0.0", "wantedbazns", unsatDeps, nil, pkg.Unknown, pkg.Present),
-	}
-
-	/////////////////////////////////////////////////////////////////////////////
-
 	for _, tcase := range []struct {
 		name         string
 		pkgs         []*pkg.Pkg
@@ -98,9 +89,18 @@ func TestSolver(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
-			name:         "unsatisfiable, remove a dependency",
-			golden:       "output/solve-unsat-remove-dep.txt",
-			pkgs:         unsatDependencies,
+			name:   "unsatisfiable, remove a dependency",
+			golden: "output/solve-unsat-remove-dep.txt",
+			pkgs: []*pkg.Pkg{
+				// release, to be removed:
+				pkg.NewPkgMock(1, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Present, pkg.Absent),
+				// release, depends on pkg that is going to be removed:
+				pkg.NewPkgMock(2, "wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.Pkg{ // dependencies:
+						pkg.NewPkgMock(1, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Present, pkg.Absent),
+					},
+					nil, pkg.Unknown, pkg.Present),
+			},
 			resultStatus: "UNSAT",
 		},
 		{
