@@ -27,49 +27,6 @@ import (
 
 func TestSolver(t *testing.T) {
 
-	// test cases have hardcoded IDs for now
-
-	dep := pkg.NewPkgMock(3, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Unknown, pkg.Unknown)
-	deps := []*pkg.Pkg{dep}
-
-	// repo
-	repo := []*pkg.Pkg{
-		pkg.NewPkgMock(1, "notinstalledbar", "1.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
-		pkg.NewPkgMock(2, "notinstalledbar", "2.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
-		dep,
-		pkg.NewPkgMock(4, "wantedbaz", "1.0.0", "wantedbazns", deps, nil, pkg.Unknown, pkg.Unknown),
-	}
-
-	// releases
-	releases := []*pkg.Pkg{
-		pkg.NewPkgMock(5, "installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
-	}
-
-	// list of packages to modify
-	toModify := []*pkg.Pkg{
-		pkg.NewPkgMock(4, "wantedbaz", "1.0.0", "wantedbazns", deps, nil, pkg.Unknown, pkg.Present),
-	}
-
-	pkgsMain := append([]*pkg.Pkg{}, repo...)
-	pkgsMain = append(pkgsMain, releases...)
-	pkgsMain = append(pkgsMain, toModify...)
-
-	/////////////////////////////////////////////////////////////////////////////
-
-	loopPkgs := []*pkg.Pkg{
-		pkg.NewPkgMock(1, "wantedfoo", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
-		pkg.NewPkgMock(2, "wantedbar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Unknown),
-		pkg.NewPkgMock(3, "wantedbaz", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Unknown),
-	}
-	loopPkgs[0].Depends = []*pkg.Pkg{loopPkgs[1]}
-	loopPkgs[1].Depends = []*pkg.Pkg{loopPkgs[2]}
-	loopPkgs[2].Depends = []*pkg.Pkg{loopPkgs[0]}
-	for _, p := range loopPkgs {
-		pkg.UpdatePkgRel(p)
-	}
-
-	/////////////////////////////////////////////////////////////////////////////
-
 	for _, tcase := range []struct {
 		name         string
 		pkgs         []*pkg.Pkg
@@ -83,9 +40,26 @@ func TestSolver(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
-			name:         "solve for the example in main",
-			golden:       "output/solve-main.txt",
-			pkgs:         pkgsMain,
+			name:   "solve for the example in main",
+			golden: "output/solve-main.txt",
+			pkgs: []*pkg.Pkg{
+				pkg.NewPkgMock(1, "notinstalledbar", "1.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock(2, "notinstalledbar", "2.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock(3, "myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// toModify:
+				pkg.NewPkgMock(4, "wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.PkgRel{
+						{
+							TargetID:  3,
+							Name:      "myawesomedep",
+							Version:   "0.1.100",
+							Namespace: "myawesomedeptargetns",
+						},
+					},
+					nil, pkg.Unknown, pkg.Present),
+				// releases:
+				pkg.NewPkgMock(5, "installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
+			},
 			resultStatus: "SAT",
 		},
 		{
@@ -96,25 +70,56 @@ func TestSolver(t *testing.T) {
 				pkg.NewPkgMock(1, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Present, pkg.Absent),
 				// release, depends on pkg that is going to be removed:
 				pkg.NewPkgMock(2, "wantedbaz", "1.0.0", "wantedbazns",
-					[]*pkg.Pkg{ // dependencies:
-						pkg.NewPkgMock(1, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Present, pkg.Absent),
+					[]*pkg.PkgRel{ // dependencies:
+						{
+							TargetID:  1,
+							Name:      "myawesomedep",
+							Version:   "0.1.100",
+							Namespace: "myawesomedeptargetns",
+						},
 					},
 					nil, pkg.Unknown, pkg.Present),
 			},
 			resultStatus: "UNSAT",
 		},
 		{
-			name:   "unsatisfiable, missing deps",
-			golden: "output/solve-unsat-missing-deps.txt",
+			name:   "install several looped deps",
+			golden: "output/solve-sat-loop-deps.txt",
 			pkgs: []*pkg.Pkg{
-				pkg.NewPkgMock(1, "wantedbar", "1.0.0", "targetns", deps, nil, pkg.Absent, pkg.Present),
+				// package 1, depends on 2:
+				pkg.NewPkgMock(1, "wantedfoo", "1.0.0", "targetns",
+					[]*pkg.PkgRel{
+						{
+							TargetID:  2,
+							Name:      "wantedbar",
+							Version:   "1.0.0",
+							Namespace: "targetns",
+						},
+					},
+					nil, pkg.Absent, pkg.Present),
+				// package 2, depends on 3:
+				pkg.NewPkgMock(2, "wantedbar", "1.0.0", "targetns",
+					[]*pkg.PkgRel{
+						{
+							TargetID:  3,
+							Name:      "wantedbaz",
+							Version:   "1.0.0",
+							Namespace: "targetns",
+						},
+					},
+					nil, pkg.Absent, pkg.Unknown),
+				// package 1, depends on 1:
+				pkg.NewPkgMock(3, "wantedbaz", "1.0.0", "targetns",
+					[]*pkg.PkgRel{
+						{
+							TargetID:  1,
+							Name:      "wantedfoo",
+							Version:   "1.0.0",
+							Namespace: "targetns",
+						},
+					},
+					nil, pkg.Absent, pkg.Unknown),
 			},
-			resultStatus: "UNSAT",
-		},
-		{
-			name:         "install several looped deps",
-			golden:       "output/solve-sat-loop-deps.txt",
-			pkgs:         loopPkgs,
 			resultStatus: "SAT",
 		},
 		{
@@ -178,14 +183,17 @@ func TestFormatOutput(t *testing.T) {
 			goldenJson:  "output/format-unsat-json.txt",
 			goldenTable: "output/format-unsat-table.txt",
 			pkgs: []*pkg.Pkg{
-				pkg.NewPkgMock(1, "bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Absent),
-				pkg.NewPkgMock(2, "bar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
+				pkg.NewPkgMock(1, "bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
+				pkg.NewPkgMock(2, "baz", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
+				pkg.NewPkgMock(3, "foo", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Absent),
 			},
 		},
 	} {
 		s := New()
 		s.BuildWorldMock(tcase.pkgs)
 		s.Solve()
+		is := assert.New(t)
+		is.Equal("SAT", s.pkgResultSet.Status)
 
 		test.AssertGoldenString(t, s.FormatOutput(YAML), tcase.goldenYaml)
 		test.AssertGoldenString(t, s.FormatOutput(JSON), tcase.goldenJson)

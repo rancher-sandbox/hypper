@@ -2,30 +2,33 @@ presentunchanged:
 - id: 2
   name: installedfoo
   version: 1.0.0
-  digest: 409d7e18c1619ac0bc8047fe51b6653bb9b56b8ae9c3bce0492c930cab80fffc5976e8611df5e6933173802587b0e46e1b195d1ccf922fbcc3210d2de2c283b3
+  charthash: 1407815532980159537
   namespace: installedns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 1
   desiredstate: 0
+  chart: null
 toinstall:
 - id: 3
   name: toupdatebar
   version: 1.3.0
-  digest: fc5eb5f38ce9f88e2d3507c32a83b0c40d9a578c54eb29fecf2a06410bc0d7056eee9e99a5d58fb9f4e4c93b05f59109bf998b8d07ad2162a1f51bebccabb5ee
+  charthash: 14188825168343946542
   namespace: toupdatebarns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 0
   desiredstate: 1
+  chart: null
 toremove:
 - id: 1
   name: toupdatebar
   version: 1.0.0
-  digest: fc5eb5f38ce9f88e2d3507c32a83b0c40d9a578c54eb29fecf2a06410bc0d7056eee9e99a5d58fb9f4e4c93b05f59109bf998b8d07ad2162a1f51bebccabb5ee
+  charthash: 3696066970254529391
   namespace: toupdatebarns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 1
   desiredstate: 0
+  chart: null
 status: SAT

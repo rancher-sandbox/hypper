@@ -22,25 +22,26 @@ import (
 	helmRelease "helm.sh/helm/v3/pkg/release"
 )
 
-func NewPkgFromChart(chart *helmChart.Chart, digest string, desiredState tristate) *Pkg {
+// NewPkgFromChart creates a Pkg struct from chart, without filling the
+// dependencies and optional dependencies information yet. This needs to happen
+// when all packages are already on the db with IDs.
+func NewPkgFromChart(chart *helmChart.Chart, dependsRel []*PkgRel,
+	dependsOptionalRel []*PkgRel, desiredState tristate) *Pkg {
+
 	ns := action.GetNamespace(chart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 
-	//TODO figure out deps, optional-deps
-
-	return NewPkg(chart.Name(), chart.Metadata.Version, digest,
-		ns, nil, nil,
+	return NewPkg(chart.Name(), chart.Metadata.Version,
+		ns, dependsRel, dependsOptionalRel,
 		Unknown, desiredState,
 		chart)
 }
 
+// NewPkgFromRelease creates a Pkg struct from release, without filling the
+// dependencies and optional dependencies information yet. This needs to happen
+// when all packages are already on the db with IDs.
 func NewPkgFromRelease(release *helmRelease.Release) *Pkg {
 
-	//TODO figure out digest: use a hash of the yaml-marshalled chart object
-
-	//TODO figure out deps, optional-deps
-	//
 	return NewPkg(release.Name, release.Chart.Metadata.Version,
-		"generated-hash", // TODO generate digest
 		release.Namespace, nil, nil,
 		Present, Unknown,
 		release.Chart)

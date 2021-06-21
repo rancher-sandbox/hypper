@@ -4,10 +4,11 @@ toremove:
 - id: 1
   name: wantedbaz
   version: 1.0.0
-  digest: 4b7af25a1c5b5f1a44a017c430e9a19ee257bb8fe137e1766f428acaa49e9f35d3f67708350ce36caad3bc7eb4e30662f2623ecef913aaecd3f0d2eb3a83bc0f
+  charthash: 7006492496207040853
   namespace: wantedbazns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 1
   desiredstate: 2
+  chart: null
 status: SAT

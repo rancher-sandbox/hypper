@@ -18,11 +18,11 @@ package pkg
 
 import (
 	"bytes"
-	"crypto/sha512"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 
+	"github.com/mitchellh/hashstructure/v2"
+	hypperChart "github.com/rancher-sandbox/hypper/pkg/chart"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 )
 
@@ -44,55 +44,38 @@ type Pkg struct {
 	ID                 int    // ID from the database, default -1
 	Name               string // Release name, or default chart release-name
 	Version            string // sem ver (without a range)
-	Digest             string // hash of the chart contents
+	ChartHash          uint64 // hash of the chart contents
 	Namespace          string // Installed ns, or default chart namespace
-	Depends            []*Pkg `json:"-" yaml:"-"` // List of pkg dependencies, built from the chart
 	DependsRel         []*PkgRel
-	DependsOptional    []*Pkg `json:"-" yaml:"-"` // List of optional pkg dependencies, built from the chart
 	DependsOptionalRel []*PkgRel
 	CurrentState       tristate // current state of the package
 	DesiredState       tristate // desired state of the package
-	chart              *helmChart.Chart
+	Chart              *helmChart.Chart
 }
 
 type PkgRel struct {
-	TargetID int
-	Name     string
-	Version  string
+	TargetID  int
+	Name      string
+	Version   string
 	Namespace string
 }
 
-func UpdatePkgRel(p *Pkg) {
-	p.DependsRel = []*PkgRel{}
-	for _, dep := range p.Depends {
-		p.DependsRel = append(p.DependsRel, &PkgRel{dep.ID, dep.Name, dep.Version, dep.Namespace})
-	}
-	p.DependsOptionalRel = []*PkgRel{}
-	for _, dep := range p.DependsOptional {
-		p.DependsOptionalRel = append(p.DependsOptionalRel, &PkgRel{dep.ID, dep.Name, dep.Version, dep.Namespace})
-	}
-}
-
-func NewPkg(name, version, digest, namespace string,
-	depends, dependsOptional []*Pkg,
+func NewPkg(name, version, namespace string,
+	dependsRel, dependsOptionalRel []*PkgRel,
 	currentState, desiredState tristate, chart *helmChart.Chart) *Pkg {
 
 	thisPkg := &Pkg{
 		ID:                 -1,
 		Name:               name,
 		Version:            version,
-		Digest:             digest,
+		ChartHash:          hypperChart.Hash(chart),
 		Namespace:          namespace,
-		Depends:            depends,
-		DependsRel:         nil,
-		DependsOptional:    dependsOptional,
-		DependsOptionalRel: nil,
+		DependsRel:         dependsRel,
+		DependsOptionalRel: dependsOptionalRel,
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
-		chart:              chart,
+		Chart:              chart,
 	}
-
-	UpdatePkgRel(thisPkg)
 
 	return thisPkg
 }
@@ -101,17 +84,14 @@ func NewPkg(name, version, digest, namespace string,
 // and a nil chart pointer.
 // Useful for testing.
 func NewPkgMock(id int, name, version, namespace string,
-	depends, dependsOptional []*Pkg,
+	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, version, "", namespace,
+	p := NewPkg(name, version, namespace,
 		depends, dependsOptional, currentState, desiredState, nil)
 	p.ID = id
 
-	h := sha512.New()
-	encodedPkg := []byte(p.Name)
-	h.Write(encodedPkg)
-	p.Digest = hex.EncodeToString(h.Sum(nil))
+	p.ChartHash, _ = hashstructure.Hash(p, hashstructure.FormatV2, nil)
 
 	return p
 }
@@ -130,17 +110,16 @@ func (p *Pkg) JSON() ([]byte, error) {
 	return buffer.Bytes(), err
 }
 
-// GetFingerPrint returns a UUID of the package.
+// GetFingerPrint returns a unique id of the package.
 // Digest is present to help with packages (mariadb, postgres) that satisfy a
 // metapackage, and get installed with the metapackage releaseName (e.g: rdbms)
 func (p *Pkg) GetFingerPrint() string {
-	return fmt.Sprintf("%s-%s-%s-%s", p.Name, p.Version, p.Digest, p.Namespace)
+	return fmt.Sprintf("%s-%s-%d-%s", p.Name, p.Version, p.ChartHash, p.Namespace)
 }
 
-
-// GetBaseFingerPrint returns a UUID of the package minus version.
+// GetBaseFingerPrint returns a unique id of the package minus version.
 func (p *Pkg) GetBaseFingerPrint() string {
-	return fmt.Sprintf("%s-%s-%s", p.Name, p.Digest, p.Namespace)
+	return fmt.Sprintf("%s-%s", p.Name, p.Namespace)
 }
 
 // Encode encodes the package to string.

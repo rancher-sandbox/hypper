@@ -292,7 +292,7 @@ func buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	id := PkgDBInstance.GetIDByPackage(p)
 
 	// build constraints for 'Depends' relations
-	for _, dep := range p.Depends {
+	for _, dep := range p.DependsRel {
 		// Pseudo-Boolean equation:
 		// a depends on b and on c: b - a >= 0 ; c - a >= 0
 		// E.g:
@@ -301,19 +301,17 @@ func buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 		// false       false   0      yes
 		// true        true    0      yes
 		// false       true    -1     no
-		depID := PkgDBInstance.GetIDByPackage(dep)
 		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq([]int{depID, -1 * id}, []int{1, 1}, 1)
+		sliceConstr := gsolver.GtEq([]int{dep.TargetID, -1 * id}, []int{1, 1}, 1)
 		constr = append(constr, sliceConstr)
 	}
 
 	// build constraints for 'Optional-Depends' relations
-	for _, dep := range p.DependsOptional {
+	for _, dep := range p.DependsOptionalRel {
 		// Pseudo-Boolean equation:
 		// same as example above
-		depID := PkgDBInstance.GetIDByPackage(dep)
 		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq([]int{depID, -1 * id}, []int{1, 1}, 1)
+		sliceConstr := gsolver.GtEq([]int{dep.TargetID, -1 * id}, []int{1, 1}, 1)
 		constr = append(constr, sliceConstr)
 	}
 

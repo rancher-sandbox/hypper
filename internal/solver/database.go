@@ -137,11 +137,11 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 	}
 
 	// Merge Depends and DependsOptional slices
-	if old.Depends == nil {
-		result.Depends = new.Depends
+	if old.DependsRel == nil {
+		result.DependsRel = new.DependsRel
 	}
-	if old.DependsOptional == nil {
-		result.DependsOptional = new.DependsOptional
+	if old.DependsOptionalRel == nil {
+		result.DependsOptionalRel = new.DependsOptionalRel
 	}
 
 	return result

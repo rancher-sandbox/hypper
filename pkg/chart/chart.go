@@ -17,6 +17,7 @@ import (
 	"github.com/Masterminds/log-go"
 	"gopkg.in/yaml.v2"
 	helmChart "helm.sh/helm/v3/pkg/chart"
+	"github.com/mitchellh/hashstructure/v2"
 )
 
 // Dependency is a composite type of Helm's chart.Dependency
@@ -65,4 +66,12 @@ func GetSharedDeps(c *helmChart.Chart, logger log.Logger) ([]*Dependency, error)
 	}
 
 	return sharedDeps, nil
+}
+
+func Hash(c *helmChart.Chart) uint64 {
+	hash, err := hashstructure.Hash(c, hashstructure.FormatV2, nil)
+	if err != nil {
+		panic(err)
+	}
+	return hash
 }
