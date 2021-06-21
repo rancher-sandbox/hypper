@@ -172,6 +172,7 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
 	p.ID = pkgdb.lastElem
 
 	// build map of same versions
+	// TODO this is broken, depending in the order of pkgs being added
 	bfp := p.GetBaseFingerPrint()
 	_, ok := pkgdb.mapBaseFingerprintToVersions[bfp]
 	if !ok {

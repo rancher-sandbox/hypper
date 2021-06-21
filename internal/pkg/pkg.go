@@ -131,9 +131,12 @@ func (p *Pkg) JSON() ([]byte, error) {
 }
 
 // GetFingerPrint returns a UUID of the package.
+// Digest is present to help with packages (mariadb, postgres) that satisfy a
+// metapackage, and get installed with the metapackage releaseName (e.g: rdbms)
 func (p *Pkg) GetFingerPrint() string {
 	return fmt.Sprintf("%s-%s-%s-%s", p.Name, p.Version, p.Digest, p.Namespace)
 }
+
 
 // GetBaseFingerPrint returns a UUID of the package minus version.
 func (p *Pkg) GetBaseFingerPrint() string {

@@ -40,7 +40,7 @@ func NewPkgFromRelease(release *helmRelease.Release) *Pkg {
 	//TODO figure out deps, optional-deps
 	//
 	return NewPkg(release.Name, release.Chart.Metadata.Version,
-		"undone-fix-me", // TODO find digest
+		"generated-hash", // TODO generate digest
 		release.Namespace, nil, nil,
 		Present, Unknown,
 		release.Chart)

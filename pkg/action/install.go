@@ -87,6 +87,25 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 // lvl is used for printing nested stagered output on recursion. Starts at 0.
 func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
+	// TODO obtain lock
+	// newPkg(chart)
+	// solver.new()
+	// s.Buildworld
+	// s.Solve()
+	// if UNSAT {
+	//    either dependencies missing
+	//    or is an upgrade
+	// }
+	// if SAT {
+	// 	  for packages in s.toInstall  {
+	// 	    if i.NoSharedDeps && package.isDependency {
+	// 	         skip
+	//		}
+ 	// 	  	helminstall.Run
+	// 	  }
+	// }
+	// TODO release lock
+
 	if lvl >= 10 {
 		return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
 	}
