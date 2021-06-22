@@ -90,7 +90,8 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// TODO obtain lock
 	// newPkg(chart)
 	// solver.new()
-	// s.Buildworld
+	// ask for optional dependencies
+	// s.Buildworld()
 	// s.Solve()
 	// if UNSAT {
 	//    either dependencies missing
