@@ -27,6 +27,7 @@ import (
 	"github.com/rancher-sandbox/hypper/internal/pkg"
 	"github.com/rancher-sandbox/hypper/pkg/repo"
 	"gopkg.in/yaml.v2"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/release"
 )
 
@@ -83,29 +84,50 @@ func New() (s *Solver) {
 	}
 }
 
-func (s *Solver) BuildWorld(repository *repo.IndexFile, releases []*release.Release, tomodify []*pkg.Pkg) {
+// FIXME assume all charts come from just 1 repo. We will generalize later.
+// TODO add chart.Hash into index file, to not need to pull hypper charts.
+// Note that we will still need to pull helm charts to calculate its chart.Hash
+func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, releases []*release.Release, toModify []*pkg.Pkg) (err error) {
+	//first, for all charts and releases create a package and assign it an ID
 
-	//first, add all charts without dependency info
+	// add repos to db
+	// for all repos:
+	for _, repoEntries := range repoEntriesSlice {
+		// for all chart entries in the repo:
+		for _, chartVersions := range *repoEntries {
+			// for all versions of a single chart:
+			for _, chartVersion := range chartVersions.ChartVersions {
 
-	// // add repos to db
-	// for _, p := range repository {
-	// 	s.PkgDB.Add(p)
-	// }
+				// obtain the chart (needed for pkg.ChartHash)
+				chart, err := loader.Load(chartVersion.URLs[0])
+				if err != nil {
+					return err
+				}
 
-	// // add releases to db
-	// for _, p := range releases {
-	// 	s.PkgDB.Add(p)
-	// }
+				// add chart to db
+				p := pkg.NewPkgFromChart(chart, nil, nil, pkg.Unknown)
+				s.PkgDB.Add(p)
+			}
+		}
+	}
 
-	// // add toModify to db
-	// for _, p := range tomodify {
-	// 	s.PkgDB.Add(p)
-	// }
+	// add releases to db
+	for _, r := range releases {
+		s.PkgDB.Add(pkg.NewPkgFromRelease(r))
+	}
 
-	// TODO run twice for finding deps correctly
-	// first: iterate through all charts/repos/releases: packages are created and IDs assigned
-	// second: iterate now, and for each package.dependencies, add it as an ID
-	// to the parent package deps list.
+	// add toModify to db
+	for _, p := range toModify {
+		s.PkgDB.Add(p)
+	}
+
+	// second, fill all the packages with information about dependency
+	// relations, now that all packages are in the db and they have assigned IDs
+	for _, p := range s.PkgDB.mapFingerprintToPkg {
+		s.PkgDB.UpdateDeps(p)
+	}
+
+	return nil
 }
 
 // BuildWorldMock fills the database with pkgs instead of releases, charts from

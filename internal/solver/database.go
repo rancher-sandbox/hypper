@@ -117,6 +117,16 @@ func GetPkgdDBInstance() *PkgDB {
 	return PkgDBInstance
 }
 
+
+// UpdateDeps takes a package, reads its chart annotations, and translates them
+// into dependency relations that get saved back into the package. The
+// dependency relations point to other packages in the database.
+func (pkgdb *PkgDB) UpdateDeps(p *pkg.Pkg) (result *pkg.Pkg) {
+
+	// TODO
+	return nil
+}
+
 // MergePkgs gives you a resulting package that is a copy of the new package,
 // but making sure that unknown inthe known CurrenState and DesiredState is not changed,
 // and only unknown info is getting filled.
