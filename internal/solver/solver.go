@@ -35,21 +35,25 @@ type Solver struct {
 	pkgResultSet PkgResultSet // outcome of sat solving
 	// Strategy
 	//
-	// Install: tries to install, if UNSAT, tells why, and that you may be wanting to do upgrade.
-	//          Or, check before s.Solve() by querying that the chart to be installed
-	//          doesn't have a releasename already in use.
-	// Upgrade: don't add a constraintPresent for the specific release/package to be upgraded.
-	//          we get a package to be installed, which conflicts with a release. Find release,
-	//          mark as DesiredState:Absent. Which means, checking the releases before s.Solve(),
-	//          because an upgrade of a chart that is not a release cannot be performed.
-	// UpgradeToMajor: same as Upgrade, but add semver distances.
-	// UpgradeToMinor: same as Upgrade, but add semver distances.
-	// Remove: don't add a constraintPresent for the specific release/package to be removed.
-	//         CurrentStatus:Present and DesiredStatus:Absent
-	// Check: add everything with desiredState:Unknown, check SAT or UNSAT.
-	// Autoremove: all packages not marked as autoinstalled can be dropped. Not
-	//             enough with setting their desiredState to absent, they may be
-	//             dependencies.
+	// Install1: tries to install, if UNSAT, tells why, and that you may be wanting to do upgrade.
+	//           Or, check before s.Solve() by querying that the chart to be installed
+	//           doesn't have a releasename already in use.
+	// Upgrade1: don't add a constraintPresent for the specific release/package to be upgraded.
+	//           We get a package to be installed, which conflicts with a release. Find release,
+	//           mark as DesiredState:Absent. Which means, checking the releases before s.Solve(),
+	//           because an upgrade of a chart that is not a release cannot be performed.
+	// Upgrade1ToMajor: same as Upgrade, but tune semver distances.
+	// Upgrade1ToMinor: same as Upgrade, but tune semver distances.
+	// UpgradeAll: don't add a constraintPresent for all the current releases,
+	//             with the AtMost1 of all the versions, plus semver distance, it's ok.
+	// UpgradeAllToMajor: same as UpgradeAll, but tune semver distances.
+	// UpgradeAllToMinor: same as UpgradeAll, but tune semver distances.
+	// Remove1: don't add a constraintPresent for the specific release/package to be removed.
+	//          CurrentStatus:Present and DesiredStatus:Absent
+	// CheckAll: add everything with desiredState:Unknown, check SAT or UNSAT.
+	// AutoremoveAll: all packages not marked as autoinstalled can be dropped. Not
+	//                enough with setting their desiredState to absent, they may be
+	//                dependencies.
 }
 
 // PkgResultSet contains the status outcome of solving, and the different sets of
