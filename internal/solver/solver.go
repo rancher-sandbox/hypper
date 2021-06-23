@@ -29,6 +29,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/release"
+	"github.com/Masterminds/semver/v3"
 )
 
 type Solver struct {
@@ -103,7 +104,10 @@ func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, r
 				}
 
 				// add chart to db
-				p := pkg.NewPkgFromChart(chart, pkg.Unknown)
+				p, err := pkg.NewPkgFromChart(chart, pkg.Unknown)
+				if err != nil {
+					return err
+				}
 				s.PkgDB.Add(p)
 			}
 		}
@@ -111,7 +115,11 @@ func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, r
 
 	// add releases to db
 	for _, r := range releases {
-		s.PkgDB.Add(pkg.NewPkgFromRelease(r))
+		p, err := pkg.NewPkgFromRelease(r)
+		if err != nil {
+			return err
+		}
+		s.PkgDB.Add(p)
 	}
 
 	// add toModify to db
@@ -170,9 +178,6 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []gsolver.PBConstr) {
 }
 
 func (s *Solver) Solve() {
-	// TODO grab lock when creating world, release after solving (maybe better
-	// in pkg/action)
-
 	// generate constraints for all packages
 	constrs := []gsolver.PBConstr{}
 	for _, p := range s.PkgDB.mapFingerprintToPkg {
@@ -183,7 +188,6 @@ func (s *Solver) Solve() {
 	pb := gsolver.ParsePBConstrs(constrs)
 
 	sp := gsolver.New(pb)
-	// sp.Verbose = true
 
 	// result.model is a [id]bool, saying if the package should be present or not
 	result := sp.Optimal(nil, nil)
@@ -293,11 +297,20 @@ func buildConstraintToModify(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 
 func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	constr = []gsolver.PBConstr{}
-	// obtain ID to use in constraints
-	id := PkgDBInstance.GetIDByPackage(p)
+ 	// obtain ID to use in constraints
+ 	parentID := PkgDBInstance.GetIDByPackage(p)
 
 	// build constraints for 'Depends' relations
-	for _, depfp := range p.DependsRel {
+	for _, deprel := range p.DependsRel {
+		// basefp        B
+		// semverrange  ^1.0.0
+
+		// package A
+		// mapBaseFingerPrintToVersions["prometheus-ns"]
+		// B 1.2.0   add constraint
+		// B 1.4.0   add constraint
+		// B 3.0.0   no constraint
+
 		// Pseudo-Boolean equation:
 		// a depends on b and on c: b - a >= 0 ; c - a >= 0
 		// E.g:
@@ -306,18 +319,36 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 		// false       false   0      yes
 		// true        true    0      yes
 		// false       true    -1     no
-		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq([]int{s.PkgDB.mapFingerprintToPbID[depfp], -1 * id}, []int{1, 1}, 1)
-		constr = append(constr, sliceConstr)
+
+		// obtain all IDs for the packages that only differ in version
+		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
+		for depVersion, depFingerprint := range mapOfVersions {
+			if semverSatisfies(deprel.SemverRange, depVersion) {
+				// add a constraint for each of those ids that satisfy the semver range:
+				depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
+				// weirdly, the lib needs a GtEq(x,y,1) instead of 0
+				sliceConstr := gsolver.GtEq([]int{depID, -1 * parentID}, []int{1, 1}, 1)
+				constr = append(constr, sliceConstr)
+			}
+		}
 	}
 
 	// build constraints for 'Optional-Depends' relations
-	for _, depfp := range p.DependsOptionalRel {
+	for _, deprel := range p.DependsOptionalRel {
 		// Pseudo-Boolean equation:
 		// same as example above
-		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq([]int{s.PkgDB.mapFingerprintToPbID[depfp], -1 * id}, []int{1, 1}, 1)
-		constr = append(constr, sliceConstr)
+
+		// obtain all IDs for the packages that only differ in version
+		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
+		for depVersion, depFingerprint := range mapOfVersions {
+			if semverSatisfies(deprel.SemverRange, depVersion) {
+				// add a constraint for each of those ids that satisfy the semver range:
+				depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
+				// weirdly, the lib needs a GtEq(x,y,1) instead of 0
+				sliceConstr := gsolver.GtEq([]int{depID, -1 * parentID}, []int{1, 1}, 1)
+				constr = append(constr, sliceConstr)
+			}
+		}
 	}
 
 	return constr
@@ -337,4 +368,23 @@ func buildConstraintAtMost1(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	constr = append(constr, sliceConstr)
 
 	return constr
+}
+
+
+func semverSatisfies(semverRange string, ourSemver string) bool {
+
+	// generate semver constraint and check:
+	c, err := semver.NewConstraint(semverRange)
+	if err != nil {
+		// TODO Handle constraint not being parseable.
+		return false
+	}
+
+	v, err := semver.NewVersion(ourSemver)
+	if err != nil {
+		// TODO Handle version not being parseable.
+		return false
+	}
+	// Check if the version meets the constraints. The a variable will be true.
+	return  c.Check(v)
 }

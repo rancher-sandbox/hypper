@@ -48,7 +48,10 @@ func TestSolver(t *testing.T) {
 				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
-					[]string{ pkg.GetFingerPrintMock("myawesomedep", "0.1.100", "myawesomedeptargetns") },
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "~0.1.0",
+					}},
 					nil, pkg.Unknown, pkg.Present),
 				// releases:
 				pkg.NewPkgMock("installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
@@ -63,7 +66,10 @@ func TestSolver(t *testing.T) {
 				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Present, pkg.Absent),
 				// release, depends on pkg that is going to be removed:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
-					[]string{ pkg.GetFingerPrintMock("myawesomedep", "0.1.100", "myawesomedeptargetns") },
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "~0.1.0",
+					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
 			resultStatus: "UNSAT",
@@ -74,15 +80,24 @@ func TestSolver(t *testing.T) {
 			pkgs: []*pkg.Pkg{
 				// package 1, depends on 2:
 				pkg.NewPkgMock("wantedfoo", "1.0.0", "targetns",
-					[]string{ pkg.GetFingerPrintMock("wantedbar", "1.0.0", "targetns") },
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("wantedbar", "targetns"),
+						SemverRange:     "^1.0.0",
+					}},
 					nil, pkg.Absent, pkg.Present),
 				// package 2, depends on 3:
 				pkg.NewPkgMock("wantedbar", "1.0.0", "targetns",
-					[]string{ pkg.GetFingerPrintMock("wantedbaz", "1.0.0", "targetns") },
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("wantedbaz", "targetns"),
+						SemverRange:     "^1.0.0",
+					}},
 					nil, pkg.Absent, pkg.Unknown),
 				// package 1, depends on 1:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
-					[]string{ pkg.GetFingerPrintMock("wantedfoo", "1.0.0", "targetns") },
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("wantedfoo", "targetns"),
+						SemverRange:     "^1.0.0",
+					}},
 					nil, pkg.Absent, pkg.Unknown),
 			},
 			resultStatus: "SAT",

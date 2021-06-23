@@ -35,8 +35,8 @@ type PkgDB struct {
 	mapFingerprintToPkg  map[string]*pkg.Pkg
 	mapFingerprintToPbID map[string]int
 	mapPbIDToFingerprint map[int]string
-	// map: BaseFingerprint -> Semver version -> PbId
-	mapBaseFingerprintToVersions map[string]map[string]int
+	// map: BaseFingerprint -> Semver version -> Fingerprint
+	mapBaseFingerprintToVersions map[string]map[string]string
 	lastElem                     int
 	// TODO maxSemverDistance    int
 }
@@ -49,6 +49,14 @@ func (pkgdb *PkgDB) GetPackageByPbID(ID int) *pkg.Pkg {
 		return nil
 	}
 	return pkgdb.GetPackageByFingerprint(fp)
+}
+
+func (pkgdb *PkgDB) GetPbIDByFingerprint(fp string) (id int) {
+	id, ok := pkgdb.mapFingerprintToPbID[fp]
+	if !ok {
+		return -1
+	}
+	return id
 }
 
 func (pkgdb *PkgDB) GetPackageByFingerprint(fp string) *pkg.Pkg {
@@ -69,47 +77,57 @@ func (pkgdb *PkgDB) GetIDByPackage(p *pkg.Pkg) (id int) {
 	return id
 }
 
+func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) (map[string]string) {
+	mapOfVersions, ok := pkgdb.mapBaseFingerprintToVersions[basefp]
+	if !ok {
+		// TODO what happens if there's no packages that satisfy the version range
+		return map[string]string{}
+	}
+	return mapOfVersions
+}
+
 func (pkgdb *PkgDB) GetPackageIDsThatDifferOnVersionByPackage(p *pkg.Pkg) (ids []int) {
 	mapOfVersions, ok := pkgdb.mapBaseFingerprintToVersions[p.GetBaseFingerPrint()]
 	if !ok {
+		// TODO what happens if there's no packages that satisfy the version range
 		return ids
 	}
-	for _, v := range mapOfVersions {
-		ids = append(ids, v)
+	for _, fp := range mapOfVersions {
+		ids = append(ids, pkgdb.GetPbIDByFingerprint(fp))
 	}
 	return ids
 }
 
-// needed to find if a pkg is a dependency, to skip when i.NoSharedDeps
-func (pkgdb *PkgDB) IsDependency(fp string) bool {
-	for _, p := range pkgdb.mapFingerprintToPkg {
-		for _, depfp := range p.DependsRel {
-			if fp == depfp {
-				return true
-			}
-		}
-	}
-	return false
-}
+// // needed to find if a pkg is a dependency, to skip when i.NoSharedDeps
+// func (pkgdb *PkgDB) IsDependency(fp string) bool {
+// 	for _, p := range pkgdb.mapFingerprintToPkg {
+// 		for _, depfp := range p.DependsRel {
+// 			if fp == depfp {
+// 				return true
+// 			}
+// 		}
+// 	}
+// 	return false
+// }
 
-// needed to find if a pkg is an optional dependency, to skip when i.NoSharedDeps
-func (pkgdb *PkgDB) IsDependencyOptional(fp string) bool {
-	for _, p := range pkgdb.mapFingerprintToPkg {
-		for _, depfp := range p.DependsOptionalRel {
-			if fp == depfp {
-				return true
-			}
-		}
-	}
-	return false
-}
+// // needed to find if a pkg is an optional dependency, to skip when i.NoSharedDeps
+// func (pkgdb *PkgDB) IsDependencyOptional(fp string) bool {
+// 	for _, p := range pkgdb.mapFingerprintToPkg {
+// 		for _, depfp := range p.DependsOptionalRel {
+// 			if fp == depfp {
+// 				return true
+// 			}
+// 		}
+// 	}
+// 	return false
+// }
 
 func CreatePkgDBInstance() *PkgDB {
 	PkgDBInstance = &PkgDB{
 		mapFingerprintToPkg:          make(map[string]*pkg.Pkg),
 		mapFingerprintToPbID:         make(map[string]int),
 		mapPbIDToFingerprint:         make(map[int]string),
-		mapBaseFingerprintToVersions: make(map[string]map[string]int),
+		mapBaseFingerprintToVersions: make(map[string]map[string]string),
 	}
 	return PkgDBInstance
 }
@@ -175,18 +193,19 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
 	bfp := p.GetBaseFingerPrint()
 	_, ok := pkgdb.mapBaseFingerprintToVersions[bfp]
 	if !ok { // if pkg first of all packages that differ only in version
-		pkgdb.mapBaseFingerprintToVersions[bfp] = make(map[string]int)
+		pkgdb.mapBaseFingerprintToVersions[bfp] = make(map[string]string)
 	}
 	_, ok = pkgdb.mapBaseFingerprintToVersions[bfp][p.Version]
 	if !ok {
 		// add pkg to map of pkgs that differ only in version:
-		pkgdb.mapBaseFingerprintToVersions[bfp][p.Version] = pkgdb.lastElem
+		pkgdb.mapBaseFingerprintToVersions[bfp][p.Version] = fp
 		// TODO calculate maximum semver distance between this package and installed package?
 		// if pkgdb.maxSemverDistance < distance {
 		// 	pkgdb.maxSemverDistance = distance
 		// }
 	}
 
+	// TODO no need to return lastElem, either nothing or fingerprint
 	return pkgdb.lastElem
 }
 

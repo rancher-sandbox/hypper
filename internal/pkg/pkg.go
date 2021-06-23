@@ -21,7 +21,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	// logcli "github.com/Masterminds/log-go/impl/cli"
 	hypperChart "github.com/rancher-sandbox/hypper/pkg/chart"
+	// "helm.sh/helm/v3/pkg/action"
+	// helmAction "helm.sh/helm/v3/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 )
 
@@ -40,27 +43,32 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	Name               string // Release name, or default chart release-name
-	Version            string // sem ver (without a range)
-	ChartHash          uint64 // hash of the chart contents
-	Namespace          string // Installed ns, or default chart namespace
-	DependsRel         []string // list of dependencies' fingerprints
-	DependsOptionalRel []string // list of optional dependencies' fingerprints
+	Name               string   // Release name, or default chart release-name
+	Version            string   // sem ver (without a range)
+	ChartHash          uint64   // hash of the chart contents
+	Namespace          string   // Installed ns, or default chart namespace
+	DependsRel         []*PkgRel // list of dependencies' fingerprints
+	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
 	CurrentState       tristate // current state of the package
 	DesiredState       tristate // desired state of the package
 	Chart              *helmChart.Chart
 }
 
-func NewPkg(name, version, namespace string,
-	currentState, desiredState tristate, chart *helmChart.Chart) *Pkg {
+type PkgRel struct {
+	BaseFingerprint  string // base fingerprint of dependency with releasename, namespace
+	SemverRange      string // e.g: 1.0.0, ~1.0.0
+}
 
-	p :=  &Pkg{
+func NewPkg(name, version, namespace string,
+	currentState, desiredState tristate, chart *helmChart.Chart) (*Pkg, error) {
+
+	p := &Pkg{
 		Name:               name,
 		Version:            version,
 		ChartHash:          hypperChart.Hash(chart),
 		Namespace:          namespace,
-		DependsRel:         []string{},
-		DependsOptionalRel: []string{},
+		DependsRel:         []*PkgRel{},
+		DependsOptionalRel: []*PkgRel{},
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
 		Chart:              chart,
@@ -69,7 +77,7 @@ func NewPkg(name, version, namespace string,
 	// codify dependency relations:
 
 
-	return p
+	return p, nil
 
 }
 
@@ -77,10 +85,10 @@ func NewPkg(name, version, namespace string,
 // and a nil chart pointer.
 // Useful for testing.
 func NewPkgMock(name, version, namespace string,
-	depends, dependsOptional []string,
+	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, version, namespace, currentState, desiredState, nil)
+	p, _ := NewPkg(name, version, namespace, currentState, desiredState, nil)
 
 	p.DependsRel = depends
 	p.DependsOptionalRel = dependsOptional
@@ -110,11 +118,9 @@ func (p *Pkg) GetBaseFingerPrint() string {
 	return fmt.Sprintf("%s-%s", p.Name, p.Namespace)
 }
 
-// GetFingerPrintMock returns a fingerprint of a mock package, setting the
-// p.ChartHash to 0.
-func GetFingerPrintMock(name string, version string, ns string) string {
-	// chart.Hash is always 0, as it is a mock
-	return fmt.Sprintf("%s-%s-0-%s", name, version, ns)
+// CreateBaseFingerPrintMock returns a mocked base fingerprint
+func CreateBaseFingerPrintMock(name, ns string) string {
+	return fmt.Sprintf("%s-%s", name, ns)
 }
 
 // Encode encodes the package to string.

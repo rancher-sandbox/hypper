@@ -5,7 +5,8 @@ toinstall:
   charthash: 0
   namespace: targetns
   dependsrel:
-  - wantedbar-1.0.0-0-targetns
+  - basefingerprint: wantedbar-targetns
+    semverrange: ^1.0.0
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 1
@@ -15,7 +16,8 @@ toinstall:
   charthash: 0
   namespace: targetns
   dependsrel:
-  - wantedbaz-1.0.0-0-targetns
+  - basefingerprint: wantedbaz-targetns
+    semverrange: ^1.0.0
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 0
@@ -25,7 +27,8 @@ toinstall:
   charthash: 0
   namespace: targetns
   dependsrel:
-  - wantedfoo-1.0.0-0-targetns
+  - basefingerprint: wantedfoo-targetns
+    semverrange: ^1.0.0
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 0

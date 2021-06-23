@@ -23,7 +23,8 @@ toinstall:
   charthash: 0
   namespace: wantedbazns
   dependsrel:
-  - myawesomedep-0.1.100-0-myawesomedeptargetns
+  - basefingerprint: myawesomedep-myawesomedeptargetns
+    semverrange: ~0.1.0
   dependsoptionalrel: []
   currentstate: 0
   desiredstate: 1
