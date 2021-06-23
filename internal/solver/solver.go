@@ -34,7 +34,7 @@ import (
 type Solver struct {
 	PkgDB        *PkgDB       // DB containing packages
 	pkgResultSet PkgResultSet // outcome of sat solving
-	// Strategy
+	// TODO Strategy
 	//
 	// Install1: tries to install, if UNSAT, tells why, and that you may be wanting to do upgrade.
 	//           Or, check before s.Solve() by querying that the chart to be installed
@@ -88,8 +88,6 @@ func New() (s *Solver) {
 // TODO add chart.Hash into index file, to not need to pull hypper charts.
 // Note that we will still need to pull helm charts to calculate its chart.Hash
 func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, releases []*release.Release, toModify []*pkg.Pkg) (err error) {
-	//first, for all charts and releases create a package and assign it an ID
-
 	// add repos to db
 	// for all repos:
 	for _, repoEntries := range repoEntriesSlice {
@@ -105,7 +103,7 @@ func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, r
 				}
 
 				// add chart to db
-				p := pkg.NewPkgFromChart(chart, nil, nil, pkg.Unknown)
+				p := pkg.NewPkgFromChart(chart, pkg.Unknown)
 				s.PkgDB.Add(p)
 			}
 		}
@@ -119,12 +117,6 @@ func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, r
 	// add toModify to db
 	for _, p := range toModify {
 		s.PkgDB.Add(p)
-	}
-
-	// second, fill all the packages with information about dependency
-	// relations, now that all packages are in the db and they have assigned IDs
-	for _, p := range s.PkgDB.mapFingerprintToPkg {
-		s.PkgDB.UpdateDeps(p)
 	}
 
 	return nil
@@ -250,18 +242,6 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 	}
 	return sb.String()
 }
-
-// operations to provide:
-// install(pkg...)
-// upgradeToMinor(pkg...)
-// upgradeToMajor(pkg...)
-// uninstall(pkg...)
-// integrityCheck()
-
-// TODO maybe in the future:
-// CRDs
-// values.yaml
-// autoremove
 
 func buildConstraintPresent(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	constr = []gsolver.PBConstr{}

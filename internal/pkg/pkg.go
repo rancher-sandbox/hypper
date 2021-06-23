@@ -52,22 +52,25 @@ type Pkg struct {
 }
 
 func NewPkg(name, version, namespace string,
-	dependsRel, dependsOptionalRel []string,
 	currentState, desiredState tristate, chart *helmChart.Chart) *Pkg {
 
-	thisPkg := &Pkg{
+	p :=  &Pkg{
 		Name:               name,
 		Version:            version,
 		ChartHash:          hypperChart.Hash(chart),
 		Namespace:          namespace,
-		DependsRel:         dependsRel,
-		DependsOptionalRel: dependsOptionalRel,
+		DependsRel:         []string{},
+		DependsOptionalRel: []string{},
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
 		Chart:              chart,
 	}
 
-	return thisPkg
+	// codify dependency relations:
+
+
+	return p
+
 }
 
 // NewPkgMock creates a new package, with a digest based in the package name,
@@ -77,9 +80,10 @@ func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []string,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, version, namespace,
-		depends, dependsOptional, currentState, desiredState, nil)
+	p := NewPkg(name, version, namespace, currentState, desiredState, nil)
 
+	p.DependsRel = depends
+	p.DependsOptionalRel = dependsOptional
 	p.ChartHash = 0
 
 	return p
