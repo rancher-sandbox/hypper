@@ -96,6 +96,37 @@ func TestSolver(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
+			name:   "install a pkg and dep, finding no matching version",
+			golden: "output/solve-unsat-dependecy-no-version.txt",
+			pkgs: []*pkg.Pkg{
+				// no dependency satisfies the constraint:
+				pkg.NewPkgMock("myawesomedep", "3.0.0", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// toModify:
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "^1.0.0",
+					}},
+					nil, pkg.Unknown, pkg.Present),
+			},
+			resultStatus: "UNSAT",
+		},
+		{
+			name:   "install a pkg and dep, dependency not in db",
+			golden: "output/solve-unsat-dependecy-not-known.txt",
+			pkgs: []*pkg.Pkg{
+				// dependency not in database (not in repos, for example)
+				// toModify:
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "^1.0.0",
+					}},
+					nil, pkg.Unknown, pkg.Present),
+			},
+			resultStatus: "UNSAT",
+		},
+		{
 			name:   "unsatisfiable, remove a dependency",
 			golden: "output/solve-unsat-remove-dep.txt",
 			pkgs: []*pkg.Pkg{
