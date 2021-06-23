@@ -25,8 +25,8 @@ import (
 // NewPkgFromChart creates a Pkg struct from chart, without filling the
 // dependencies and optional dependencies information yet. This needs to happen
 // when all packages are already on the db with IDs.
-func NewPkgFromChart(chart *helmChart.Chart, dependsRel []*PkgRel,
-	dependsOptionalRel []*PkgRel, desiredState tristate) *Pkg {
+func NewPkgFromChart(chart *helmChart.Chart,
+	dependsRel, dependsOptionalRel []string, desiredState tristate) *Pkg {
 
 	ns := action.GetNamespace(chart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 

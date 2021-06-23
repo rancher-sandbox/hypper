@@ -43,22 +43,15 @@ func TestSolver(t *testing.T) {
 			name:   "solve for the example in main",
 			golden: "output/solve-main.txt",
 			pkgs: []*pkg.Pkg{
-				pkg.NewPkgMock(1, "notinstalledbar", "1.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
-				pkg.NewPkgMock(2, "notinstalledbar", "2.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
-				pkg.NewPkgMock(3, "myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock("notinstalledbar", "1.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock("notinstalledbar", "2.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
 				// toModify:
-				pkg.NewPkgMock(4, "wantedbaz", "1.0.0", "wantedbazns",
-					[]*pkg.PkgRel{
-						{
-							TargetID:  3,
-							Name:      "myawesomedep",
-							Version:   "0.1.100",
-							Namespace: "myawesomedeptargetns",
-						},
-					},
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]string{ pkg.GetFingerPrintMock("myawesomedep", "0.1.100", "myawesomedeptargetns") },
 					nil, pkg.Unknown, pkg.Present),
 				// releases:
-				pkg.NewPkgMock(5, "installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
+				pkg.NewPkgMock("installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
 			},
 			resultStatus: "SAT",
 		},
@@ -67,17 +60,10 @@ func TestSolver(t *testing.T) {
 			golden: "output/solve-unsat-remove-dep.txt",
 			pkgs: []*pkg.Pkg{
 				// release, to be removed:
-				pkg.NewPkgMock(1, "myawesomedep", "0.1.100", "myawesomedependencytargetns", nil, nil, pkg.Present, pkg.Absent),
+				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Present, pkg.Absent),
 				// release, depends on pkg that is going to be removed:
-				pkg.NewPkgMock(2, "wantedbaz", "1.0.0", "wantedbazns",
-					[]*pkg.PkgRel{ // dependencies:
-						{
-							TargetID:  1,
-							Name:      "myawesomedep",
-							Version:   "0.1.100",
-							Namespace: "myawesomedeptargetns",
-						},
-					},
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]string{ pkg.GetFingerPrintMock("myawesomedep", "0.1.100", "myawesomedeptargetns") },
 					nil, pkg.Unknown, pkg.Present),
 			},
 			resultStatus: "UNSAT",
@@ -87,37 +73,16 @@ func TestSolver(t *testing.T) {
 			golden: "output/solve-sat-loop-deps.txt",
 			pkgs: []*pkg.Pkg{
 				// package 1, depends on 2:
-				pkg.NewPkgMock(1, "wantedfoo", "1.0.0", "targetns",
-					[]*pkg.PkgRel{
-						{
-							TargetID:  2,
-							Name:      "wantedbar",
-							Version:   "1.0.0",
-							Namespace: "targetns",
-						},
-					},
+				pkg.NewPkgMock("wantedfoo", "1.0.0", "targetns",
+					[]string{ pkg.GetFingerPrintMock("wantedbar", "1.0.0", "targetns") },
 					nil, pkg.Absent, pkg.Present),
 				// package 2, depends on 3:
-				pkg.NewPkgMock(2, "wantedbar", "1.0.0", "targetns",
-					[]*pkg.PkgRel{
-						{
-							TargetID:  3,
-							Name:      "wantedbaz",
-							Version:   "1.0.0",
-							Namespace: "targetns",
-						},
-					},
+				pkg.NewPkgMock("wantedbar", "1.0.0", "targetns",
+					[]string{ pkg.GetFingerPrintMock("wantedbaz", "1.0.0", "targetns") },
 					nil, pkg.Absent, pkg.Unknown),
 				// package 1, depends on 1:
-				pkg.NewPkgMock(3, "wantedbaz", "1.0.0", "targetns",
-					[]*pkg.PkgRel{
-						{
-							TargetID:  1,
-							Name:      "wantedfoo",
-							Version:   "1.0.0",
-							Namespace: "targetns",
-						},
-					},
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
+					[]string{ pkg.GetFingerPrintMock("wantedfoo", "1.0.0", "targetns") },
 					nil, pkg.Absent, pkg.Unknown),
 			},
 			resultStatus: "SAT",
@@ -126,7 +91,7 @@ func TestSolver(t *testing.T) {
 			name:   "remove package",
 			golden: "output/solve-sat-remove-package.txt",
 			pkgs: []*pkg.Pkg{
-				pkg.NewPkgMock(1, "wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
 			},
 			resultStatus: "SAT",
 		},
@@ -135,10 +100,10 @@ func TestSolver(t *testing.T) {
 			golden: "output/solve-sat-update-package.txt",
 			pkgs: []*pkg.Pkg{
 				// releases:
-				pkg.NewPkgMock(1, "toupdatebar", "1.0.0", "toupdatebarns", nil, nil, pkg.Present, pkg.Unknown),
-				pkg.NewPkgMock(2, "installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
+				pkg.NewPkgMock("toupdatebar", "1.0.0", "toupdatebarns", nil, nil, pkg.Present, pkg.Unknown),
+				pkg.NewPkgMock("installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
 				// package to update:
-				pkg.NewPkgMock(3, "toupdatebar", "1.3.0", "toupdatebarns", nil, nil, pkg.Unknown, pkg.Present),
+				pkg.NewPkgMock("toupdatebar", "1.3.0", "toupdatebarns", nil, nil, pkg.Unknown, pkg.Present),
 			},
 			resultStatus: "SAT",
 		},
@@ -183,9 +148,9 @@ func TestFormatOutput(t *testing.T) {
 			goldenJson:  "output/format-unsat-json.txt",
 			goldenTable: "output/format-unsat-table.txt",
 			pkgs: []*pkg.Pkg{
-				pkg.NewPkgMock(1, "bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
-				pkg.NewPkgMock(2, "baz", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
-				pkg.NewPkgMock(3, "foo", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Absent),
+				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
+				pkg.NewPkgMock("baz", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
+				pkg.NewPkgMock("foo", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Absent),
 			},
 		},
 	} {

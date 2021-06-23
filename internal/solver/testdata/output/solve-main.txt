@@ -1,8 +1,7 @@
 presentunchanged:
-- id: 5
-  name: installedfoo
+- name: installedfoo
   version: 1.0.0
-  charthash: 122862107680140000
+  charthash: 0
   namespace: installedns
   dependsrel: []
   dependsoptionalrel: []
@@ -10,26 +9,21 @@ presentunchanged:
   desiredstate: 0
   chart: null
 toinstall:
-- id: 3
-  name: myawesomedep
+- name: myawesomedep
   version: 0.1.100
-  charthash: 14330701832445677046
+  charthash: 0
   namespace: myawesomedeptargetns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 0
   desiredstate: 0
   chart: null
-- id: 4
-  name: wantedbaz
+- name: wantedbaz
   version: 1.0.0
-  charthash: 17570473656078989302
+  charthash: 0
   namespace: wantedbazns
   dependsrel:
-  - targetid: 3
-    name: myawesomedep
-    version: 0.1.100
-    namespace: myawesomedeptargetns
+  - myawesomedep-0.1.100-0-myawesomedeptargetns
   dependsoptionalrel: []
   currentstate: 0
   desiredstate: 1

@@ -81,10 +81,10 @@ func (pkgdb *PkgDB) GetPackageIDsThatDifferOnVersionByPackage(p *pkg.Pkg) (ids [
 }
 
 // needed to find if a pkg is a dependency, to skip when i.NoSharedDeps
-func (pkgdb *PkgDB) IsDependency(ID int) bool {
+func (pkgdb *PkgDB) IsDependency(fp string) bool {
 	for _, p := range pkgdb.mapFingerprintToPkg {
-		for _, pr := range p.DependsRel {
-			if pr.TargetID == ID {
+		for _, depfp := range p.DependsRel {
+			if fp == depfp {
 				return true
 			}
 		}
@@ -93,10 +93,10 @@ func (pkgdb *PkgDB) IsDependency(ID int) bool {
 }
 
 // needed to find if a pkg is an optional dependency, to skip when i.NoSharedDeps
-func (pkgdb *PkgDB) IsDependencyOptional(ID int) bool {
+func (pkgdb *PkgDB) IsDependencyOptional(fp string) bool {
 	for _, p := range pkgdb.mapFingerprintToPkg {
-		for _, pr := range p.DependsOptionalRel {
-			if pr.TargetID == ID {
+		for _, depfp := range p.DependsOptionalRel {
+			if fp == depfp {
 				return true
 			}
 		}
@@ -179,8 +179,6 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
 	pkgdb.mapFingerprintToPkg[fp] = p
 	pkgdb.mapFingerprintToPbID[fp] = pkgdb.lastElem
 	pkgdb.mapPbIDToFingerprint[pkgdb.lastElem] = fp
-
-	p.ID = pkgdb.lastElem
 
 	// build map of same versions
 	// TODO this is broken, depending in the order of pkgs being added

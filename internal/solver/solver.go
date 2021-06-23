@@ -140,11 +140,10 @@ func (s *Solver) BuildWorldMock(pkgs []*pkg.Pkg) {
 }
 
 // BuildConstraints generates all constraints for package p with ID
-func (s *Solver) BuildConstraints(id int) (constrs []gsolver.PBConstr) {
-	p := s.PkgDB.GetPackageByPbID(id)
+func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []gsolver.PBConstr) {
 
 	// add constraints for relationships
-	packageConstrs := buildConstraintRelations(p)
+	packageConstrs := s.buildConstraintRelations(p)
 	constrs = append(constrs, packageConstrs...)
 
 	if p.CurrentState == pkg.Present && p.DesiredState != pkg.Absent {
@@ -184,8 +183,8 @@ func (s *Solver) Solve() {
 
 	// generate constraints for all packages
 	constrs := []gsolver.PBConstr{}
-	for id := 1; id <= s.PkgDB.Size(); id++ { // IDs start with 1
-		constrs = append(constrs, s.BuildConstraints(id)...)
+	for _, p := range s.PkgDB.mapFingerprintToPkg {
+		constrs = append(constrs, s.BuildConstraints(p)...)
 	}
 
 	// create problem with constraints, and solve
@@ -312,13 +311,13 @@ func buildConstraintToModify(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	return constr
 }
 
-func buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
+func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	constr = []gsolver.PBConstr{}
 	// obtain ID to use in constraints
 	id := PkgDBInstance.GetIDByPackage(p)
 
 	// build constraints for 'Depends' relations
-	for _, dep := range p.DependsRel {
+	for _, depfp := range p.DependsRel {
 		// Pseudo-Boolean equation:
 		// a depends on b and on c: b - a >= 0 ; c - a >= 0
 		// E.g:
@@ -328,16 +327,16 @@ func buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 		// true        true    0      yes
 		// false       true    -1     no
 		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq([]int{dep.TargetID, -1 * id}, []int{1, 1}, 1)
+		sliceConstr := gsolver.GtEq([]int{s.PkgDB.mapFingerprintToPbID[depfp], -1 * id}, []int{1, 1}, 1)
 		constr = append(constr, sliceConstr)
 	}
 
 	// build constraints for 'Optional-Depends' relations
-	for _, dep := range p.DependsOptionalRel {
+	for _, depfp := range p.DependsOptionalRel {
 		// Pseudo-Boolean equation:
 		// same as example above
 		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq([]int{dep.TargetID, -1 * id}, []int{1, 1}, 1)
+		sliceConstr := gsolver.GtEq([]int{s.PkgDB.mapFingerprintToPbID[depfp], -1 * id}, []int{1, 1}, 1)
 		constr = append(constr, sliceConstr)
 	}
 

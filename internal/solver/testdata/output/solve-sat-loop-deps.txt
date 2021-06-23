@@ -1,43 +1,31 @@
 presentunchanged: []
 toinstall:
-- id: 1
-  name: wantedfoo
+- name: wantedfoo
   version: 1.0.0
-  charthash: 4904395121435030237
+  charthash: 0
   namespace: targetns
   dependsrel:
-  - targetid: 2
-    name: wantedbar
-    version: 1.0.0
-    namespace: targetns
+  - wantedbar-1.0.0-0-targetns
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 1
   chart: null
-- id: 2
-  name: wantedbar
+- name: wantedbar
   version: 1.0.0
-  charthash: 13084238723902892203
+  charthash: 0
   namespace: targetns
   dependsrel:
-  - targetid: 3
-    name: wantedbaz
-    version: 1.0.0
-    namespace: targetns
+  - wantedbaz-1.0.0-0-targetns
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 0
   chart: null
-- id: 3
-  name: wantedbaz
+- name: wantedbaz
   version: 1.0.0
-  charthash: 15222458252935103273
+  charthash: 0
   namespace: targetns
   dependsrel:
-  - targetid: 1
-    name: wantedfoo
-    version: 1.0.0
-    namespace: targetns
+  - wantedfoo-1.0.0-0-targetns
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 0

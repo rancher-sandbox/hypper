@@ -1,10 +1,9 @@
 presentunchanged: []
 toinstall: []
 toremove:
-- id: 1
-  name: wantedbaz
+- name: wantedbaz
   version: 1.0.0
-  charthash: 7006492496207040853
+  charthash: 0
   namespace: wantedbazns
   dependsrel: []
   dependsoptionalrel: []

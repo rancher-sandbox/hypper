@@ -1,8 +1,7 @@
 presentunchanged:
-- id: 1
-  name: bar
+- name: bar
   version: 1.0.0
-  charthash: 12227455374053262265
+  charthash: 0
   namespace: targetns
   dependsrel: []
   dependsoptionalrel: []
@@ -10,10 +9,9 @@ presentunchanged:
   desiredstate: 1
   chart: null
 toinstall:
-- id: 2
-  name: baz
+- name: baz
   version: 1.0.0
-  charthash: 9386020519408746473
+  charthash: 0
   namespace: targetns
   dependsrel: []
   dependsoptionalrel: []
@@ -21,10 +19,9 @@ toinstall:
   desiredstate: 1
   chart: null
 toremove:
-- id: 3
-  name: foo
+- name: foo
   version: 1.0.0
-  charthash: 16042560838754015475
+  charthash: 0
   namespace: targetns
   dependsrel: []
   dependsoptionalrel: []

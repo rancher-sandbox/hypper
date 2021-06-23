@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mitchellh/hashstructure/v2"
 	hypperChart "github.com/rancher-sandbox/hypper/pkg/chart"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 )
@@ -41,31 +40,22 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	ID                 int    // ID from the database, default -1
 	Name               string // Release name, or default chart release-name
 	Version            string // sem ver (without a range)
 	ChartHash          uint64 // hash of the chart contents
 	Namespace          string // Installed ns, or default chart namespace
-	DependsRel         []*PkgRel
-	DependsOptionalRel []*PkgRel
+	DependsRel         []string // list of dependencies' fingerprints
+	DependsOptionalRel []string // list of optional dependencies' fingerprints
 	CurrentState       tristate // current state of the package
 	DesiredState       tristate // desired state of the package
 	Chart              *helmChart.Chart
 }
 
-type PkgRel struct {
-	TargetID  int
-	Name      string
-	Version   string
-	Namespace string
-}
-
 func NewPkg(name, version, namespace string,
-	dependsRel, dependsOptionalRel []*PkgRel,
+	dependsRel, dependsOptionalRel []string,
 	currentState, desiredState tristate, chart *helmChart.Chart) *Pkg {
 
 	thisPkg := &Pkg{
-		ID:                 -1,
 		Name:               name,
 		Version:            version,
 		ChartHash:          hypperChart.Hash(chart),
@@ -83,23 +73,17 @@ func NewPkg(name, version, namespace string,
 // NewPkgMock creates a new package, with a digest based in the package name,
 // and a nil chart pointer.
 // Useful for testing.
-func NewPkgMock(id int, name, version, namespace string,
-	depends, dependsOptional []*PkgRel,
+func NewPkgMock(name, version, namespace string,
+	depends, dependsOptional []string,
 	currentState, desiredState tristate) *Pkg {
 
 	p := NewPkg(name, version, namespace,
 		depends, dependsOptional, currentState, desiredState, nil)
-	p.ID = id
 
-	p.ChartHash, _ = hashstructure.Hash(p, hashstructure.FormatV2, nil)
+	p.ChartHash = 0
 
 	return p
 }
-
-// func (p *Pkg) Eval() bool {
-// 	// TODO calculate with ToInstall and ToRemove
-// 	return p.Installed
-// }
 
 // JSON serializes package p into JSON, returning a []byte
 func (p *Pkg) JSON() ([]byte, error) {
@@ -120,6 +104,13 @@ func (p *Pkg) GetFingerPrint() string {
 // GetBaseFingerPrint returns a unique id of the package minus version.
 func (p *Pkg) GetBaseFingerPrint() string {
 	return fmt.Sprintf("%s-%s", p.Name, p.Namespace)
+}
+
+// GetFingerPrintMock returns a fingerprint of a mock package, setting the
+// p.ChartHash to 0.
+func GetFingerPrintMock(name string, version string, ns string) string {
+	// chart.Hash is always 0, as it is a mock
+	return fmt.Sprintf("%s-%s-0-%s", name, version, ns)
 }
 
 // Encode encodes the package to string.
