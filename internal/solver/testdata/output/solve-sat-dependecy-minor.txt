@@ -1,0 +1,24 @@
+presentunchanged: []
+toinstall:
+- name: myawesomedep
+  version: 0.1.100
+  charthash: 0
+  namespace: myawesomedeptargetns
+  dependsrel: []
+  dependsoptionalrel: []
+  currentstate: 0
+  desiredstate: 0
+  chart: null
+- name: wantedbaz
+  version: 1.0.0
+  charthash: 0
+  namespace: wantedbazns
+  dependsrel:
+  - basefingerprint: myawesomedep-myawesomedeptargetns
+    semverrange: ~0.1.0
+  dependsoptionalrel: []
+  currentstate: 0
+  desiredstate: 1
+  chart: null
+toremove: []
+status: SAT

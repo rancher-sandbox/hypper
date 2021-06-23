@@ -59,6 +59,43 @@ func TestSolver(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
+			name:   "install a pkg and dep, finding minor version",
+			golden: "output/solve-sat-dependecy-minor.txt",
+			pkgs: []*pkg.Pkg{
+				// dependency that doesn't match semver range:
+				pkg.NewPkgMock("myawesomedep", "2.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// dependency we want pulled:
+				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// toModify:
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "~0.1.0",
+					}},
+					nil, pkg.Unknown, pkg.Present),
+			},
+			resultStatus: "SAT",
+		},
+		{
+			name:   "install a pkg and dep, finding major version",
+			golden: "output/solve-sat-dependecy-major.txt",
+			pkgs: []*pkg.Pkg{
+				// dependency that don't match semver range:
+				pkg.NewPkgMock("myawesomedep", "2.0.0", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// dependency we want pulled:
+				pkg.NewPkgMock("myawesomedep", "1.9.0", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// toModify:
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "^1.2.0",
+					}},
+					nil, pkg.Unknown, pkg.Present),
+			},
+			resultStatus: "SAT",
+		},
+		{
 			name:   "unsatisfiable, remove a dependency",
 			golden: "output/solve-unsat-remove-dep.txt",
 			pkgs: []*pkg.Pkg{
