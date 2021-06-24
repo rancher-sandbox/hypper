@@ -17,7 +17,6 @@ limitations under the License.
 package pkg
 
 import (
-	"github.com/rancher-sandbox/hypper/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 	helmRelease "helm.sh/helm/v3/pkg/release"
 )
@@ -25,11 +24,9 @@ import (
 // NewPkgFromChart creates a Pkg struct from chart, without filling the
 // dependencies and optional dependencies information yet. This needs to happen
 // when all packages are already on the db with IDs.
-func NewPkgFromChart(chart *helmChart.Chart, desiredState tristate) (*Pkg, error) {
+func NewPkgFromChart(chart *helmChart.Chart, releaseName, ns string, desiredState tristate) (*Pkg, error) {
 
-	ns := action.GetNamespace(chart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-
-	return NewPkg(chart.Name(), chart.Metadata.Version,
+	return NewPkg(releaseName, chart.Metadata.Version,
 		ns, Unknown, desiredState, chart)
 }
 

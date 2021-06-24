@@ -26,12 +26,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	gsolver "github.com/crillab/gophersat/solver"
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
-	"github.com/rancher-sandbox/hypper/pkg/cli"
-	"github.com/rancher-sandbox/hypper/pkg/repo"
 	"gopkg.in/yaml.v2"
-	"helm.sh/helm/v3/pkg/chart/loader"
-	"helm.sh/helm/v3/pkg/release"
-	logcli "github.com/Masterminds/log-go/impl/cli"
 )
 
 type Solver struct {
@@ -85,58 +80,6 @@ func New() (s *Solver) {
 		PkgDB:        CreatePkgDBInstance(),
 		pkgResultSet: PkgResultSet{},
 	}
-}
-
-// FIXME assume all charts come from just 1 repo. We will generalize later.
-// TODO add chart.Hash into index file, to not need to pull hypper charts.
-// Note that we will still need to pull helm charts to calculate its chart.Hash
-func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions,
-	releases []*release.Release, toModify []*pkg.Pkg, settings *cli.EnvSettings, logger *logcli.Logger) (err error) {
-	// add repos to db
-	// for all repos:
-	for _, repoEntries := range repoEntriesSlice {
-		// for all chart entries in the repo:
-		for _, chartVersions := range *repoEntries {
-			// for all versions of a single chart:
-			for _, chartVersion := range chartVersions.ChartVersions {
-
-				// obtain the chart (needed for pkg.ChartHash)
-				chart, err := loader.Load(chartVersion.URLs[0])
-				if err != nil {
-					return err
-				}
-
-				// add chart to db
-				p, err := pkg.NewPkgFromChart(chart, pkg.Unknown)
-				if err != nil {
-					return err
-				}
-				s.PkgDB.Add(p)
-			}
-		}
-	}
-
-	// add releases to db
-	for _, r := range releases {
-		p, err := pkg.NewPkgFromRelease(r)
-		if err != nil {
-			return err
-		}
-		s.PkgDB.Add(p)
-	}
-
-	// add toModify to db
-	for _, p := range toModify {
-		s.PkgDB.Add(p)
-	}
-
-	// create dependency relations in all packages:
-	for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1
-		p := s.PkgDB.GetPackageByPbID(i)
-		p.CreateDependencyRelations(settings, logger)
-	}
-
-	return nil
 }
 
 // BuildWorldMock fills the database with pkgs instead of releases, charts from

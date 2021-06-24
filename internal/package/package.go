@@ -21,13 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	logcli "github.com/Masterminds/log-go/impl/cli"
-	hypperChart "github.com/rancher-sandbox/hypper/pkg/chart"
-	"github.com/rancher-sandbox/hypper/pkg/action"
-	"github.com/rancher-sandbox/hypper/pkg/cli"
-	helmAction "helm.sh/helm/v3/pkg/action"
+	"github.com/rancher-sandbox/hypper/pkg/chart"
 	helmChart "helm.sh/helm/v3/pkg/chart"
-	helmLoader "helm.sh/helm/v3/pkg/chart/loader"
 )
 
 type tristate int
@@ -62,62 +57,21 @@ type PkgRel struct {
 }
 
 func NewPkg(name, version, namespace string,
-	currentState, desiredState tristate, chart *helmChart.Chart) (*Pkg, error) {
+	currentState, desiredState tristate, chrt *helmChart.Chart) (*Pkg, error) {
 
 	p := &Pkg{
 		Name:               name,
 		Version:            version,
-		ChartHash:          hypperChart.Hash(chart),
+		ChartHash:          chart.Hash(chrt),
 		Namespace:          namespace,
 		DependsRel:         []*PkgRel{},
 		DependsOptionalRel: []*PkgRel{},
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
-		Chart:              chart,
+		Chart:              chrt,
 	}
 
 	return p, nil
-}
-
-func (p *Pkg) CreateDependencyRelations(settings *cli.EnvSettings, logger *logcli.Logger) error {
-
-	// don't check error, dependencies come from repo, they are correctly formed
-	sharedDeps, _ := hypperChart.GetSharedDeps(p.Chart, logger)
-
-	for _, dep := range sharedDeps {
-		// from chart -> obtain list of deps -> obtain default
-		// ns,version,release, and build relation.
-
-		// pull chart:
-		chartPathOptions := helmAction.ChartPathOptions{}
-		chartPathOptions.RepoURL = dep.Repository
-		cp, err := chartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
-		if err != nil {
-			return err
-		}
-		depChart, err := helmLoader.Load(cp)
-		if err != nil {
-			return err
-		}
-
-		// Obtain fingerprint and semver for relation:
-		depNS := action.GetNamespace(p.Chart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-		baseFP := CreateBaseFingerPrint(depChart.Name(), depNS)
-
-		// build relation:
-		if dep.IsOptional {
-			p.DependsOptionalRel = append(p.DependsOptionalRel, &PkgRel{
-				BaseFingerprint: baseFP,
-				SemverRange: dep.Version,
-			})
-		} else {
-			p.DependsRel = append(p.DependsRel, &PkgRel{
-				BaseFingerprint: baseFP,
-				SemverRange: dep.Version,
-			})
-		}
-	}
-	return nil
 }
 
 // NewPkgMock creates a new package, with a digest based in the package name,
