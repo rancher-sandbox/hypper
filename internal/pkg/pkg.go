@@ -21,11 +21,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	// logcli "github.com/Masterminds/log-go/impl/cli"
+	logcli "github.com/Masterminds/log-go/impl/cli"
 	hypperChart "github.com/rancher-sandbox/hypper/pkg/chart"
-	// "helm.sh/helm/v3/pkg/action"
-	// helmAction "helm.sh/helm/v3/pkg/action"
+	"github.com/rancher-sandbox/hypper/pkg/action"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
+	helmAction "helm.sh/helm/v3/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
+	helmLoader "helm.sh/helm/v3/pkg/chart/loader"
 )
 
 type tristate int
@@ -74,11 +76,48 @@ func NewPkg(name, version, namespace string,
 		Chart:              chart,
 	}
 
-	// codify dependency relations:
-
-
 	return p, nil
+}
 
+func (p *Pkg) CreateDependencyRelations(settings *cli.EnvSettings, logger *logcli.Logger) error {
+
+	// don't check error, dependencies come from repo, they are correctly formed
+	sharedDeps, _ := hypperChart.GetSharedDeps(p.Chart, logger)
+
+	for _, dep := range sharedDeps {
+		// from chart -> obtain list of deps -> obtain default
+		// ns,version,release, and build relation.
+
+		// pull chart:
+		chartPathOptions := helmAction.ChartPathOptions{}
+		chartPathOptions.RepoURL = dep.Repository
+		cp, err := chartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+		if err != nil {
+			return err
+		}
+		depChart, err := helmLoader.Load(cp)
+		if err != nil {
+			return err
+		}
+
+		// Obtain fingerprint and semver for relation:
+		depNS := action.GetNamespace(p.Chart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+		baseFP := CreateBaseFingerPrint(depChart.Name(), depNS)
+
+		// build relation:
+		if dep.IsOptional {
+			p.DependsOptionalRel = append(p.DependsOptionalRel, &PkgRel{
+				BaseFingerprint: baseFP,
+				SemverRange: dep.Version,
+			})
+		} else {
+			p.DependsRel = append(p.DependsRel, &PkgRel{
+				BaseFingerprint: baseFP,
+				SemverRange: dep.Version,
+			})
+		}
+	}
+	return nil
 }
 
 // NewPkgMock creates a new package, with a digest based in the package name,
@@ -118,8 +157,8 @@ func (p *Pkg) GetBaseFingerPrint() string {
 	return fmt.Sprintf("%s-%s", p.Name, p.Namespace)
 }
 
-// CreateBaseFingerPrintMock returns a mocked base fingerprint
-func CreateBaseFingerPrintMock(name, ns string) string {
+// CreateBaseFingerPrint returns a base fingerprint (name-ns)
+func CreateBaseFingerPrint(name, ns string) string {
 	return fmt.Sprintf("%s-%s", name, ns)
 }
 

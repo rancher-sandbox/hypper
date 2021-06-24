@@ -23,13 +23,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	gsolver "github.com/crillab/gophersat/solver"
 	"github.com/rancher-sandbox/hypper/internal/pkg"
+	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/repo"
 	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/release"
-	"github.com/Masterminds/semver/v3"
+	logcli "github.com/Masterminds/log-go/impl/cli"
 )
 
 type Solver struct {
@@ -88,7 +90,8 @@ func New() (s *Solver) {
 // FIXME assume all charts come from just 1 repo. We will generalize later.
 // TODO add chart.Hash into index file, to not need to pull hypper charts.
 // Note that we will still need to pull helm charts to calculate its chart.Hash
-func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, releases []*release.Release, toModify []*pkg.Pkg) (err error) {
+func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions,
+	releases []*release.Release, toModify []*pkg.Pkg, settings *cli.EnvSettings, logger *logcli.Logger) (err error) {
 	// add repos to db
 	// for all repos:
 	for _, repoEntries := range repoEntriesSlice {
@@ -125,6 +128,12 @@ func (s *Solver) BuildWorld(repoEntriesSlice []*map[string]repo.ChartVersions, r
 	// add toModify to db
 	for _, p := range toModify {
 		s.PkgDB.Add(p)
+	}
+
+	// create dependency relations in all packages:
+	for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1
+		p := s.PkgDB.GetPackageByPbID(i)
+		p.CreateDependencyRelations(settings, logger)
 	}
 
 	return nil
