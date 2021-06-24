@@ -59,6 +59,25 @@ func TestSolver(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
+			name:   "install a pkg and dep, finding specific version",
+			golden: "output/solve-sat-dependecy-specific-ver.txt",
+			pkgs: []*pkg.Pkg{
+				// dependency that doesn't match semver range:
+				pkg.NewPkgMock("myawesomedep", "2.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				pkg.NewPkgMock("myawesomedep", "1.0.0", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// dependency we want pulled:
+				pkg.NewPkgMock("myawesomedep", "0.1.103", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
+				// toModify:
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrintMock("myawesomedep", "myawesomedeptargetns"),
+						SemverRange:     "0.1.103",
+					}},
+					nil, pkg.Unknown, pkg.Present),
+			},
+			resultStatus: "SAT",
+		},
+		{
 			name:   "install a pkg and dep, finding minor version",
 			golden: "output/solve-sat-dependecy-minor.txt",
 			pkgs: []*pkg.Pkg{
@@ -96,7 +115,7 @@ func TestSolver(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
-			name:   "install a pkg and dep, finding no matching version",
+			name:   "install a pkg and dep, being no matching version for the dep",
 			golden: "output/solve-unsat-dependecy-no-version.txt",
 			pkgs: []*pkg.Pkg{
 				// no dependency satisfies the constraint:
