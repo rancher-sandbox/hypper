@@ -159,9 +159,6 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []gsolver.PBConstr) {
 		constrs = append(constrs, packageConstrs...)
 	}
 
-	// TODO don't hardcode desired version of a dependency, accept a version interval
-	// depending on the semver range
-
 	// TODO the rest of constraints get duplicated several times, when they
 	// should only be added once. We should only iterate the
 	// packages-differing-in-version once (which means having a several
@@ -296,65 +293,95 @@ func buildConstraintToModify(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 }
 
 func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr) {
+	// E.g: A depends on B,~1.0.0, with B having several or zero versions to
+	// chose from.
+	// Constraints:
+    //     B-1.0.0 + ... + B-1.5.0 - A >= 0
+	//     B-1.0.0 + ... + B-1.5.0 >= 1  (at most 1, added outside of this function)
+
 	constr = []gsolver.PBConstr{}
  	// obtain ID to use in constraints
  	parentID := PkgDBInstance.GetIDByPackage(p)
 
 	// build constraints for 'Depends' relations
 	for _, deprel := range p.DependsRel {
-		// basefp        B
-		// semverrange  ^1.0.0
-
-		// package A
-		// mapBaseFingerPrintToVersions["prometheus-ns"]
-		// B 1.2.0   add constraint
-		// B 1.4.0   add constraint
-		// B 3.0.0   no constraint
-
-		// Pseudo-Boolean equation:
-		// a depends on b and on c: b - a >= 0 ; c - a >= 0
-		// E.g:
-		// b     -     a       >= 0   satisfiable?
-		// true        false   1      yes
-		// false       false   0      yes
-		// true        true    0      yes
-		// false       true    -1     no
-
 		// obtain all IDs for the packages that only differ in version
 		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
+		matchingVersionIDs := []int{}
 		for depVersion, depFingerprint := range mapOfVersions {
+			depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
+
+		    // add a constraint to install those versions that satisfy semver range
 			if semverSatisfies(deprel.SemverRange, depVersion) {
-				// add a constraint for each of those ids that satisfy the semver range:
-				depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
-				// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-				sliceConstr := gsolver.GtEq([]int{depID, -1 * parentID}, []int{1, 1}, 1)
-				constr = append(constr, sliceConstr)
+				// efficiently build a slice of version IDs for use in the constraint:
+				matchingVersionIDs = append(matchingVersionIDs, depID)
 			}
 		}
+
+		// A depends on all valid versions of B.
+		// Pseudo-Boolean equation:
+		// B-1.0.0 + ... + B-1.5.0 - A >= 0   satisfiable?
+		// true            false   - 1    0    yes, 1 package satisfies dependency
+		// false           true      0    0    yes, A is not being installed
+		// true            false     0    0    yes, A is not being installed
+		// false           false   - 1   -1    no, no package satisfies dependency
+
+		// build []lits and []weights:
+		lits := append(matchingVersionIDs, -1 * parentID) // B1 + ... + B2 - A
+		weights := make([]int, len(lits))
+		for i := range weights {
+			weights[i] = 1
+		}
+		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
+		sliceConstr := gsolver.GtEq(lits, weights, 1)
+		constr = append(constr, sliceConstr)
 	}
 
 	// build constraints for 'Optional-Depends' relations
 	for _, deprel := range p.DependsOptionalRel {
-		// Pseudo-Boolean equation:
-		// same as example above
-
 		// obtain all IDs for the packages that only differ in version
 		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
+		matchingVersionIDs := []int{}
 		for depVersion, depFingerprint := range mapOfVersions {
+			depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
+
+		    // add a constraint to install those versions that satisfy semver range
 			if semverSatisfies(deprel.SemverRange, depVersion) {
-				// add a constraint for each of those ids that satisfy the semver range:
-				depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
-				// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-				sliceConstr := gsolver.GtEq([]int{depID, -1 * parentID}, []int{1, 1}, 1)
-				constr = append(constr, sliceConstr)
+				// efficiently build a slice of version IDs for use in the constraint:
+				matchingVersionIDs = append(matchingVersionIDs, depID)
 			}
 		}
+
+		// A depends on all valid versions of B.
+		// Pseudo-Boolean equation:
+		// B-1.0.0 + ... + B-1.5.0 - A >= 0   satisfiable?
+		// true            false   - 1    0    yes, 1 package satisfies dependency
+		// false           true      0    0    yes, A is not being installed
+		// true            false     0    0    yes, A is not being installed
+		// false           false   - 1   -1    no, no package satisfies dependency
+
+		// build []lits and []weights:
+		lits := append(matchingVersionIDs, -1 * parentID) // B1 + ... + B2 - A
+		weights := make([]int, len(lits))
+		for i := range weights {
+			weights[i] = 1
+		}
+		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
+		sliceConstr := gsolver.GtEq(lits, weights, 1)
+		constr = append(constr, sliceConstr)
 	}
 
 	return constr
 }
 
 func buildConstraintAtMost1(p *pkg.Pkg) (constr []gsolver.PBConstr) {
+	// E.g: B having several versions: B-1.0.0, B-2.0.0, B-3.0.0
+	// Only one can be installed, as they all share releaseName and ns.
+	//
+	// Add constraint:
+	// B-1.3.0 + ... + B-1.2.0 <= 1  (at most 1). If there are no versions of B,
+	// it's SAT.
+
 	// obtain all IDs for the packages that only differ in version
 	ids := PkgDBInstance.GetPackageIDsThatDifferOnVersionByPackage(p)
 
