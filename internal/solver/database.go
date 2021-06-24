@@ -17,7 +17,7 @@ limitations under the License.
 package solver
 
 import (
-	"github.com/rancher-sandbox/hypper/internal/pkg"
+	pkg "github.com/rancher-sandbox/hypper/internal/package"
 )
 
 // PkgDB implements a database of 2 keys (ID, fingerprint) and 1 value

@@ -25,7 +25,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	gsolver "github.com/crillab/gophersat/solver"
-	"github.com/rancher-sandbox/hypper/internal/pkg"
+	pkg "github.com/rancher-sandbox/hypper/internal/package"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/repo"
 	"gopkg.in/yaml.v2"

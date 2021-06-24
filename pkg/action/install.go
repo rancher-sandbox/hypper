@@ -29,6 +29,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
 
+	 pkg "github.com/rancher-sandbox/hypper/internal/package"
 	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"

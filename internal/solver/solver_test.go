@@ -19,7 +19,7 @@ package solver
 import (
 	"testing"
 
-	"github.com/rancher-sandbox/hypper/internal/pkg"
+	pkg "github.com/rancher-sandbox/hypper/internal/package"
 
 	"github.com/rancher-sandbox/hypper/internal/test"
 	"github.com/stretchr/testify/assert"
