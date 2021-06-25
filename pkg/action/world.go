@@ -106,7 +106,7 @@ func createDependencyRelations(p *pkg.Pkg, settings *cli.EnvSettings, logger *lo
 		}
 
 		// Obtain fingerprint and semver for relation:
-		depNS := GetNamespace(p.Chart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+		depNS := GetNamespace(depChart, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 		baseFP := pkg.CreateBaseFingerPrint(depChart.Name(), depNS)
 
 		// build relation:
