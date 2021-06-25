@@ -15,9 +15,9 @@ package chart
 
 import (
 	"github.com/Masterminds/log-go"
+	"github.com/mitchellh/hashstructure/v2"
 	"gopkg.in/yaml.v2"
 	helmChart "helm.sh/helm/v3/pkg/chart"
-	"github.com/mitchellh/hashstructure/v2"
 )
 
 // Dependency is a composite type of Helm's chart.Dependency

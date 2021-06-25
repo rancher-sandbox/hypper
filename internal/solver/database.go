@@ -77,7 +77,7 @@ func (pkgdb *PkgDB) GetIDByPackage(p *pkg.Pkg) (id int) {
 	return id
 }
 
-func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) (map[string]string) {
+func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) map[string]string {
 	mapOfVersions, ok := pkgdb.mapBaseFingerprintToVersions[basefp]
 	if !ok {
 		// TODO what happens if there's no packages that satisfy the version range
@@ -180,7 +180,7 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
 	}
 	// package not there, add it
 	fp := p.GetFingerPrint()
-	if pkgdb.lastElem == int(^uint(0) >> 1) {
+	if pkgdb.lastElem == int(^uint(0)>>1) {
 		panic("Attempting to add too many packages.")
 	}
 	pkgdb.lastElem = pkgdb.lastElem + 1

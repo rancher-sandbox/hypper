@@ -40,20 +40,20 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	Name               string   // Release name, or default chart release-name
-	Version            string   // sem ver (without a range)
-	ChartHash          uint64   // hash of the chart contents
-	Namespace          string   // Installed ns, or default chart namespace
+	Name               string    // Release name, or default chart release-name
+	Version            string    // sem ver (without a range)
+	ChartHash          uint64    // hash of the chart contents
+	Namespace          string    // Installed ns, or default chart namespace
 	DependsRel         []*PkgRel // list of dependencies' fingerprints
 	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
-	CurrentState       tristate // current state of the package
-	DesiredState       tristate // desired state of the package
+	CurrentState       tristate  // current state of the package
+	DesiredState       tristate  // desired state of the package
 	Chart              *helmChart.Chart
 }
 
 type PkgRel struct {
-	BaseFingerprint  string // base fingerprint of dependency with releasename, namespace
-	SemverRange      string // e.g: 1.0.0, ~1.0.0
+	BaseFingerprint string // base fingerprint of dependency with releasename, namespace
+	SemverRange     string // e.g: 1.0.0, ~1.0.0
 }
 
 func NewPkg(name, version, namespace string,

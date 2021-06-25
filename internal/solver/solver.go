@@ -250,12 +250,12 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 	// E.g: A depends on B,~1.0.0, with B having several or zero versions to
 	// chose from.
 	// Constraints:
-    //     B-1.0.0 + ... + B-1.5.0 - A >= 0
+	//     B-1.0.0 + ... + B-1.5.0 - A >= 0
 	//     B-1.0.0 + ... + B-1.5.0 >= 1  (at most 1, added outside of this function)
 
 	constr = []gsolver.PBConstr{}
- 	// obtain ID to use in constraints
- 	parentID := PkgDBInstance.GetIDByPackage(p)
+	// obtain ID to use in constraints
+	parentID := PkgDBInstance.GetIDByPackage(p)
 
 	// build constraints for 'Depends' relations
 	for _, deprel := range p.DependsRel {
@@ -265,7 +265,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 		for depVersion, depFingerprint := range mapOfVersions {
 			depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
 
-		    // add a constraint to install those versions that satisfy semver range
+			// add a constraint to install those versions that satisfy semver range
 			if semverSatisfies(deprel.SemverRange, depVersion) {
 				// efficiently build a slice of version IDs for use in the constraint:
 				matchingVersionIDs = append(matchingVersionIDs, depID)
@@ -289,7 +289,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 		// false           false   - 1   -1    no, no package satisfies dependency
 
 		// build []lits and []weights:
-		lits := append(matchingVersionIDs, -1 * parentID) // B1 + ... + B2 - A
+		lits := append(matchingVersionIDs, -1*parentID) // B1 + ... + B2 - A
 		weights := make([]int, len(lits))
 		for i := range weights {
 			weights[i] = 1
@@ -307,7 +307,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 		for depVersion, depFingerprint := range mapOfVersions {
 			depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
 
-		    // add a constraint to install those versions that satisfy semver range
+			// add a constraint to install those versions that satisfy semver range
 			if semverSatisfies(deprel.SemverRange, depVersion) {
 				// efficiently build a slice of version IDs for use in the constraint:
 				matchingVersionIDs = append(matchingVersionIDs, depID)
@@ -323,7 +323,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 		// false           false   - 1   -1    no, no package satisfies dependency
 
 		// build []lits and []weights:
-		lits := append(matchingVersionIDs, -1 * parentID) // B1 + ... + B2 - A
+		lits := append(matchingVersionIDs, -1*parentID) // B1 + ... + B2 - A
 		weights := make([]int, len(lits))
 		for i := range weights {
 			weights[i] = 1
@@ -359,7 +359,6 @@ func buildConstraintAtMost1(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	return constr
 }
 
-
 func semverSatisfies(semverRange string, ourSemver string) bool {
 
 	// generate semver constraint and check:
@@ -375,5 +374,5 @@ func semverSatisfies(semverRange string, ourSemver string) bool {
 		return false
 	}
 	// Check if the version meets the constraints. The a variable will be true.
-	return  c.Check(v)
+	return c.Check(v)
 }

@@ -29,11 +29,13 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
 
-	 pkg "github.com/rancher-sandbox/hypper/internal/package"
+	pkg "github.com/rancher-sandbox/hypper/internal/package"
+	"github.com/rancher-sandbox/hypper/internal/solver"
 	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 
+	"github.com/rancher-sandbox/hypper/pkg/repo"
 	"helm.sh/helm/v3/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -89,10 +91,34 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	// TODO obtain lock
-	// newPkg(chart)
-	// solver.new()
-	// ask for optional dependencies
-	// s.Buildworld()
+
+	// create pkg with chart to be installed:
+	wantedPkg, err := pkg.NewPkgFromChart(chrt, i.ReleaseName, i.Namespace, pkg.Present)
+
+	// get all releases
+	rels, err := i.GetAllReleases(settings)
+	if err != nil {
+		return nil, err
+	}
+
+	// get all repo entries
+	rf, err := repo.LoadFile(settings.RepositoryConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	s := solver.New()
+
+	// TODO ask for optional dependencies
+
+	BuildWorld(s, rf.Repositories, rels, []*pkg.Pkg{wantedPkg}, settings, logger)
+
+	fmt.Println("Printing db after buildworld")
+	for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1
+		p := s.PkgDB.GetPackageByPbID(i)
+		fmt.Printf("Package: %s  Currentstate: %v   DesiredState: %v Version: %v \n", p.Name, p.CurrentState, p.DesiredState, p.Version)
+	}
+
 	// s.Solve()
 	// if UNSAT {
 	//    either dependencies missing
@@ -103,7 +129,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// 	    if i.NoSharedDeps && package.isDependency {
 	// 	         skip
 	//		}
- 	// 	  	helminstall.Run
+	// 	  	helminstall.Run
 	// 	  }
 	// }
 	// TODO release lock
@@ -215,14 +241,10 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 			return err
 		}
 
-		// obtain the releases for the specific ns that we are searching into
-		clientList := NewList(i.Config)
-		clientList.SetStateMask()
-		releases, err := clientList.Run()
+		releases, err := i.GetReleases()
 		if err != nil {
 			return err
 		}
-
 		// create constraint for version checking
 		constraint, err := semver.NewConstraint(dep.Version)
 		if err != nil {
@@ -273,6 +295,25 @@ func (i *Install) InstallAllSharedDeps(parentChart *helmChart.Chart, settings *c
 		}
 	}
 	return nil
+}
+
+func (i *Install) GetReleases() (releases []*release.Release, err error) {
+	// obtain the releases for the specific ns that we are searching into
+	clientList := NewList(i.Config)
+	clientList.SetStateMask()
+	releases, err = clientList.Run()
+	if err != nil {
+		return nil, err
+	}
+	return releases, nil
+}
+
+func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release.Release, err error) {
+
+	if err := i.Config.Init(settings.RESTClientGetter(), "", os.Getenv("HELM_DRIVER"), i.Config.Log); err != nil {
+		return nil, err
+	}
+	return i.GetReleases()
 }
 
 func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
