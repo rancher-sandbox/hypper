@@ -31,3 +31,4 @@ toinstall:
   chart: null
 toremove: []
 status: SAT
+inconsistencies: []

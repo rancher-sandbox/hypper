@@ -63,7 +63,7 @@ type PkgResultSet struct {
 	ToInstall        []*pkg.Pkg
 	ToRemove         []*pkg.Pkg
 	Status           string
-	//Incosistencies []
+	Inconsistencies  []string
 }
 
 type OutputMode int
@@ -76,10 +76,12 @@ const (
 
 // New creates a new Solver, initializing its database.
 func New() (s *Solver) {
-	return &Solver{
+	s = &Solver{
 		PkgDB:        CreatePkgDBInstance(),
 		pkgResultSet: PkgResultSet{},
 	}
+	s.pkgResultSet.Inconsistencies = []string{}
+	return s
 }
 
 // BuildWorldMock fills the database with pkgs instead of releases, charts from
@@ -268,6 +270,14 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 				// efficiently build a slice of version IDs for use in the constraint:
 				matchingVersionIDs = append(matchingVersionIDs, depID)
 			}
+		}
+		if len(matchingVersionIDs) == 0 {
+			// there are no packages that match the version we depend on, add
+			// that to inconsistencies
+			// TODO create acyclic graph of result instead
+			incos := fmt.Sprintf("Package %s depends on %s, semver %s, but nothing satisfies it\n",
+				p.GetFingerPrint(), deprel.BaseFingerprint, deprel.SemverRange)
+			s.pkgResultSet.Inconsistencies = append(s.pkgResultSet.Inconsistencies, incos)
 		}
 
 		// A depends on all valid versions of B.
