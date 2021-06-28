@@ -92,8 +92,10 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	// TODO obtain lock
 
+	// find latest version of chart to be installed:
+
 	// create pkg with chart to be installed:
-	wantedPkg := pkg.NewPkg(i.ReleaseName, i.Version, i.Namespace, pkg.Unknown, pkg.Present)
+	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present)
 
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
@@ -119,43 +121,65 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	fmt.Println("Printing db after buildworld")
 	for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1
 		p := s.PkgDB.GetPackageByPbID(i)
-		fmt.Printf("Package: %s  Currentstate: %v   DesiredState: %v Version: %v \n", p.Name, p.CurrentState, p.DesiredState, p.Version)
+		fmt.Printf("Package: %s  Currentstate: %v   DesiredState: %v Version: %v NS: %v\n",
+			p.Name, p.CurrentState, p.DesiredState, p.Version, p.Namespace)
+		for _, rel := range p.DependsRel {
+			fmt.Printf("   DepRel: %s\n", rel.BaseFingerprint)
+		}
+		// fmt.Printf("DepOptRel: %s", p.DependsOptionalRel[0].BaseFingerprint)
 	}
 
-	// s.Solve()
-	// if UNSAT {
+	s.Solve()
+
+	if s.IsSAT() {
+		fmt.Println(s.FormatOutput(solver.Table))
+		for _, p := range s.PkgResultSet.ToInstall {
+
+			// 	    if i.NoSharedDeps && package.isDependency {
+			// 	         skip
+			//		}
+
+			// load chart from pkg:
+			// chrt := p.C
+
+			// // install chart:
+			// logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
+			// helmInstall := i.Install
+			// i.Config.SetNamespace(i.Namespace)
+			// rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
+			// return rel, err
+
+			fmt.Printf("Installing package %v\n", p)
+		}
+	}
+	// else if UNSAT {
 	//    either dependencies missing
 	//    or is an upgrade
 	// }
-	// if SAT {
-	// 	  for packages in s.toInstall  {
-	// 	    if i.NoSharedDeps && package.isDependency {
-	// 	         skip
-	//		}
-	// 	  	helminstall.Run
-	// 	  }
-	// }
+
 	// TODO release lock
 
-	if lvl >= 10 {
-		return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
-	}
+	return nil, nil
 
-	if !i.NoSharedDeps {
-		if err := i.InstallAllSharedDeps(chrt, settings, logger, lvl); err != nil {
-			return nil, err
-		}
-	}
+	// if lvl >= 10 {
+	// 	return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
+	// }
 
-	prefix := ""
-	if lvl > 0 {
-		prefix = fmt.Sprintf("%*s", lvl*2, "- ")
-	}
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
-	helmInstall := i.Install
-	i.Config.SetNamespace(i.Namespace)
-	rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
-	return rel, err
+	// if !i.NoSharedDeps {
+	// 	if err := i.InstallAllSharedDeps(chrt, settings, logger, lvl); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// prefix := ""
+	// if lvl > 0 {
+	// 	prefix = fmt.Sprintf("%*s", lvl*2, "- ")
+	// }
+	// logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
+	// helmInstall := i.Install
+	// i.Config.SetNamespace(i.Namespace)
+	// rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
+	// return rel, err
 }
 
 // Chart returns the chart that should be used.

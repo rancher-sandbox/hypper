@@ -17,7 +17,12 @@ limitations under the License.
 package solver
 
 import (
+	"fmt"
+	"math"
+
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
+
+	"github.com/Masterminds/semver/v3"
 )
 
 // PkgDB implements a database of 2 keys (ID, fingerprint) and 1 value
@@ -37,8 +42,12 @@ type PkgDB struct {
 	mapPbIDToFingerprint map[int]string
 	// map: BaseFingerprint -> Semver version -> Fingerprint
 	mapBaseFingerprintToVersions map[string]map[string]string
-	lastElem                     int
-	// TODO maxSemverDistance    int
+	// struct {
+	// 	semver string
+	// 	semverDistToZero int // major * 10^6 + minor * 10^4 + patch
+	// }
+	lastElem int
+	// MaxSemverDistance
 }
 
 var PkgDBInstance *PkgDB
@@ -86,16 +95,31 @@ func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) map[string]
 	return mapOfVersions
 }
 
-func (pkgdb *PkgDB) GetPackageIDsThatDifferOnVersionByPackage(p *pkg.Pkg) (ids []int) {
+func (pkgdb *PkgDB) GetPackageIDsThatDifferOnVersionByPackage(p *pkg.Pkg) (ids []int, weights []int) {
 	mapOfVersions, ok := pkgdb.mapBaseFingerprintToVersions[p.GetBaseFingerPrint()]
 	if !ok {
 		// TODO what happens if there's no packages that satisfy the version range
-		return ids
+		return ids, weights
 	}
-	for _, fp := range mapOfVersions {
+	for semver, fp := range mapOfVersions {
 		ids = append(ids, pkgdb.GetPbIDByFingerprint(fp))
+		weights = append(weights, CalculateSemverDistanceToZero(semver))
 	}
-	return ids
+	return ids, weights
+}
+
+func CalculateSemverDistanceToZero(semversion string) (distance int) {
+
+	sv := semver.MustParse(semversion)
+	// if sv.Major() > uint64(10^4) || sv.Minor() > uint64(10^4) || sv.Patch() > uint64(10^4) {
+	// 	fmt.Printf("\n%v\n", sv)
+	// 	panic("Semver out of range")
+	// }
+	// return 10^14 - (int(sv.Major())*10 ^ 13 + int(sv.Minor())*10 ^ 9 + int(sv.Patch()))
+	// distance = int(math.Pow(10, 16)) - (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
+	distance = (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
+	fmt.Println(distance)
+	return distance
 }
 
 // // needed to find if a pkg is a dependency, to skip when i.NoSharedDeps

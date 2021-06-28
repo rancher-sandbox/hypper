@@ -17,6 +17,7 @@ limitations under the License.
 package action
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/Masterminds/log-go"
@@ -88,6 +89,8 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 				//   obtain default ns of dep
 				depNS := GetNamespaceFromAnnot(depChrtVer[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 				depName := GetNameFromAnnot(depChrtVer[0].Annotations, "")    // TODO default name for helm repos
+				fmt.Printf("Namespace: %s\n", depNS)
+				fmt.Printf("Name: %s\n", depName)
 
 				//add relation to pkg
 				p.DependsRel = append(p.DependsRel, &pkg.PkgRel{
@@ -122,7 +125,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 				depName := GetNameFromAnnot(depChrtVer[0].Annotations, "")    // TODO default name for helm repos
 
 				//add relation to pkg
-				p.DependsRel = append(p.DependsOptionalRel, &pkg.PkgRel{
+				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
 					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
 					SemverRange:     dep.Version,
 				})

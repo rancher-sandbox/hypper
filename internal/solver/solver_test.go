@@ -215,7 +215,7 @@ func TestSolver(t *testing.T) {
 			s.BuildWorldMock(tcase.pkgs)
 			s.Solve()
 			is := assert.New(t)
-			is.Equal(tcase.resultStatus, s.pkgResultSet.Status)
+			is.Equal(tcase.resultStatus, s.PkgResultSet.Status)
 
 			str := s.FormatOutput(YAML)
 			if tcase.golden != "" {
@@ -260,7 +260,7 @@ func TestFormatOutput(t *testing.T) {
 		s.BuildWorldMock(tcase.pkgs)
 		s.Solve()
 		is := assert.New(t)
-		is.Equal("SAT", s.pkgResultSet.Status)
+		is.Equal("SAT", s.PkgResultSet.Status)
 
 		test.AssertGoldenString(t, s.FormatOutput(YAML), tcase.goldenYaml)
 		test.AssertGoldenString(t, s.FormatOutput(JSON), tcase.goldenJson)

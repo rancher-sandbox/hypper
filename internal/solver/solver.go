@@ -31,7 +31,7 @@ import (
 
 type Solver struct {
 	PkgDB        *PkgDB       // DB containing packages
-	pkgResultSet PkgResultSet // outcome of sat solving
+	PkgResultSet PkgResultSet // outcome of sat solving
 	// TODO Strategy
 	//
 	// Install1: tries to install, if UNSAT, tells why, and that you may be wanting to do upgrade.
@@ -78,9 +78,9 @@ const (
 func New() (s *Solver) {
 	s = &Solver{
 		PkgDB:        CreatePkgDBInstance(),
-		pkgResultSet: PkgResultSet{},
+		PkgResultSet: PkgResultSet{},
 	}
-	s.pkgResultSet.Inconsistencies = []string{}
+	s.PkgResultSet.Inconsistencies = []string{}
 	return s
 }
 
@@ -142,27 +142,31 @@ func (s *Solver) Solve() {
 
 	// result.model is a [id]bool, saying if the package should be present or not
 	result := sp.Optimal(nil, nil)
-	s.pkgResultSet.Status = result.Status.String()
+	s.PkgResultSet.Status = result.Status.String()
 
 	s.GeneratePkgSets(result.Model)
+}
+
+func (s *Solver) IsSAT() bool {
+	return s.PkgResultSet.Status == "SAT"
 }
 
 // GeneratePkgSets obtains back the sets of packages from IDs.
 func (s *Solver) GeneratePkgSets(model []bool) {
 
-	s.pkgResultSet.ToInstall = []*pkg.Pkg{}
-	s.pkgResultSet.ToRemove = []*pkg.Pkg{}
-	s.pkgResultSet.PresentUnchanged = []*pkg.Pkg{}
+	s.PkgResultSet.ToInstall = []*pkg.Pkg{}
+	s.PkgResultSet.ToRemove = []*pkg.Pkg{}
+	s.PkgResultSet.PresentUnchanged = []*pkg.Pkg{}
 
 	for id, pkgResult := range model {
 		p := s.PkgDB.GetPackageByPbID(id + 1) // model starts at 0, IDs at 1
 
 		if pkgResult && p.CurrentState == pkg.Present {
-			s.pkgResultSet.PresentUnchanged = append(s.pkgResultSet.PresentUnchanged, p)
+			s.PkgResultSet.PresentUnchanged = append(s.PkgResultSet.PresentUnchanged, p)
 		} else if pkgResult && p.CurrentState != pkg.Present {
-			s.pkgResultSet.ToInstall = append(s.pkgResultSet.ToInstall, p)
+			s.PkgResultSet.ToInstall = append(s.PkgResultSet.ToInstall, p)
 		} else if !pkgResult && p.CurrentState == pkg.Present {
-			s.pkgResultSet.ToRemove = append(s.pkgResultSet.ToRemove, p)
+			s.PkgResultSet.ToRemove = append(s.PkgResultSet.ToRemove, p)
 		}
 	}
 }
@@ -172,26 +176,26 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 	switch t {
 	case Table:
 		// TODO: Refurbish this to create some fancy emoji/table output
-		sb.WriteString(fmt.Sprintf("Status: %s\n", s.pkgResultSet.Status))
+		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
 		sb.WriteString("Packages to be installed:\n")
-		for _, p := range s.pkgResultSet.ToInstall {
+		for _, p := range s.PkgResultSet.ToInstall {
 			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.Name, p.Version))
 		}
 		sb.WriteString("\n")
 		sb.WriteString("Packages to be removed:\n")
-		for _, p := range s.pkgResultSet.ToRemove {
+		for _, p := range s.PkgResultSet.ToRemove {
 			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.Name, p.Version))
 		}
 		sb.WriteString("\n")
 		sb.WriteString("Releases already in the system:\n")
-		for _, p := range s.pkgResultSet.PresentUnchanged {
+		for _, p := range s.PkgResultSet.PresentUnchanged {
 			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.Name, p.Version))
 		}
 	case YAML:
-		o, _ := yaml.Marshal(s.pkgResultSet)
+		o, _ := yaml.Marshal(s.PkgResultSet)
 		sb.WriteString(string(o))
 	case JSON:
-		o, err := json.Marshal(s.pkgResultSet)
+		o, err := json.Marshal(s.PkgResultSet)
 		fmt.Println(err)
 		sb.WriteString(string(o))
 	}
@@ -277,7 +281,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 			// TODO create acyclic graph of result instead
 			incos := fmt.Sprintf("Package %s depends on %s, semver %s, but nothing satisfies it\n",
 				p.GetFingerPrint(), deprel.BaseFingerprint, deprel.SemverRange)
-			s.pkgResultSet.Inconsistencies = append(s.pkgResultSet.Inconsistencies, incos)
+			s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incos)
 		}
 
 		// A depends on all valid versions of B.
@@ -345,14 +349,16 @@ func buildConstraintAtMost1(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	// it's SAT.
 
 	// obtain all IDs for the packages that only differ in version
-	ids := PkgDBInstance.GetPackageIDsThatDifferOnVersionByPackage(p)
+	ids, _ := PkgDBInstance.GetPackageIDsThatDifferOnVersionByPackage(p)
 
 	// at most 1 of all the IDs is allowed
 	// Pseudo-Boolean equation:
-	// a + b + ... + c == 1
+	// a*X + b*Y + ... + c*Z == 1
 	// a       b      c        == 1  satisfiable?
 	// true    false  false    1     yes
 	// false   true   true     2     no
+	// weirdly, the lib needs a GtEq(x,y,1) instead of 0
+	//TODO sliceConstr := gsolver.LtEq(ids, weights, 1)
 	sliceConstr := gsolver.AtMost(ids, 1)
 	constr = append(constr, sliceConstr)
 
