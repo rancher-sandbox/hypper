@@ -93,7 +93,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// TODO obtain lock
 
 	// create pkg with chart to be installed:
-	wantedPkg, err := pkg.NewPkgFromChart(chrt, i.ReleaseName, i.Namespace, pkg.Present)
+	wantedPkg := pkg.NewPkg(i.ReleaseName, i.Version, i.Namespace, pkg.Unknown, pkg.Present)
 
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
@@ -111,7 +111,10 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	// TODO ask for optional dependencies
 
-	BuildWorld(s, rf.Repositories, rels, []*pkg.Pkg{wantedPkg}, settings, logger)
+	err = BuildWorld(s.PkgDB, rf.Repositories, rels, []*pkg.Pkg{wantedPkg}, settings, logger)
+	if err != nil {
+		return nil, err
+	}
 
 	fmt.Println("Printing db after buildworld")
 	for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1

@@ -20,9 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-
-	"github.com/rancher-sandbox/hypper/pkg/chart"
-	helmChart "helm.sh/helm/v3/pkg/chart"
 )
 
 type tristate int
@@ -42,13 +39,11 @@ const (
 type Pkg struct {
 	Name               string    // Release name, or default chart release-name
 	Version            string    // sem ver (without a range)
-	ChartHash          uint64    // hash of the chart contents
 	Namespace          string    // Installed ns, or default chart namespace
 	DependsRel         []*PkgRel // list of dependencies' fingerprints
 	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
 	CurrentState       tristate  // current state of the package
 	DesiredState       tristate  // desired state of the package
-	Chart              *helmChart.Chart
 }
 
 type PkgRel struct {
@@ -57,21 +52,19 @@ type PkgRel struct {
 }
 
 func NewPkg(name, version, namespace string,
-	currentState, desiredState tristate, chrt *helmChart.Chart) (*Pkg, error) {
+	currentState, desiredState tristate) *Pkg {
 
 	p := &Pkg{
 		Name:               name,
 		Version:            version,
-		ChartHash:          chart.Hash(chrt),
 		Namespace:          namespace,
 		DependsRel:         []*PkgRel{},
 		DependsOptionalRel: []*PkgRel{},
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
-		Chart:              chrt,
 	}
 
-	return p, nil
+	return p
 }
 
 // NewPkgMock creates a new package, with a digest based in the package name,
@@ -81,11 +74,10 @@ func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p, _ := NewPkg(name, version, namespace, currentState, desiredState, nil)
+	p := NewPkg(name, version, namespace, currentState, desiredState)
 
 	p.DependsRel = depends
 	p.DependsOptionalRel = dependsOptional
-	p.ChartHash = 0
 
 	return p
 }
@@ -100,13 +92,13 @@ func (p *Pkg) JSON() ([]byte, error) {
 }
 
 // GetFingerPrint returns a unique id of the package.
-// Digest is present to help with packages (mariadb, postgres) that satisfy a
-// metapackage, and get installed with the metapackage releaseName (e.g: rdbms)
 func (p *Pkg) GetFingerPrint() string {
-	return fmt.Sprintf("%s-%s-%d-%s", p.Name, p.Version, p.ChartHash, p.Namespace)
+	return fmt.Sprintf("%s-%s-%s", p.Name, p.Version, p.Namespace)
 }
 
 // GetBaseFingerPrint returns a unique id of the package minus version.
+// This helps when filtering packages to find those that are similar and differ
+// only in the version.
 func (p *Pkg) GetBaseFingerPrint() string {
 	return fmt.Sprintf("%s-%s", p.Name, p.Namespace)
 }
