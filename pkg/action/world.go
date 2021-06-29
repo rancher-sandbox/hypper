@@ -40,7 +40,11 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	settings *cli.EnvSettings, logger log.Logger) (err error) {
 
 	// concatenate all index entries from all repositories:
-	repoEntries := make(map[string][]*helmRepo.ChartVersion)
+	type chrtEntry struct {
+		chartVersions []*helmRepo.ChartVersion
+		url           string
+	}
+	repoEntries := make(map[string]chrtEntry)
 	for _, r := range repositories {
 		idxFilepath := filepath.Join(settings.RepositoryCache, helmpath.CacheIndexFile(r.Name))
 		// obtain repo index file from cache:
@@ -50,7 +54,10 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 		}
 		for chrtName, chrtVers := range index.Entries {
 			// TODO this overrides other repos, if charts are in both
-			repoEntries[chrtName] = chrtVers
+			repoEntries[chrtName] = chrtEntry{
+				chartVersions: chrtVers,
+				url:           r.URL,
+			}
 		}
 	}
 
@@ -58,12 +65,13 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	// for all chart entries in repos:
 	for chrtName, chrtVersions := range repoEntries {
 		// for all the versions of a chart:
-		for _, chrtVer := range chrtVersions {
+		for _, chrtVer := range chrtVersions.chartVersions {
 
 			// add chart to db:
 			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settings.Namespace()) //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 			name := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name)   // TODO default name for helm repos
-			p := pkg.NewPkg(name, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown)
+			repo := chrtVersions.url
+			p := pkg.NewPkg(name, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, repo)
 
 			// unmarshal dependencies:
 			sharedDepsYaml, _ := chrtVer.Annotations["hypper.cattle.io/shared-dependencies"]
@@ -87,8 +95,8 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 				// Iterate through all depChrtVer
 
 				//   obtain default ns of dep
-				depNS := GetNamespaceFromAnnot(depChrtVer[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-				depName := GetNameFromAnnot(depChrtVer[0].Annotations, "")    // TODO default name for helm repos
+				depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+				depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
 				fmt.Printf("Namespace: %s\n", depNS)
 				fmt.Printf("Name: %s\n", depName)
 
@@ -121,8 +129,8 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 				// Iterate through all depChrtVer
 
 				//   obtain default ns of dep
-				depNS := GetNamespaceFromAnnot(depChrtVer[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-				depName := GetNameFromAnnot(depChrtVer[0].Annotations, "")    // TODO default name for helm repos
+				depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+				depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
 
 				//add relation to pkg
 				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
@@ -138,8 +146,13 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	// add releases to db
 	for _, r := range releases {
 		// TODO pull deps if they aren't present in repos
-		p := pkg.NewPkg(r.Name, r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown)
-		pkgdb.Add(p)
+		// TODO we don't know the repo
+		// p := pkg.NewPkg(r.Name, r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, "")
+		// pkgdb.Add(p)
+
+		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace)
+		p := pkgdb.GetPackageByFingerprint(fp)
+		p.CurrentState = pkg.Present
 	}
 
 	// add toModify to db

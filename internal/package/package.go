@@ -44,6 +44,7 @@ type Pkg struct {
 	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
 	CurrentState       tristate  // current state of the package
 	DesiredState       tristate  // desired state of the package
+	Repository         string
 }
 
 type PkgRel struct {
@@ -52,7 +53,7 @@ type PkgRel struct {
 }
 
 func NewPkg(name, version, namespace string,
-	currentState, desiredState tristate) *Pkg {
+	currentState, desiredState tristate, repo string) *Pkg {
 
 	p := &Pkg{
 		Name:               name,
@@ -62,6 +63,7 @@ func NewPkg(name, version, namespace string,
 		DependsOptionalRel: []*PkgRel{},
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
+		Repository:         repo,
 	}
 
 	return p
@@ -74,7 +76,7 @@ func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, version, namespace, currentState, desiredState)
+	p := NewPkg(name, version, namespace, currentState, desiredState, "ourrepo")
 
 	p.DependsRel = depends
 	p.DependsOptionalRel = dependsOptional
@@ -94,6 +96,10 @@ func (p *Pkg) JSON() ([]byte, error) {
 // GetFingerPrint returns a unique id of the package.
 func (p *Pkg) GetFingerPrint() string {
 	return fmt.Sprintf("%s-%s-%s", p.Name, p.Version, p.Namespace)
+}
+
+func CreateFingerPrint(name, version, ns string) string {
+	return fmt.Sprintf("%s-%s-%s", name, version, ns)
 }
 
 // GetBaseFingerPrint returns a unique id of the package minus version.
