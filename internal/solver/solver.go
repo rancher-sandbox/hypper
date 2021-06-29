@@ -179,17 +179,17 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
 		sb.WriteString("Packages to be installed:\n")
 		for _, p := range s.PkgResultSet.ToInstall {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.Name, p.Version))
+			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
 		}
 		sb.WriteString("\n")
 		sb.WriteString("Packages to be removed:\n")
 		for _, p := range s.PkgResultSet.ToRemove {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.Name, p.Version))
+			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
 		}
 		sb.WriteString("\n")
 		sb.WriteString("Releases already in the system:\n")
 		for _, p := range s.PkgResultSet.PresentUnchanged {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.Name, p.Version))
+			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
 		}
 	case YAML:
 		o, _ := yaml.Marshal(s.PkgResultSet)

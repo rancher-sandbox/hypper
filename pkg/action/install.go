@@ -91,11 +91,12 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
 
 	// TODO obtain lock
+	// defer release lock
 
 	// find latest version of chart to be installed:
-
 	// create pkg with chart to be installed:
-	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present)
+	// TODO chrt.Metadata.Version is incorrect
+	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "TODO")
 
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
@@ -156,8 +157,6 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	//    either dependencies missing
 	//    or is an upgrade
 	// }
-
-	// TODO release lock
 
 	return nil, nil
 

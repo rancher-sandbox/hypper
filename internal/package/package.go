@@ -37,7 +37,8 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	Name               string    // Release name, or default chart release-name
+	ReleaseName        string    // Release name, or default chart release-name
+	ChartName          string    // chart name
 	Version            string    // sem ver (without a range)
 	Namespace          string    // Installed ns, or default chart namespace
 	DependsRel         []*PkgRel // list of dependencies' fingerprints
@@ -52,11 +53,12 @@ type PkgRel struct {
 	SemverRange     string // e.g: 1.0.0, ~1.0.0
 }
 
-func NewPkg(name, version, namespace string,
+func NewPkg(relName, chartName, version, namespace string,
 	currentState, desiredState tristate, repo string) *Pkg {
 
 	p := &Pkg{
-		Name:               name,
+		ReleaseName:        relName,
+		ChartName:          chartName,
 		Version:            version,
 		Namespace:          namespace,
 		DependsRel:         []*PkgRel{},
@@ -76,7 +78,7 @@ func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, version, namespace, currentState, desiredState, "ourrepo")
+	p := NewPkg(name, name, version, namespace, currentState, desiredState, "ourrepo")
 
 	p.DependsRel = depends
 	p.DependsOptionalRel = dependsOptional
@@ -95,7 +97,7 @@ func (p *Pkg) JSON() ([]byte, error) {
 
 // GetFingerPrint returns a unique id of the package.
 func (p *Pkg) GetFingerPrint() string {
-	return fmt.Sprintf("%s-%s-%s", p.Name, p.Version, p.Namespace)
+	return fmt.Sprintf("%s-%s-%s", p.ReleaseName, p.Version, p.Namespace)
 }
 
 func CreateFingerPrint(name, version, ns string) string {
@@ -106,7 +108,7 @@ func CreateFingerPrint(name, version, ns string) string {
 // This helps when filtering packages to find those that are similar and differ
 // only in the version.
 func (p *Pkg) GetBaseFingerPrint() string {
-	return fmt.Sprintf("%s-%s", p.Name, p.Namespace)
+	return fmt.Sprintf("%s-%s", p.ReleaseName, p.Namespace)
 }
 
 // CreateBaseFingerPrint returns a base fingerprint (name-ns)

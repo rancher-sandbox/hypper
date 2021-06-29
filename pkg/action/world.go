@@ -68,10 +68,10 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 		for _, chrtVer := range chrtVersions.chartVersions {
 
 			// add chart to db:
-			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settings.Namespace()) //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-			name := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name)   // TODO default name for helm repos
+			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settings.Namespace())  //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name) // TODO default name for helm repos
 			repo := chrtVersions.url
-			p := pkg.NewPkg(name, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, repo)
+			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, repo)
 
 			// unmarshal dependencies:
 			sharedDepsYaml, _ := chrtVer.Annotations["hypper.cattle.io/shared-dependencies"]
