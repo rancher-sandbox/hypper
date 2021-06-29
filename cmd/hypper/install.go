@@ -104,7 +104,7 @@ func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Instal
 	f.BoolVar(&client.DryRun, "dry-run", false, "simulate an install")
 }
 
-func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
+func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) ([]*release.Release, error) {
 
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)

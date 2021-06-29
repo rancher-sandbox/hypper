@@ -146,11 +146,11 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 					instClient.Description = client.Description
 					instClient.ReleaseName = client.ReleaseName
 
-					rel, err := runInstall(args, instClient, valueOpts, logger)
+					rels, err := runInstall(args, instClient, valueOpts, logger)
 					if err != nil {
 						return err
 					}
-					return outfmt.Write(wInfo, &statusPrinter{rel, settings.Debug, false})
+					return outfmt.Write(wInfo, &statusPrinter{rels[0], settings.Debug, false}) // TODO should be all rels, not rels[0]
 				} else if err != nil {
 					return err
 				}
