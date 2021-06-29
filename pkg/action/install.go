@@ -237,7 +237,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 	getter := getter.All(settings.EnvSettings)
 	vals := make(map[string]interface{}) // TODO calculate vals instead of {}
 
-	logger.Debugf("Original shared-dep chart version: %q", chartRequested.Metadata.Version)
+	logger.Debugf("Original chart version: %q", chartRequested.Metadata.Version)
 	if clientInstall.Devel {
 		logger.Debug("setting version to >0.0.0-0")
 		clientInstall.Version = ">0.0.0-0"
@@ -259,15 +259,14 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 		logger.Warnf("Chart \"$s\" is deprecated", chartRequested.Name())
 	}
 
-	// re-obtain the cp again, for Metadata.Dependencies
-	// FIXME deduplicate
-	i.ChartPathOptions.RepoURL = p.Repository
-	cp, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
+	// re-obtain the chartpath again, for Metadata.Dependencies. FIXME deduplicate.
+	clientInstall.ChartPathOptions.RepoURL = p.Repository
+	chartpath, err := clientInstall.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Debugf("CHART PATH: %s\n", cp)
+	logger.Debugf("CHART PATH: %s\n", chartpath)
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
@@ -280,7 +279,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 			if clientInstall.DependencyUpdate {
 				man := &downloader.Manager{
 					Out:              wInfo,
-					ChartPath:        cp,
+					ChartPath:        chartpath,
 					Keyring:          clientInstall.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
 					Getters:          getter,
@@ -292,7 +291,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 					return nil, err
 				}
 				// Reload the chart with the updated Chart.lock file.
-				if chartRequested, err = loader.Load(cp); err != nil {
+				if chartRequested, err = loader.Load(chartpath); err != nil {
 					return nil, errors.Wrap(err, "failed reloading chart after repo update")
 				}
 			} else {
@@ -301,9 +300,10 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 		}
 	}
 
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing chart \"%s\" as \"%s\" in namespace \"%s\"…", chartRequested.Name(), i.ReleaseName, i.Namespace))
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing chart \"%s\" as \"%s\" in namespace \"%s\"…",
+		chartRequested.Name(), clientInstall.ReleaseName, clientInstall.Namespace))
 	helmInstall := clientInstall.Install
-	i.Config.SetNamespace(i.Namespace)
+	i.Config.SetNamespace(clientInstall.Namespace)
 	rel, err := helmInstall.Run(chartRequested, vals) // wrap Helm's i.Run for now
 	if err != nil {
 		return rel, err
