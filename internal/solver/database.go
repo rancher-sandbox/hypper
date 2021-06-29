@@ -19,6 +19,7 @@ package solver
 import (
 	"math"
 
+	"github.com/Masterminds/log-go"
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
 
 	"github.com/Masterminds/semver/v3"
@@ -118,6 +119,21 @@ func CalculateSemverDistanceToZero(semversion string) (distance int) {
 	// distance = int(math.Pow(10, 16)) - (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
 	distance = (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
 	return distance
+}
+
+func (pkgdb *PkgDB) DebugPrintDB(logger log.Logger) {
+	logger.Debugf("Printing DB")
+	for i := 1; i <= pkgdb.Size(); i++ { // IDs start with 1
+		p := pkgdb.GetPackageByPbID(i)
+		logger.Debugf("ID: %d RelName: %s ChartName: %s Currentstate: %v   DesiredState: %v Version: %v NS: %v\n",
+			i, p.ReleaseName, p.ChartName, p.CurrentState, p.DesiredState, p.Version, p.Namespace)
+		for _, rel := range p.DependsRel {
+			logger.Debugf("   DepRel: %v\n", rel)
+		}
+		for _, rel := range p.DependsOptionalRel {
+			logger.Debugf("   DepOptionalRel: %s\n", rel)
+		}
+	}
 }
 
 // // needed to find if a pkg is a dependency, to skip when i.NoSharedDeps

@@ -119,16 +119,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 		return nil, err
 	}
 
-	fmt.Println("Printing db after buildworld")
-	for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1
-		p := s.PkgDB.GetPackageByPbID(i)
-		fmt.Printf("Package: %s  Currentstate: %v   DesiredState: %v Version: %v NS: %v\n",
-			p.Name, p.CurrentState, p.DesiredState, p.Version, p.Namespace)
-		for _, rel := range p.DependsRel {
-			fmt.Printf("   DepRel: %s\n", rel.BaseFingerprint)
-		}
-		// fmt.Printf("DepOptRel: %s", p.DependsOptionalRel[0].BaseFingerprint)
-	}
+	s.PkgDB.DebugPrintDB(logger)
 
 	s.Solve()
 
