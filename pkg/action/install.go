@@ -109,14 +109,16 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	s := solver.New()
 
-	// TODO ask for optional dependencies
-
 	err = BuildWorld(s.PkgDB, rf.Repositories, rels, []*pkg.Pkg{wantedPkg}, settings, logger)
 	if err != nil {
 		return nil, err
 	}
 
 	s.PkgDB.DebugPrintDB(logger)
+
+	// TODO ask for optional dependencies
+	// prompt for all depoptionalRel
+	// those wanted, move to depRel
 
 	s.Solve()
 	// TODO solver picks versions to install randomly

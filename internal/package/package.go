@@ -100,8 +100,8 @@ func (p *Pkg) GetFingerPrint() string {
 	return fmt.Sprintf("%s-%s-%s", p.ReleaseName, p.Version, p.Namespace)
 }
 
-func CreateFingerPrint(name, version, ns string) string {
-	return fmt.Sprintf("%s-%s-%s", name, version, ns)
+func CreateFingerPrint(releaseName, version, ns string) string {
+	return fmt.Sprintf("%s-%s-%s", releaseName, version, ns)
 }
 
 // GetBaseFingerPrint returns a unique id of the package minus version.

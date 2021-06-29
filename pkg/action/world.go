@@ -142,14 +142,18 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 
 	// add releases to db
 	for _, r := range releases {
-		// TODO pull deps if they aren't present in repos
-		// TODO we don't know the repo
-		// p := pkg.NewPkg(r.Name, r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, "")
-		// pkgdb.Add(p)
-
 		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace)
 		p := pkgdb.GetPackageByFingerprint(fp)
-		p.CurrentState = pkg.Present
+		if p != nil {
+			// release is in repos, hence it was added to db. Modify directly:
+			p.CurrentState = pkg.Present
+		} else {
+			// release is not in repos
+			// we don't know the repo where the release has originally been installed from, so we add it as stale package
+			// with an empty repo string
+			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, "")
+			pkgdb.Add(p)
+		}
 	}
 
 	// add toModify to db
