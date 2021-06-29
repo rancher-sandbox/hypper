@@ -17,7 +17,6 @@ limitations under the License.
 package solver
 
 import (
-	"fmt"
 	"math"
 
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
@@ -164,7 +163,7 @@ func GetPkgdDBInstance() *PkgDB {
 // but making sure that unknown inthe known CurrenState and DesiredState is not changed,
 // and only unknown info is getting filled.
 func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
-	result = &new
+	result = &old
 
 	// Merge CurrentState and DesiredState
 	// E.g:
@@ -172,20 +171,20 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 	// old (coming from release)   installed      unknown
 	// new (coming from tomodify)  unknown        removed
 	// result                      installed      removed
-	if result.CurrentState == pkg.Unknown {
-		result.CurrentState = old.CurrentState
+	if old.CurrentState == pkg.Unknown {
+		result.CurrentState = new.CurrentState
 	}
-	if result.DesiredState == pkg.Unknown {
-		result.DesiredState = old.DesiredState
+	if old.DesiredState == pkg.Unknown {
+		result.DesiredState = new.DesiredState
 	}
 
 	// Merge Depends and DependsOptional slices
-	if old.DependsRel == nil {
-		result.DependsRel = new.DependsRel
-	}
-	if old.DependsOptionalRel == nil {
-		result.DependsOptionalRel = new.DependsOptionalRel
-	}
+	// if len(old.DependsRel) == 0 {
+	// 	result.DependsRel = new.DependsRel
+	// }
+	// if len(old.DependsOptionalRel) == 0 {
+	// 	result.DependsOptionalRel = new.DependsOptionalRel
+	// }
 
 	return result
 }
