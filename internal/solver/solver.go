@@ -225,14 +225,20 @@ func buildConstraintToModify(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 
 	// build constraint if package is desired installed
 	if p.DesiredState == pkg.Present {
+		// obtain all IDs for the packages that only differ in version
+		ids, weights := PkgDBInstance.GetPackageIDsThatDifferOnVersionByPackage(p)
+
+		// at most 1 of all the IDs is allowed
 		// Pseudo-Boolean equation:
-		// packageA == 1 (packageA installed)
-		// E.g:
-		// a         == 1  satisfiable?
-		// true      1     yes
-		// false     0     no
-		sliceConstr := gsolver.Eq([]int{id}, []int{1}, 1)
-		constr = append(constr, sliceConstr...)
+		// a*X + b*Y + ... + c*Z == 1
+		// a       b      c        == 1  satisfiable?
+		// true    false  false    1     yes
+		// false   true   true     2     no
+		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
+		// fmt.Printf("weights that matter: %v\n", weights)
+		// fmt.Printf("ids that matter: %v\n", ids)
+		sliceConstr := gsolver.GtEq(ids, weights, 1)
+		constr = append(constr, sliceConstr)
 	}
 
 	// build constraint if package is desired removed
@@ -358,7 +364,6 @@ func buildConstraintAtMost1(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	// true    false  false    1     yes
 	// false   true   true     2     no
 	// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-	//TODO sliceConstr := gsolver.LtEq(ids, weights, 1)
 	sliceConstr := gsolver.AtMost(ids, 1)
 	constr = append(constr, sliceConstr)
 

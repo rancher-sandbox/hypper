@@ -117,7 +117,6 @@ func CalculateSemverDistanceToZero(semversion string) (distance int) {
 	// return 10^14 - (int(sv.Major())*10 ^ 13 + int(sv.Minor())*10 ^ 9 + int(sv.Patch()))
 	// distance = int(math.Pow(10, 16)) - (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
 	distance = (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
-	fmt.Println(distance)
 	return distance
 }
 
