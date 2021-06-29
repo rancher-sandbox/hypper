@@ -26,12 +26,10 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
-	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
 
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
 	"github.com/rancher-sandbox/hypper/internal/solver"
-	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 
@@ -93,7 +91,6 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// TODO obtain lock
 	// defer release lock
 
-	// find latest version of chart to be installed:
 	// create pkg with chart to be installed:
 	// TODO chrt.Metadata.Version is incorrect
 	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "TODO")
@@ -122,26 +119,25 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	s.PkgDB.DebugPrintDB(logger)
 
 	s.Solve()
+	// TODO solver picks versions to install randomly
 
+	fmt.Println(s.FormatOutput(solver.Table))
+
+	installedRels := make([]*release.Release, 0)
 	if s.IsSAT() {
-		fmt.Println(s.FormatOutput(solver.Table))
 		for _, p := range s.PkgResultSet.ToInstall {
 
-			// 	    if i.NoSharedDeps && package.isDependency {
-			// 	         skip
-			//		}
+			// if i.NoSharedDeps && package.isDependency {
+			//    skip
+			// }
 
-			// load chart from pkg:
-			// chrt := p.C
-
-			// // install chart:
-			// logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
-			// helmInstall := i.Install
-			// i.Config.SetNamespace(i.Namespace)
-			// rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
-			// return rel, err
-
-			fmt.Printf("Installing package %v\n", p)
+			// install package:
+			// fmt.Printf("Installing package %v\n", p)
+			rel, err := i.InstallPkg(p, settings, logger)
+			if err != nil {
+				return nil, err
+			}
+			installedRels = append(installedRels, rel)
 		}
 	}
 	// else if UNSAT {
@@ -150,26 +146,6 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// }
 
 	return nil, nil
-
-	// if lvl >= 10 {
-	// 	return nil, errors.Errorf("ABORTING: Nested recursion #%d. we don't have a SAT solver yet, chances are you are in a cycle!", lvl)
-	// }
-
-	// if !i.NoSharedDeps {
-	// 	if err := i.InstallAllSharedDeps(chrt, settings, logger, lvl); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	// prefix := ""
-	// if lvl > 0 {
-	// 	prefix = fmt.Sprintf("%*s", lvl*2, "- ")
-	// }
-	// logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…", prefix, chrt.Name(), i.ReleaseName, i.Namespace))
-	// helmInstall := i.Install
-	// i.Config.SetNamespace(i.Namespace)
-	// rel, err := helmInstall.Run(chrt, vals) // wrap Helm's i.Run for now
-	// return rel, err
 }
 
 // Chart returns the chart that should be used.
@@ -333,10 +309,10 @@ func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release
 	return i.GetReleases()
 }
 
-func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
-	i.ChartPathOptions.RepoURL = dep.Repository
-	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
-	if err != nil && !dep.IsOptional {
+func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
+	i.ChartPathOptions.RepoURL = p.Repository
+	cp, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
+	if err != nil {
 		return nil, err
 	}
 
@@ -349,14 +325,7 @@ func (i *Install) LoadChartFromDep(dep *chart.Dependency, settings *cli.EnvSetti
 	return chartRequested, nil
 }
 
-// InstallSharedDep installs a chart.Dependency using the provided settings.
-//
-// It does this by creating a new action.Install and setting it correctly,
-// loading the chart, checking for constraints, and delegating the install.Run()
-// lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *cli.EnvSettings, logger log.Logger, lvl int) (*release.Release, error) {
-
-	wInfo := logio.NewWriter(logger, log.InfoLevel)
+func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
 
 	clientInstall := NewInstall(i.Config)
 	// we need to automatically satisfy all install options (i.CreateNamespace,
@@ -367,12 +336,12 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *c
 		return nil, err
 	}
 
-	chartRequested, err := clientInstall.LoadChartFromDep(dep, settings, logger)
+	chartRequested, err := clientInstall.LoadChartFromPkg(p, settings, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	p := getter.All(settings.EnvSettings)
+	getter := getter.All(settings.EnvSettings)
 	vals := make(map[string]interface{}) // TODO calculate vals instead of {}
 
 	logger.Debugf("Original shared-dep chart version: %q", chartRequested.Metadata.Version)
@@ -381,32 +350,10 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *c
 		clientInstall.Version = ">0.0.0-0"
 	}
 
-	// check if chartRequested satisfies version range specified in dep
-	if chartRequested.Metadata.Version != dep.Version {
-		constraint, err := semver.NewConstraint(dep.Version)
-		if err != nil {
-			return nil, err
-		}
-
-		v, err := semver.NewVersion(chartRequested.Metadata.Version)
-		if err != nil {
-			return nil, err
-		}
-
-		if b, errs := constraint.Validate(v); !b {
-			logger.Errorf(eyecandy.ESPrintf(settings.NoEmojis, ":x: Satisfiable version for chart \"%s\" not found, aborting\n", dep.Name))
-			err := errors.New("Satisfiable chart version not found")
-			for _, e := range errs {
-				err = fmt.Errorf("%w; %s", err, e)
-			}
-			return nil, err
-		}
-	}
-
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:
-	SetNamespace(clientInstall, chartRequested, ns, settings.NamespaceFromFlag)
-	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, dep.Name)
+	SetNamespace(clientInstall, chartRequested, p.Namespace, settings.NamespaceFromFlag)
+	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, p.ReleaseName)
 	if err != nil {
 		return nil, err
 	}
@@ -421,13 +368,15 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *c
 
 	// re-obtain the cp again, for Metadata.Dependencies
 	// FIXME deduplicate
-	i.ChartPathOptions.RepoURL = dep.Repository
-	cp, err := i.ChartPathOptions.LocateChart(dep.Name, settings.EnvSettings)
+	i.ChartPathOptions.RepoURL = p.Repository
+	cp, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
 
 	logger.Debugf("CHART PATH: %s\n", cp)
+
+	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
 	// Check chart dependencies to make sure all are present in /charts
 	if req := chartRequested.Metadata.Dependencies; req != nil {
@@ -441,7 +390,7 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *c
 					ChartPath:        cp,
 					Keyring:          clientInstall.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
-					Getters:          p,
+					Getters:          getter,
 					RepositoryConfig: settings.RepositoryConfig,
 					RepositoryCache:  settings.RepositoryCache,
 					Debug:            settings.Debug,
@@ -459,11 +408,14 @@ func (i *Install) InstallSharedDep(dep *chart.Dependency, ns string, settings *c
 		}
 	}
 
-	res, err := clientInstall.Run(chartRequested, vals, settings, logger, lvl)
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing chart \"%s\" as \"%s\" in namespace \"%s\"…", chartRequested.Name(), i.ReleaseName, i.Namespace))
+	helmInstall := clientInstall.Install
+	i.Config.SetNamespace(i.Namespace)
+	rel, err := helmInstall.Run(chartRequested, vals) // wrap Helm's i.Run for now
 	if err != nil {
-		return res, err
+		return rel, err
 	}
-	return res, nil
+	return rel, nil
 }
 
 func promptBool(question string, reader *bufio.Reader, logger log.Logger) bool {
