@@ -92,8 +92,10 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// defer release lock
 
 	// create pkg with chart to be installed:
-	// TODO chrt.Metadata.Version is incorrect
-	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "TODO")
+	// TODO chrt.Metadata.Version & repo, are incorrect and irrelevant
+	// we are just updating an already existing package from the repos with
+	// DesiredState: Present
+	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "")
 
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
@@ -116,9 +118,30 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	s.PkgDB.DebugPrintDB(logger)
 
-	// TODO ask for optional dependencies
-	// prompt for all depoptionalRel
-	// those wanted, move to depRel
+	// Promote optional deps to normal deps, depending on the strategy selected:
+	switch i.OptionalDeps {
+	case OptionalDepsAll:
+		logger.Debugf("Promoting all optional deps of package %s to normal deps\n", wantedPkg.GetFingerPrint())
+		// promote all optional deps of wanted package to normal deps:
+		for _, rel := range wantedPkg.DependsOptionalRel {
+			wantedPkg.DependsRel = append(wantedPkg.DependsRel, rel)
+		}
+	case OptionalDepsNone:
+		logger.Debugf("Disregarding all optional deps of package %s\n", wantedPkg.GetFingerPrint())
+	case OptionalDepsAsk:
+		logger.Debugf("Asking for each optional deps of package %s if they should be promoted\n", wantedPkg.GetFingerPrint())
+		for _, rel := range wantedPkg.DependsOptionalRel {
+			reader := bufio.NewReader(os.Stdin)
+			question := eyecandy.ESPrintf(settings.NoEmojis,
+				":red_question_mark:Install optional shared dependency \"%s\" of chart \"%s\"?",
+				rel.BaseFingerprint,
+				wantedPkg.ChartName,
+			)
+			if promptBool(question, reader, logger) {
+				wantedPkg.DependsRel = append(wantedPkg.DependsRel, rel)
+			}
+		}
+	}
 
 	s.Solve()
 	// TODO solver picks versions to install randomly
