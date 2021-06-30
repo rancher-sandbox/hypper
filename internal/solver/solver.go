@@ -308,41 +308,6 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []gsolver.PBConstr
 		sliceConstr := gsolver.GtEq(lits, weights, 1)
 		constr = append(constr, sliceConstr)
 	}
-
-	// build constraints for 'Optional-Depends' relations
-	for _, deprel := range p.DependsOptionalRel {
-		// obtain all IDs for the packages that only differ in version
-		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
-		matchingVersionIDs := []int{}
-		for depVersion, depFingerprint := range mapOfVersions {
-			depID := PkgDBInstance.GetPbIDByFingerprint(depFingerprint)
-
-			// add a constraint to install those versions that satisfy semver range
-			if semverSatisfies(deprel.SemverRange, depVersion) {
-				// efficiently build a slice of version IDs for use in the constraint:
-				matchingVersionIDs = append(matchingVersionIDs, depID)
-			}
-		}
-
-		// A depends on all valid versions of B.
-		// Pseudo-Boolean equation:
-		// B-1.0.0 + ... + B-1.5.0 - A >= 0   satisfiable?
-		// true            false   - 1    0    yes, 1 package satisfies dependency
-		// false           true      0    0    yes, A is not being installed
-		// true            false     0    0    yes, A is not being installed
-		// false           false   - 1   -1    no, no package satisfies dependency
-
-		// build []lits and []weights:
-		lits := append(matchingVersionIDs, -1*parentID) // B1 + ... + B2 - A
-		weights := make([]int, len(lits))
-		for i := range weights {
-			weights[i] = 1
-		}
-		// weirdly, the lib needs a GtEq(x,y,1) instead of 0
-		sliceConstr := gsolver.GtEq(lits, weights, 1)
-		constr = append(constr, sliceConstr)
-	}
-
 	return constr
 }
 
