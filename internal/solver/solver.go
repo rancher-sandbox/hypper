@@ -109,7 +109,7 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []gsolver.PBConstr) {
 
 	if p.DesiredState != pkg.Unknown {
 		// p is going to be installed, or removed (and is a release)
-		packageConstrs := buildConstraintToModify(p)
+		packageConstrs := s.buildConstraintToModify(p)
 		constrs = append(constrs, packageConstrs...)
 	}
 
@@ -176,20 +176,27 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 	switch t {
 	case Table:
 		// TODO: Refurbish this to create some fancy emoji/table output
-		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
-		sb.WriteString("Packages to be installed:\n")
-		for _, p := range s.PkgResultSet.ToInstall {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
-		}
-		sb.WriteString("\n")
-		sb.WriteString("Packages to be removed:\n")
-		for _, p := range s.PkgResultSet.ToRemove {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
-		}
-		sb.WriteString("\n")
-		sb.WriteString("Releases already in the system:\n")
-		for _, p := range s.PkgResultSet.PresentUnchanged {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+		if s.IsSAT() {
+			sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
+			sb.WriteString("Packages to be installed:\n")
+			for _, p := range s.PkgResultSet.ToInstall {
+				sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+			}
+			sb.WriteString("\n")
+			sb.WriteString("Packages to be removed:\n")
+			for _, p := range s.PkgResultSet.ToRemove {
+				sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+			}
+			sb.WriteString("\n")
+			sb.WriteString("Releases already in the system:\n")
+			for _, p := range s.PkgResultSet.PresentUnchanged {
+				sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+			}
+		} else {
+			sb.WriteString("Inconsistencies:\n")
+			for _, incos := range s.PkgResultSet.Inconsistencies {
+				sb.WriteString(fmt.Sprintf("\t%s\n", incos))
+			}
 		}
 	case YAML:
 		o, _ := yaml.Marshal(s.PkgResultSet)
@@ -218,10 +225,19 @@ func buildConstraintPresent(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	return constr
 }
 
-func buildConstraintToModify(p *pkg.Pkg) (constr []gsolver.PBConstr) {
+func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []gsolver.PBConstr) {
 	constr = []gsolver.PBConstr{}
 	// obtain ID to use in constraints
 	id := PkgDBInstance.GetIDByPackage(p)
+
+	if p.CurrentState == pkg.Present && p.DesiredState == pkg.Present {
+		// package is scheduled for an upgrade, this is not possible
+		// as we aren't separating install and upgrade implementation yet
+		incos := fmt.Sprintf("Package %s is scheduled for upgrade, did you mean \"hypper upgrade\" instead of \"hypper install\"\n",
+			p.GetFingerPrint())
+		s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incos)
+
+	}
 
 	// build constraint if package is desired installed
 	if p.DesiredState == pkg.Present {

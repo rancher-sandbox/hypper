@@ -97,6 +97,9 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// DesiredState: Present
 	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "")
 
+	// FIXME deprels are not taken if wantedPkg is local and not in repos
+	// FIXME wantedPkg from repos is not taken correctly: failed to download hypper/our-app
+
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
 	if err != nil {
@@ -144,7 +147,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	}
 
 	s.Solve()
-	// TODO solver picks versions to install randomly
+	// FIXME solver picks versions to install randomly
 
 	fmt.Println(s.FormatOutput(solver.Table))
 
@@ -152,23 +155,20 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	if s.IsSAT() {
 		for _, p := range s.PkgResultSet.ToInstall {
 
+			// TODO
 			// if i.NoSharedDeps && package.isDependency {
-			//    skip
+			// 	  // skip this package and not install it
+			//    continue
 			// }
 
 			// install package:
-			// fmt.Printf("Installing package %v\n", p)
 			rel, err := i.InstallPkg(p, settings, logger)
 			if err != nil {
-				return nil, err
+				return installedRels, err
 			}
 			installedRels = append(installedRels, rel)
 		}
 	}
-	// else if UNSAT {
-	//    either dependencies missing
-	//    or is an upgrade
-	// }
 
 	return installedRels, nil
 }
