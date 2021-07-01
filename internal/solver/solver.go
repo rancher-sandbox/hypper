@@ -311,8 +311,16 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// E.g: A depends on B,~1.0.0, with B having several or zero versions to
 	// chose from.
 	// Constraints:
+	//
+	// A depends on any versions of B:
 	//     B-1.0.0 + ... + B-1.5.0 - A >= 0
-	//     B-1.0.0 + ... + B-1.5.0 >= 1  (at most 1, added outside of this function)
+	//
+	// At least 1 satisfying version  (added in this function):
+	//     B-1.0.0 + ... + B-1.5.0 >= 1
+	//
+	// At most 1 of all the possible versions, satisfying semver range or not,
+	// as they all share releaseName and namespace  (added outside of this function)
+	//     B-1.0.0 + ... + B-1.5.0 + B-3.0.0 <= 1
 
 	// build constraints for 'Depends' relations
 	for _, deprel := range p.DependsRel {
@@ -340,7 +348,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 				depP.ID = s.PkgDB.lastElem
 			}
 
-			// A depends on B:  not(A) or B
+			// A depends on B: not(A) or B == true
 			sliceConstr := maxsat.HardClause(maxsat.Not(p.GetFingerPrint()), maxsat.Var(depFingerprint))
 			constr = append(constr, sliceConstr)
 		}
@@ -355,6 +363,8 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 			break
 		} else {
 			// for all deps that satisfy the semver range, use at least 1
+			// TODO atleast1 constraint gets added several times per pkg in db instead of only once
+
 			// build lits:
 			lits := []maxsat.Lit{}
 			coeffs := []int{}
@@ -375,6 +385,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 				lits = append(lits, lit)
 				coeffs = append(coeffs, 1)
 			}
+
 			// at least 1 of all the versions that satisfy semver
 			sliceConstr := maxsat.HardPBConstr(lits, coeffs, 1)
 			constr = append(constr, sliceConstr)
@@ -389,14 +400,20 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// Only one can be installed, as they all share releaseName and ns.
 	//
 	// Add constraint:
-	// B-1.3.0 + ... + B-1.2.0 <= 1  (at most 1). If there are no versions of B,
-	// it's SAT.
+	//
+	//   B-1.0.0 + ... + B-3.0.0 <= 1  (at most 1). If there are no versions of B,
+	//   it's SAT.
+	//
+	// This is equivalent to:
+	//
+	//   not(A) or not(B) or ... not(C) where at least numPackages -1 need to be
+	//   true, to only select 1 package
+	//
+	// In case that there's only 1 version of B, we can skip adding a constraint
 
 	// obtain all fps, weights, for the packages that only differ in version
 	fps, coeffs := PkgDBInstance.GetPackageFingerprintsThatDifferOnVersionByPackage(p)
 
-	// at most 1 of all the IDs is allowed
-	// xor(A,B, ... C) == not(A) or not(B) or ... not(C), at least num -1 need to be true
 	lits := []maxsat.Lit{}
 	for _, fp := range fps { // for all the packages that only differ in version
 		pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
