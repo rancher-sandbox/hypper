@@ -4,4 +4,4 @@ toremove: []
 status: UNSAT
 inconsistencies:
 - |
-  Package wantedbaz-1.0.0-0-wantedbazns depends on myawesomedep-myawesomedeptargetns, semver ^1.0.0, but nothing satisfies it
+  Package wantedbaz-1.0.0-wantedbazns depends on myawesomedep-myawesomedeptargetns, semver ^1.0.0, but nothing satisfies it

@@ -1,17 +1,17 @@
 presentunchanged: []
 toinstall:
-- name: myawesomedep
+- releasename: myawesomedep
+  chartname: myawesomedep
   version: 0.1.103
-  charthash: 0
   namespace: myawesomedeptargetns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 0
   desiredstate: 0
-  chart: null
-- name: wantedbaz
+  repository: ourrepo
+- releasename: wantedbaz
+  chartname: wantedbaz
   version: 1.0.0
-  charthash: 0
   namespace: wantedbazns
   dependsrel:
   - basefingerprint: myawesomedep-myawesomedeptargetns
@@ -19,7 +19,7 @@ toinstall:
   dependsoptionalrel: []
   currentstate: 0
   desiredstate: 1
-  chart: null
+  repository: ourrepo
 toremove: []
 status: SAT
 inconsistencies: []

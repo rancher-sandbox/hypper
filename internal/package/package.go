@@ -37,7 +37,7 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	ID                 int       // ID, position on the solver model
+	ID                 int  `json:"-" yaml:"-"`     // ID, position on the solver model
 	ReleaseName        string    // Release name, or default chart release-name
 	ChartName          string    // chart name
 	Version            string    // sem ver (without a range)

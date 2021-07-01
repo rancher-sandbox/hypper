@@ -1,8 +1,8 @@
 presentunchanged: []
 toinstall:
-- name: wantedfoo
+- releasename: wantedfoo
+  chartname: wantedfoo
   version: 1.0.0
-  charthash: 0
   namespace: targetns
   dependsrel:
   - basefingerprint: wantedbar-targetns
@@ -10,10 +10,10 @@ toinstall:
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 1
-  chart: null
-- name: wantedbar
+  repository: ourrepo
+- releasename: wantedbar
+  chartname: wantedbar
   version: 1.0.0
-  charthash: 0
   namespace: targetns
   dependsrel:
   - basefingerprint: wantedbaz-targetns
@@ -21,10 +21,10 @@ toinstall:
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 0
-  chart: null
-- name: wantedbaz
+  repository: ourrepo
+- releasename: wantedbaz
+  chartname: wantedbaz
   version: 1.0.0
-  charthash: 0
   namespace: targetns
   dependsrel:
   - basefingerprint: wantedfoo-targetns
@@ -32,7 +32,7 @@ toinstall:
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 0
-  chart: null
+  repository: ourrepo
 toremove: []
 status: SAT
 inconsistencies: []

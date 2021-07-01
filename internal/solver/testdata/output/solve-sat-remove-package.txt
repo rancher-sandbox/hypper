@@ -1,14 +1,14 @@
 presentunchanged: []
 toinstall: []
 toremove:
-- name: wantedbaz
+- releasename: wantedbaz
+  chartname: wantedbaz
   version: 1.0.0
-  charthash: 0
   namespace: wantedbazns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 1
   desiredstate: 2
-  chart: null
+  repository: ourrepo
 status: SAT
 inconsistencies: []

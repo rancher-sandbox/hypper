@@ -1,32 +1,32 @@
 presentunchanged:
-- name: bar
+- releasename: bar
+  chartname: bar
   version: 1.0.0
-  charthash: 0
   namespace: targetns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 1
   desiredstate: 1
-  chart: null
+  repository: ourrepo
 toinstall:
-- name: baz
+- releasename: baz
+  chartname: baz
   version: 1.0.0
-  charthash: 0
   namespace: targetns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 2
   desiredstate: 1
-  chart: null
+  repository: ourrepo
 toremove:
-- name: foo
+- releasename: foo
+  chartname: foo
   version: 1.0.0
-  charthash: 0
   namespace: targetns
   dependsrel: []
   dependsoptionalrel: []
   currentstate: 1
   desiredstate: 2
-  chart: null
+  repository: ourrepo
 status: SAT
 inconsistencies: []
