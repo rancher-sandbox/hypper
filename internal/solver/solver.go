@@ -312,11 +312,12 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// chose from.
 	// Constraints:
 	//
-	// A depends on any versions of B:
-	//     B-1.0.0 + ... + B-1.5.0 - A >= 0
-	//
-	// At least 1 satisfying version  (added in this function):
-	//     B-1.0.0 + ... + B-1.5.0 >= 1
+	// A depends on any versions of B:  not(A) or B
+	// And least 1 satisfying version of B:  B-1.0.0 + ... + B-1.5.0 >= 1
+	// These two constraints are equivalent to:
+	// A depends on at least 1 version of B:
+	//    not(A) or atleast1(B-1.0.0, B-2.0.0 ..., B-3.0.0) ==
+	//    atLeast1( not(A) or B-1.0.0 or B-2.0.0 ... B-3.0.0 )
 	//
 	// At most 1 of all the possible versions, satisfying semver range or not,
 	// as they all share releaseName and namespace  (added outside of this function)
@@ -326,34 +327,49 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 	for _, deprel := range p.DependsRel {
 		// obtain all IDs for the packages that only differ in version
 		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
-		matchingVersions := []string{} // slice of fingerprints
+		satisfyingVersions := []string{} // slice of fingerprints
 		for depVersion, depFingerprint := range mapOfVersions {
-
 			// build list of packages that differ only in version and that satisfy semver
 			if semverSatisfies(deprel.SemverRange, depVersion) {
 				// efficiently build a slice of version IDs for use in the constraint:
-				matchingVersions = append(matchingVersions, depFingerprint)
+				satisfyingVersions = append(satisfyingVersions, depFingerprint)
 			}
-			// assign the parent package an id, to recover from model later:
-			if p.ID == -1 {
-				// first time we use this package, set id
-				s.PkgDB.lastElem++
-				p.ID = s.PkgDB.lastElem
+		}
+
+		// build lits:  not(A) , B1, B2, B3, B4
+		lits := []maxsat.Lit{}
+
+		// create parent lit: not(A)
+		litParent := maxsat.Lit{
+			Var:     p.GetFingerPrint(),
+			Negated: true, // not installed
+		}
+		lits = append(lits, litParent)
+
+		for _, fp := range satisfyingVersions {
+			// create lit for solver:
+			lit := maxsat.Lit{
+				Var:     fp,
+				Negated: false, // installed
 			}
-			// assign the dep package an id, to recover from model later:
-			depP := s.PkgDB.GetPackageByFingerprint(depFingerprint)
+
+			// assign the dependency an id, to recover from model later:
+			depP := s.PkgDB.GetPackageByFingerprint(fp)
 			if depP.ID == -1 {
 				// first time we use this package, set id
 				s.PkgDB.lastElem++
 				depP.ID = s.PkgDB.lastElem
 			}
 
-			// A depends on B: not(A) or B == true
-			sliceConstr := maxsat.HardClause(maxsat.Not(p.GetFingerPrint()), maxsat.Var(depFingerprint))
-			constr = append(constr, sliceConstr)
+			lits = append(lits, lit)
 		}
 
-		if len(matchingVersions) == 0 {
+		// at least 1 of all the versions that satisfy semver
+		sliceConstr := maxsat.HardPBConstr(lits, nil, 1)
+		constr = append(constr, sliceConstr)
+
+
+		if len(satisfyingVersions) == 0 {
 			// there are no packages that match the version we depend on, add
 			// that to inconsistencies
 			// TODO create acyclic graph of result instead
@@ -361,34 +377,6 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 				p.GetFingerPrint(), deprel.BaseFingerprint, deprel.SemverRange)
 			s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incons)
 			break
-		} else {
-			// for all deps that satisfy the semver range, use at least 1
-			// TODO atleast1 constraint gets added several times per pkg in db instead of only once
-
-			// build lits:
-			lits := []maxsat.Lit{}
-			coeffs := []int{}
-			for _, fp := range matchingVersions {
-				// create lit for solver:
-				lit := maxsat.Lit{
-					Var:     fp,
-					Negated: false, // installed
-				}
-				// assing the package an id, to recover from model later:
-				depP := s.PkgDB.GetPackageByFingerprint(fp)
-				if depP.ID == -1 {
-					// first time we use this package, set id
-					s.PkgDB.lastElem++
-					depP.ID = s.PkgDB.lastElem
-				}
-
-				lits = append(lits, lit)
-				coeffs = append(coeffs, 1)
-			}
-
-			// at least 1 of all the versions that satisfy semver
-			sliceConstr := maxsat.HardPBConstr(lits, coeffs, 1)
-			constr = append(constr, sliceConstr)
 		}
 
 	}
@@ -412,25 +400,43 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// In case that there's only 1 version of B, we can skip adding a constraint
 
 	// obtain all fps, weights, for the packages that only differ in version
-	fps, coeffs := PkgDBInstance.GetPackageFingerprintsThatDifferOnVersionByPackage(p)
+	fps, _ := PkgDBInstance.GetPackageFingerprintsThatDifferOnVersionByPackage(p)
+
+	if len(fps) == 1 {
+		// there is only one package on that releaseName and Namespace. No need
+		// to create the constraint.
+		return []maxsat.Constr{}
+	}
 
 	lits := []maxsat.Lit{}
 	for _, fp := range fps { // for all the packages that only differ in version
 		pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
-		// create lit for solver:
-		lit := maxsat.Lit{
-			Var:     pkgDifferVersion.GetFingerPrint(),
-			Negated: true, // not installed
-		}
-		lits = append(lits, lit)
+
 		// assign the package an id, to recover from model later:
 		if pkgDifferVersion.ID == -1 {
 			// first time we use this package, set id
 			s.PkgDB.lastElem++
 			pkgDifferVersion.ID = s.PkgDB.lastElem
 		}
+
+		// create lit for atleast(not(B1), not(B2),  num -1):
+		lit := maxsat.Lit{
+			Var:     pkgDifferVersion.GetFingerPrint(),
+			Negated: true, // not installed
+		}
+		lits = append(lits, lit)
+
+		// // create lit for weighting semver distances:
+		// weightedLit := []maxsat.Lit{{
+		// 	Var:     pkgDifferVersion.GetFingerPrint(),
+		// 	Negated: false, // installed
+		// }}
+
+		// sliceConstr := maxsat.WeightedClause(weightedLit, coeffs[i])
+		// constr = append(constr, sliceConstr)
 	}
-	sliceConstr := maxsat.HardPBConstr(lits, coeffs, len(lits)-1)
+	atLeast := len(lits)-1
+	sliceConstr := maxsat.HardPBConstr(lits, nil, atLeast)
 	constr = append(constr, sliceConstr)
 
 	return constr
