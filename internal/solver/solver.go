@@ -206,28 +206,29 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 	return sb.String()
 }
 
+
+// buildConstraintPresent returns a constraint specifycing that package p is to
+// be present in result
 func (s *Solver) buildConstraintPresent(p *pkg.Pkg) (constr []maxsat.Constr) {
 	constr = []maxsat.Constr{}
 
-	// build constraint if package is installed
-	if p.CurrentState == pkg.Present {
-		// Boolean equation:
-		// package1 == true (package1 installed)
-		// create lit for solver:
-		lit := maxsat.Lit{
-			Var:     p.GetFingerPrint(),
-			Negated: false, // installed
-		}
-		// assign the package an id, to recover from model later:
-		if p.ID == -1 {
-			// first time we use this package, set id
-			s.PkgDB.lastElem++
-			p.ID = s.PkgDB.lastElem
-		}
+	// Boolean equation:
+	// packageA == true (packageA installed)
 
-		sliceConstr := maxsat.HardClause(lit)
-		constr = append(constr, sliceConstr)
+	// create lit for solver:
+	lit := maxsat.Lit{
+		Var:     p.GetFingerPrint(),
+		Negated: false, // installed
 	}
+	// assign the package an id, to recover from model later:
+	if p.ID == -1 {
+		// first time we use this package, set id
+		s.PkgDB.lastElem++
+		p.ID = s.PkgDB.lastElem
+	}
+
+	sliceConstr := maxsat.HardClause(lit)
+	constr = append(constr, sliceConstr)
 
 	return constr
 }
@@ -286,6 +287,7 @@ func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 		// a         == 0  satisfiable?
 		// true      0     no
 		// false     1     yes
+
 		// create lit for solver:
 		lit := maxsat.Lit{
 			Var:     p.GetFingerPrint(),
