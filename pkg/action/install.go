@@ -228,6 +228,7 @@ func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release
 
 func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
 	i.ChartPathOptions.RepoURL = p.Repository
+	i.ChartPathOptions.Version = p.Version
 	cp, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
 	if err != nil {
 		return nil, err
@@ -243,6 +244,8 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger
 }
 
 func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
+
+	logger.Debugf("Installing package: %v\n", p)
 
 	clientInstall := NewInstall(i.Config)
 	// we need to automatically satisfy all install options (i.CreateNamespace,
