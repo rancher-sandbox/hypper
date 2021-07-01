@@ -147,7 +147,6 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	}
 
 	s.Solve()
-	// FIXME solver picks versions to install randomly
 
 	fmt.Println(s.FormatOutput(solver.Table))
 

@@ -37,9 +37,7 @@ import (
 // merged with the existent entry in a way to complete unknown info of that
 // package.
 type PkgDB struct {
-	mapFingerprintToPkg  map[string]*pkg.Pkg
-	mapFingerprintToPbID map[string]int
-	mapPbIDToFingerprint map[int]string
+	mapFingerprintToPkg map[string]*pkg.Pkg
 	// map: BaseFingerprint -> Semver version -> Fingerprint
 	mapBaseFingerprintToVersions map[string]map[string]string
 	// struct {
@@ -52,38 +50,12 @@ type PkgDB struct {
 
 var PkgDBInstance *PkgDB
 
-func (pkgdb *PkgDB) GetPackageByPbID(ID int) *pkg.Pkg {
-	fp, ok := pkgdb.mapPbIDToFingerprint[ID]
-	if !ok {
-		return nil
-	}
-	return pkgdb.GetPackageByFingerprint(fp)
-}
-
-func (pkgdb *PkgDB) GetPbIDByFingerprint(fp string) (id int) {
-	id, ok := pkgdb.mapFingerprintToPbID[fp]
-	if !ok {
-		return -1
-	}
-	return id
-}
-
 func (pkgdb *PkgDB) GetPackageByFingerprint(fp string) *pkg.Pkg {
 	p, ok := pkgdb.mapFingerprintToPkg[fp]
 	if !ok {
 		return nil
 	}
 	return p
-}
-
-func (pkgdb *PkgDB) GetIDByPackage(p *pkg.Pkg) (id int) {
-	fp := p.GetFingerPrint()
-
-	id, ok := pkgdb.mapFingerprintToPbID[fp]
-	if !ok {
-		return -1
-	}
-	return id
 }
 
 func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) map[string]string {
@@ -95,17 +67,17 @@ func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) map[string]
 	return mapOfVersions
 }
 
-func (pkgdb *PkgDB) GetPackageIDsThatDifferOnVersionByPackage(p *pkg.Pkg) (ids []int, weights []int) {
+func (pkgdb *PkgDB) GetPackageFingerprintsThatDifferOnVersionByPackage(p *pkg.Pkg) (fps []string, weights []int) {
 	mapOfVersions, ok := pkgdb.mapBaseFingerprintToVersions[p.GetBaseFingerPrint()]
 	if !ok {
 		// TODO what happens if there's no packages that satisfy the version range
-		return ids, weights
+		return fps, weights
 	}
 	for semver, fp := range mapOfVersions {
-		ids = append(ids, pkgdb.GetPbIDByFingerprint(fp))
+		fps = append(fps, fp)
 		weights = append(weights, CalculateSemverDistanceToZero(semver))
 	}
-	return ids, weights
+	return fps, weights
 }
 
 func CalculateSemverDistanceToZero(semversion string) (distance int) {
@@ -123,10 +95,9 @@ func CalculateSemverDistanceToZero(semversion string) (distance int) {
 
 func (pkgdb *PkgDB) DebugPrintDB(logger log.Logger) {
 	logger.Debugf("Printing DB")
-	for i := 1; i <= pkgdb.Size(); i++ { // IDs start with 1
-		p := pkgdb.GetPackageByPbID(i)
-		logger.Debugf("ID: %d RelName: %s ChartName: %s Currentstate: %v   DesiredState: %v Version: %v NS: %v\n",
-			i, p.ReleaseName, p.ChartName, p.CurrentState, p.DesiredState, p.Version, p.Namespace)
+	for fp, p := range pkgdb.mapFingerprintToPkg {
+		logger.Debugf("fp: %s ID: %d RelName: %s ChartName: %s Currentstate: %v   DesiredState: %v Version: %v NS: %v\n",
+			fp, p.ID, p.ReleaseName, p.ChartName, p.CurrentState, p.DesiredState, p.Version, p.Namespace)
 		for _, rel := range p.DependsRel {
 			logger.Debugf("   DepRel: %v\n", rel)
 		}
@@ -163,8 +134,6 @@ func (pkgdb *PkgDB) DebugPrintDB(logger log.Logger) {
 func CreatePkgDBInstance() *PkgDB {
 	PkgDBInstance = &PkgDB{
 		mapFingerprintToPkg:          make(map[string]*pkg.Pkg),
-		mapFingerprintToPbID:         make(map[string]int),
-		mapPbIDToFingerprint:         make(map[int]string),
 		mapBaseFingerprintToVersions: make(map[string]map[string]string),
 	}
 	return PkgDBInstance
@@ -207,24 +176,19 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 // Add adds a package to the database and returns it's ID. If a package was
 // already present in the database, it makes sure to update it, in a way that
 // only unknown info to that package is added.
-func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
-	id := pkgdb.GetIDByPackage(p)
-	if id > -1 {
-		// package already there, merge
+func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
+	fp := p.GetFingerPrint()
+	pInDB := pkgdb.mapFingerprintToPkg[fp]
+	if pInDB != nil {
+		// package already in DB, merge
 		pkgdb.mapFingerprintToPkg[p.GetFingerPrint()] =
-			MergePkgs(*pkgdb.GetPackageByPbID(id), *p)
-
-		return id
+			MergePkgs(*pInDB, *p)
 	}
 	// package not there, add it
-	fp := p.GetFingerPrint()
 	if pkgdb.lastElem == int(^uint(0)>>1) {
 		panic("Attempting to add too many packages.")
 	}
-	pkgdb.lastElem = pkgdb.lastElem + 1
 	pkgdb.mapFingerprintToPkg[fp] = p
-	pkgdb.mapFingerprintToPbID[fp] = pkgdb.lastElem
-	pkgdb.mapPbIDToFingerprint[pkgdb.lastElem] = fp
 
 	// build map of same versions
 	// TODO this is broken, depending in the order of pkgs being added
@@ -242,9 +206,6 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) (ID int) {
 		// 	pkgdb.maxSemverDistance = distance
 		// }
 	}
-
-	// TODO no need to return lastElem, either nothing or fingerprint
-	return pkgdb.lastElem
 }
 
 func (pkgdb *PkgDB) Size() int {
