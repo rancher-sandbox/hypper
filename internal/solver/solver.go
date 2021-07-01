@@ -132,11 +132,13 @@ func (s *Solver) Solve() {
 	solver := problem.Solver()
 	result := solver.Optimal(nil, nil)
 
-	// result.model is a [id]bool, saying if the package should be present or not
-	// result := sp.Solver.Optimal(nil, nil)
-	s.PkgResultSet.Status = result.Status.String()
+	// result.Weight is 0, means all constraints could be solved
+	if result.Status.String() == "SAT" && result.Weight == 0 {
+		s.PkgResultSet.Status = "SAT"
+		// there is a result.model, generate pkg sets then:
+		s.GeneratePkgSets(result.Model)
+	}
 
-	s.GeneratePkgSets(result.Model)
 }
 
 func (s *Solver) IsSAT() bool {
