@@ -245,14 +245,35 @@ func TestFormatOutput(t *testing.T) {
 			pkgs:        []*pkg.Pkg{},
 		},
 		{
+			name:        "satisfiable, install 1",
+			goldenYaml:  "output/format-sat-install1-yaml.txt",
+			goldenJson:  "output/format-sat-install1-json.txt",
+			goldenTable: "output/format-sat-install1-table.txt",
+			pkgs: []*pkg.Pkg{
+				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
+			},
+		},
+		{
 			name:        "unsatisfiable, remove and install at the same time",
-			goldenYaml:  "output/format-unsat-yaml.txt",
-			goldenJson:  "output/format-unsat-json.txt",
-			goldenTable: "output/format-unsat-table.txt",
+			goldenYaml:  "output/format-unsat-upgrade-yaml.txt",
+			goldenJson:  "output/format-unsat-upgrade-json.txt",
+			goldenTable: "output/format-unsat-upgrade-table.txt",
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
-				pkg.NewPkgMock("baz", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
-				pkg.NewPkgMock("foo", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Absent),
+			},
+		},
+		{
+			name:        "unsatisfiable, nothing provides dep",
+			goldenYaml:  "output/format-unsat-nothing-dep-yaml.txt",
+			goldenJson:  "output/format-unsat-nothing-dep-json.txt",
+			goldenTable: "output/format-unsat-nothing-dep-table.txt",
+			pkgs: []*pkg.Pkg{
+				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
+					[]*pkg.PkgRel{{
+						BaseFingerprint: pkg.CreateBaseFingerPrint("depfoo", "targetns"),
+						SemverRange:     "^1.0.0",
+					}},
+					nil, pkg.Absent, pkg.Unknown),
 			},
 		},
 	} {
