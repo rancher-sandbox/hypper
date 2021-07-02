@@ -206,12 +206,9 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 	return sb.String()
 }
 
-
 // buildConstraintPresent returns a constraint specifycing that package p is to
 // be present in result
 func (s *Solver) buildConstraintPresent(p *pkg.Pkg) (constr []maxsat.Constr) {
-	constr = []maxsat.Constr{}
-
 	// Boolean equation:
 	// packageA == true (packageA installed)
 
@@ -236,7 +233,7 @@ func (s *Solver) buildConstraintPresent(p *pkg.Pkg) (constr []maxsat.Constr) {
 func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 
 	if p.CurrentState == pkg.Present { // if is a release
-		fps, _ := s.PkgDB.GetPackageFingerprintsThatDifferOnVersionByPackage(p)
+		fps, _ := s.PkgDB.GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p)
 		for _, fp := range fps { // for all the packages that only differ in version
 			pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
 			if pkgDifferVersion.DesiredState == pkg.Present {
@@ -253,7 +250,7 @@ func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// if package not release and we want to install
 	if p.CurrentState != pkg.Present && p.DesiredState == pkg.Present {
 		// obtain all fps for the packages that only differ in version
-		fps, _ := s.PkgDB.GetPackageFingerprintsThatDifferOnVersionByPackage(p)
+		fps, _ := s.PkgDB.GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p)
 
 		// atLeast 1 of all versions
 		lits := []maxsat.Lit{}
@@ -368,7 +365,6 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 		sliceConstr := maxsat.HardPBConstr(lits, nil, 1)
 		constr = append(constr, sliceConstr)
 
-
 		if len(satisfyingVersions) == 0 {
 			// there are no packages that match the version we depend on, add
 			// that to inconsistencies
@@ -400,7 +396,7 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// In case that there's only 1 version of B, we can skip adding a constraint
 
 	// obtain all fps, weights, for the packages that only differ in version
-	fps, _ := PkgDBInstance.GetPackageFingerprintsThatDifferOnVersionByPackage(p)
+	fps, coeffs := PkgDBInstance.GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p)
 
 	if len(fps) == 1 {
 		// there is only one package on that releaseName and Namespace. No need
@@ -409,7 +405,7 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 	}
 
 	lits := []maxsat.Lit{}
-	for _, fp := range fps { // for all the packages that only differ in version
+	for i, fp := range fps { // for all the packages that only differ in version
 		pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
 
 		// assign the package an id, to recover from model later:
@@ -426,16 +422,16 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 		}
 		lits = append(lits, lit)
 
-		// // create lit for weighting semver distances:
-		// weightedLit := []maxsat.Lit{{
-		// 	Var:     pkgDifferVersion.GetFingerPrint(),
-		// 	Negated: false, // installed
-		// }}
+		// create lit for weighting semver distances:
+		weightedLit := []maxsat.Lit{{
+			Var:     pkgDifferVersion.GetFingerPrint(),
+			Negated: false, // installed
+		}}
 
-		// sliceConstr := maxsat.WeightedClause(weightedLit, coeffs[i])
-		// constr = append(constr, sliceConstr)
+		sliceConstr := maxsat.WeightedClause(weightedLit, coeffs[i])
+		constr = append(constr, sliceConstr)
 	}
-	atLeast := len(lits)-1
+	atLeast := len(lits) - 1
 	sliceConstr := maxsat.HardPBConstr(lits, nil, atLeast)
 	constr = append(constr, sliceConstr)
 

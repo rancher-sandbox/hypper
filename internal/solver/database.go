@@ -18,6 +18,7 @@ package solver
 
 import (
 	"math"
+	"sort"
 
 	"github.com/Masterminds/log-go"
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
@@ -67,16 +68,37 @@ func (pkgdb *PkgDB) GetMapOfVersionsByBaseFingerPrint(basefp string) map[string]
 	return mapOfVersions
 }
 
-func (pkgdb *PkgDB) GetPackageFingerprintsThatDifferOnVersionByPackage(p *pkg.Pkg) (fps []string, weights []int) {
+func (pkgdb *PkgDB) GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p *pkg.Pkg) (fps []string, weights []int) {
 	mapOfVersions, ok := pkgdb.mapBaseFingerprintToVersions[p.GetBaseFingerPrint()]
 	if !ok {
 		// TODO what happens if there's no packages that satisfy the version range
 		return fps, weights
 	}
-	for semver, fp := range mapOfVersions {
+	for _, fp := range mapOfVersions {
 		fps = append(fps, fp)
-		weights = append(weights, CalculateSemverDistanceToZero(semver))
+		// weights = append(weights, CalculateSemverDistanceToZero(semver))
 	}
+
+	// sort fps by weights
+	//
+	// TODO it would be more efficient to move mapBaseFingerprintToVersions[] to
+	// a sorted list of versions: []fingerprint[]semver. And insert elements in
+	// a sorted way on creation.
+	//
+	// Sort fps by weight
+	sort.Slice(fps,
+		func(i, j int) bool {
+			semverI := CalculateSemverDistanceToZero(pkgdb.GetPackageByFingerprint(fps[i]).Version)
+			semverJ := CalculateSemverDistanceToZero(pkgdb.GetPackageByFingerprint(fps[j]).Version)
+			return semverI < semverJ
+		},
+	)
+	// create corresponding weight slice
+	for i := range fps {
+		//weights[i] = CalculateSemverDistanceToZero(pkgdb.GetPackageByFingerprint(fp).Version)
+		weights = append(weights, i+1)
+	}
+
 	return fps, weights
 }
 
