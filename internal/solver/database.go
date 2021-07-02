@@ -185,12 +185,12 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 	}
 
 	// Merge Depends and DependsOptional slices
-	// if len(old.DependsRel) == 0 {
-	// 	result.DependsRel = new.DependsRel
-	// }
-	// if len(old.DependsOptionalRel) == 0 {
-	// 	result.DependsOptionalRel = new.DependsOptionalRel
-	// }
+	if len(old.DependsRel) == 0 {
+		result.DependsRel = new.DependsRel
+	}
+	if len(old.DependsOptionalRel) == 0 {
+		result.DependsOptionalRel = new.DependsOptionalRel
+	}
 
 	return result
 }
@@ -200,22 +200,23 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 // only unknown info to that package is added.
 func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
 	fp := p.GetFingerPrint()
-	pInDB := pkgdb.mapFingerprintToPkg[fp]
-	if pInDB != nil {
+	pInDB, ok := pkgdb.mapFingerprintToPkg[fp]
+	if ok {
 		// package already in DB, merge
 		pkgdb.mapFingerprintToPkg[p.GetFingerPrint()] =
 			MergePkgs(*pInDB, *p)
+	} else {
+		// package not there, add it
+		if pkgdb.lastElem == int(^uint(0)>>1) {
+			panic("Attempting to add too many packages.")
+		}
+		pkgdb.mapFingerprintToPkg[fp] = p
 	}
-	// package not there, add it
-	if pkgdb.lastElem == int(^uint(0)>>1) {
-		panic("Attempting to add too many packages.")
-	}
-	pkgdb.mapFingerprintToPkg[fp] = p
 
 	// build map of same versions
 	// TODO this is broken, depending in the order of pkgs being added
 	bfp := p.GetBaseFingerPrint()
-	_, ok := pkgdb.mapBaseFingerprintToVersions[bfp]
+	_, ok = pkgdb.mapBaseFingerprintToVersions[bfp]
 	if !ok { // if pkg first of all packages that differ only in version
 		pkgdb.mapBaseFingerprintToVersions[bfp] = make(map[string]string)
 	}

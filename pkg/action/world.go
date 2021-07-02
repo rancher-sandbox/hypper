@@ -141,6 +141,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	}
 
 	// add releases to db
+	// FIXME releases not getting depRel, depOptionalRel
 	for _, r := range releases {
 		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace)
 		p := pkgdb.GetPackageByFingerprint(fp)
