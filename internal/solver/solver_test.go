@@ -17,8 +17,11 @@ limitations under the License.
 package solver
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/Masterminds/log-go"
+	logcli "github.com/Masterminds/log-go/impl/cli"
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
 
 	"github.com/rancher-sandbox/hypper/internal/test"
@@ -211,9 +214,19 @@ func TestSolver(t *testing.T) {
 		// },
 	} {
 		t.Run(tcase.name, func(t *testing.T) {
+
+			// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+			buf := new(bytes.Buffer)
+			logger := logcli.NewStandard()
+			logger.InfoOut = buf
+			logger.WarnOut = buf
+			logger.ErrorOut = buf
+			logger.DebugOut = buf
+			log.Current = logger
+
 			s := New()
 			s.BuildWorldMock(tcase.pkgs)
-			s.Solve()
+			s.Solve(logger)
 			is := assert.New(t)
 			is.Equal(tcase.resultStatus, s.PkgResultSet.Status)
 
@@ -277,9 +290,18 @@ func TestFormatOutput(t *testing.T) {
 			},
 		},
 	} {
+		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+		buf := new(bytes.Buffer)
+		logger := logcli.NewStandard()
+		logger.InfoOut = buf
+		logger.WarnOut = buf
+		logger.ErrorOut = buf
+		logger.DebugOut = buf
+		log.Current = logger
+
 		s := New()
 		s.BuildWorldMock(tcase.pkgs)
-		s.Solve()
+		s.Solve(logger)
 		is := assert.New(t)
 		is.Equal("SAT", s.PkgResultSet.Status)
 

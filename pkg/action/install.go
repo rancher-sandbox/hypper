@@ -146,7 +146,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 		}
 	}
 
-	s.Solve()
+	s.Solve(logger)
 
 	fmt.Println(s.FormatOutput(solver.Table))
 

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/log-go"
 	"github.com/Masterminds/semver/v3"
 	"github.com/crillab/gophersat/maxsat"
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
@@ -120,12 +121,19 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []maxsat.Constr) {
 	return constrs
 }
 
-func (s *Solver) Solve() {
+func (s *Solver) Solve(logger log.Logger) {
 	// generate constraints for all packages
 	constrs := []maxsat.Constr{}
 	for _, p := range s.PkgDB.mapFingerprintToPkg {
 		constrs = append(constrs, s.BuildConstraints(p)...)
 	}
+
+	logger.Debug("Constraints:")
+	for _, c := range constrs {
+		logger.Debugf("    %v\n", c)
+
+	}
+	logger.Debug("Starting to solve")
 
 	// create problem with constraints, and solve
 	problem := maxsat.New(constrs...)
@@ -139,6 +147,7 @@ func (s *Solver) Solve() {
 		s.GeneratePkgSets(result.Model)
 	}
 
+	logger.Debugf("Result %v\n", result)
 }
 
 func (s *Solver) IsSAT() bool {
