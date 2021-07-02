@@ -256,31 +256,45 @@ func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 
 	// if package not release and we want to install
 	if p.CurrentState != pkg.Present && p.DesiredState == pkg.Present {
-		// obtain all fps for the packages that only differ in version
-		fps, _ := s.PkgDB.GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p)
 
-		// atLeast 1 of all versions
-		lits := []maxsat.Lit{}
-		coeffs := []int{}
-		for _, fp := range fps { // for all the packages that only differ in version
-			pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
-			// create lit for solver:
-			lit := maxsat.Lit{
-				Var:     pkgDifferVersion.GetFingerPrint(),
+		if p.PinnedVer == pkg.Present {
+			// we only want 1 version, the current one:
+
+			lit := []maxsat.Lit{{
+				Var:     p.GetFingerPrint(),
 				Negated: false, // installed
-			}
-			// assign the package an id, to recover from model later:
-			if pkgDifferVersion.ID == -1 {
-				// first time we use this package, set id
-				s.PkgDB.lastElem++
-				pkgDifferVersion.ID = s.PkgDB.lastElem
-			}
+			}}
+			sliceConstr := maxsat.HardPBConstr(lit, nil, 1)
+			constr = append(constr, sliceConstr)
 
-			coeffs = append(coeffs, 1)
-			lits = append(lits, lit)
+		} else {
+			// atLeast 1 of all versions
+
+			// obtain all fps for the packages that only differ in version
+			fps, _ := s.PkgDB.GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p)
+			lits := []maxsat.Lit{}
+			coeffs := []int{}
+			for _, fp := range fps { // for all the packages that only differ in version
+				pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
+				// create lit for solver:
+				lit := maxsat.Lit{
+					Var:     pkgDifferVersion.GetFingerPrint(),
+					Negated: false, // installed
+				}
+				// assign the package an id, to recover from model later:
+				if pkgDifferVersion.ID == -1 {
+					// first time we use this package, set id
+					s.PkgDB.lastElem++
+					pkgDifferVersion.ID = s.PkgDB.lastElem
+				}
+
+				coeffs = append(coeffs, 1)
+				lits = append(lits, lit)
+			}
+			sliceConstr := maxsat.HardPBConstr(lits, coeffs, 1)
+			constr = append(constr, sliceConstr)
 		}
-		sliceConstr := maxsat.HardPBConstr(lits, coeffs, 1)
-		constr = append(constr, sliceConstr)
+
 	}
 
 	// build constraint if package is desired removed
@@ -435,6 +449,7 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 			Negated: false, // installed
 		}}
 
+		// add weighted constraints to select newest version
 		sliceConstr := maxsat.WeightedClause(weightedLit, coeffs[i])
 		constr = append(constr, sliceConstr)
 	}

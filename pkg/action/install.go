@@ -92,15 +92,17 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// defer release lock
 
 	// create pkg with chart to be installed:
-	// TODO chrt.Metadata.Version & repo, are incorrect and irrelevant
-	// we are just updating an already existing package from the repos with
-	// DesiredState: Present
 	version := i.ChartPathOptions.Version
+	pinnedVer := pkg.Unknown
 	if i.Version == "" {
+		// no pinned ver, take the chart as a filler for fp:
 		version = chrt.Metadata.Version
+	} else {
+		pinnedVer = pkg.Present
 	}
 
-	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
+	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
+	// wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
 	// wantedPkg := solver.PkgDBInstance.GetPackageByFingerprint(pkg.CreateFingerPrint(i.ReleaseName, version, i.Namespace))
 	// if wantedPkg != nil {
 	// 	wantedPkg.DesiredState = pkg.Present
@@ -162,7 +164,6 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	s.Solve(logger)
 
 	// FIXME action.Install not installing correct version
-	// FIXME passing --version=0.0.1 gives us 0.0.2 from the solver
 	// FIXME local chart doesn't get DepRel filled
 
 	fmt.Println(s.FormatOutput(solver.Table))

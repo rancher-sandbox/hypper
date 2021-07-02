@@ -70,7 +70,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settings.Namespace())  //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name) // TODO default name for helm repos
 			repo := chrtVersions.url
-			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, repo)
+			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
 
 			// unmarshal dependencies:
 			sharedDepsYaml, _ := chrtVer.Annotations["hypper.cattle.io/shared-dependencies"]
@@ -152,7 +152,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			// release is not in repos
 			// we don't know the repo where the release has originally been installed from, so we add it as stale package
 			// with an empty repo string
-			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, "")
+			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, pkg.Present, "")
 			pkgdb.Add(p)
 		}
 	}

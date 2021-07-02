@@ -183,6 +183,9 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 	if old.DesiredState == pkg.Unknown {
 		result.DesiredState = new.DesiredState
 	}
+	if old.PinnedVer == pkg.Unknown {
+		result.PinnedVer = new.PinnedVer
+	}
 
 	// Merge Depends and DependsOptional slices
 	if len(old.DependsRel) == 0 {

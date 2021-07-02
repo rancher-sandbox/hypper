@@ -37,16 +37,20 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	ID                 int  `json:"-" yaml:"-"`     // ID, position on the solver model
-	ReleaseName        string    // Release name, or default chart release-name
+	ID int `json:"-" yaml:"-"` // ID, position on the solver model
+
+	// unique key
+	ReleaseName string // Release name, or default chart release-name
+	Version     string // sem ver (without a range)
+	Namespace   string // Installed ns, or default chart namespace
+
 	ChartName          string    // chart name
-	Version            string    // sem ver (without a range)
-	Namespace          string    // Installed ns, or default chart namespace
 	DependsRel         []*PkgRel // list of dependencies' fingerprints
 	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
+	Repository         string    // repository where to find ChartName
 	CurrentState       tristate  // current state of the package
 	DesiredState       tristate  // desired state of the package
-	Repository         string
+	PinnedVer          tristate  // if we have a pinnedVer or not in pkg.Version
 }
 
 type PkgRel struct {
@@ -55,19 +59,20 @@ type PkgRel struct {
 }
 
 func NewPkg(relName, chartName, version, namespace string,
-	currentState, desiredState tristate, repo string) *Pkg {
+	currentState, desiredState, pinnedVer tristate, repo string) *Pkg {
 
 	p := &Pkg{
 		ID:                 -1,
 		ReleaseName:        relName,
-		ChartName:          chartName,
 		Version:            version,
 		Namespace:          namespace,
+		ChartName:          chartName,
 		DependsRel:         []*PkgRel{},
 		DependsOptionalRel: []*PkgRel{},
+		Repository:         repo,
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
-		Repository:         repo,
+		PinnedVer:          pinnedVer,
 	}
 
 	return p
@@ -80,7 +85,7 @@ func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, name, version, namespace, currentState, desiredState, "ourrepo")
+	p := NewPkg(name, name, version, namespace, currentState, desiredState, Unknown, "ourrepo")
 
 	p.DependsRel = depends
 	p.DependsOptionalRel = dependsOptional
