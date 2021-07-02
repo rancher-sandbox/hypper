@@ -1,0 +1,10 @@
+Status: SAT
+Packages to be installed:
+
+Packages to be removed:
+
+Releases already in the system:
+bar	1.0.0
+Inconsistencies:
+	Package bar-1.0.0-targetns is scheduled for upgrade, did you mean "hypper upgrade" instead of "hypper install"
+

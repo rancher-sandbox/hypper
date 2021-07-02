@@ -1,15 +1,15 @@
 presentunchanged: []
-toinstall: []
-toremove:
-- releasename: wantedbaz
+toinstall:
+- releasename: bar
   version: 1.0.0
-  namespace: wantedbazns
-  chartname: wantedbaz
+  namespace: targetns
+  chartname: bar
   dependsrel: []
   dependsoptionalrel: []
   repository: ourrepo
-  currentstate: 1
-  desiredstate: 2
+  currentstate: 2
+  desiredstate: 1
   pinnedver: 0
+toremove: []
 status: SAT
 inconsistencies: []

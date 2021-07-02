@@ -4,3 +4,4 @@ Packages to be installed:
 Packages to be removed:
 
 Releases already in the system:
+Inconsistencies:

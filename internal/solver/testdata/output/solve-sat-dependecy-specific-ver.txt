@@ -1,25 +1,27 @@
 presentunchanged: []
 toinstall:
-- releasename: myawesomedep
-  chartname: myawesomedep
-  version: 0.1.103
-  namespace: myawesomedeptargetns
-  dependsrel: []
-  dependsoptionalrel: []
-  currentstate: 0
-  desiredstate: 0
-  repository: ourrepo
 - releasename: wantedbaz
-  chartname: wantedbaz
   version: 1.0.0
   namespace: wantedbazns
+  chartname: wantedbaz
   dependsrel:
   - basefingerprint: myawesomedep-myawesomedeptargetns
     semverrange: 0.1.103
   dependsoptionalrel: []
+  repository: ourrepo
   currentstate: 0
   desiredstate: 1
+  pinnedver: 0
+- releasename: myawesomedep
+  version: 0.1.103
+  namespace: myawesomedeptargetns
+  chartname: myawesomedep
+  dependsrel: []
+  dependsoptionalrel: []
   repository: ourrepo
+  currentstate: 0
+  desiredstate: 0
+  pinnedver: 0
 toremove: []
 status: SAT
 inconsistencies: []

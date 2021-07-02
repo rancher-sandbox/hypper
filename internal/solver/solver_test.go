@@ -267,10 +267,10 @@ func TestFormatOutput(t *testing.T) {
 			},
 		},
 		{
-			name:        "unsatisfiable, remove and install at the same time",
-			goldenYaml:  "output/format-unsat-upgrade-yaml.txt",
-			goldenJson:  "output/format-unsat-upgrade-json.txt",
-			goldenTable: "output/format-unsat-upgrade-table.txt",
+			name:        "satisfiable, upgrade a release",
+			goldenYaml:  "output/format-sat-upgrade-yaml.txt",
+			goldenJson:  "output/format-sat-upgrade-json.txt",
+			goldenTable: "output/format-sat-upgrade-table.txt",
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
 			},
@@ -286,7 +286,7 @@ func TestFormatOutput(t *testing.T) {
 						BaseFingerprint: pkg.CreateBaseFingerPrint("depfoo", "targetns"),
 						SemverRange:     "^1.0.0",
 					}},
-					nil, pkg.Absent, pkg.Unknown),
+					nil, pkg.Absent, pkg.Present),
 			},
 		},
 	} {

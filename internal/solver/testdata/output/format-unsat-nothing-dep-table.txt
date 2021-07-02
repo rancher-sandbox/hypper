@@ -1,0 +1,9 @@
+Status: UNSAT
+Packages to be installed:
+
+Packages to be removed:
+
+Releases already in the system:
+Inconsistencies:
+	Package wantedbaz-1.0.0-targetns depends on depfoo-targetns, semver ^1.0.0, but nothing satisfies it
+

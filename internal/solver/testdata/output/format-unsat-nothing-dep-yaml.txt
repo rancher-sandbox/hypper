@@ -1,0 +1,7 @@
+presentunchanged: []
+toinstall: []
+toremove: []
+status: UNSAT
+inconsistencies:
+- |
+  Package wantedbaz-1.0.0-targetns depends on depfoo-targetns, semver ^1.0.0, but nothing satisfies it

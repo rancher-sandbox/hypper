@@ -180,27 +180,24 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 	switch t {
 	case Table:
 		// TODO: Refurbish this to create some fancy emoji/table output
-		if s.IsSAT() {
-			sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
-			sb.WriteString("Packages to be installed:\n")
-			for _, p := range s.PkgResultSet.ToInstall {
-				sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
-			}
-			sb.WriteString("\n")
-			sb.WriteString("Packages to be removed:\n")
-			for _, p := range s.PkgResultSet.ToRemove {
-				sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
-			}
-			sb.WriteString("\n")
-			sb.WriteString("Releases already in the system:\n")
-			for _, p := range s.PkgResultSet.PresentUnchanged {
-				sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
-			}
-		} else {
-			sb.WriteString("Inconsistencies:\n")
-			for _, incos := range s.PkgResultSet.Inconsistencies {
-				sb.WriteString(fmt.Sprintf("\t%s\n", incos))
-			}
+		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
+		sb.WriteString("Packages to be installed:\n")
+		for _, p := range s.PkgResultSet.ToInstall {
+			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+		}
+		sb.WriteString("\n")
+		sb.WriteString("Packages to be removed:\n")
+		for _, p := range s.PkgResultSet.ToRemove {
+			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+		}
+		sb.WriteString("\n")
+		sb.WriteString("Releases already in the system:\n")
+		for _, p := range s.PkgResultSet.PresentUnchanged {
+			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
+		}
+		sb.WriteString("Inconsistencies:\n")
+		for _, incos := range s.PkgResultSet.Inconsistencies {
+			sb.WriteString(fmt.Sprintf("\t%s\n", incos))
 		}
 	case YAML:
 		o, _ := yaml.Marshal(s.PkgResultSet)
