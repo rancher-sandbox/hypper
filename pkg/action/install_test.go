@@ -25,14 +25,14 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
-	// "github.com/rancher-sandbox/hypper/internal/test"
+	"github.com/rancher-sandbox/hypper/internal/test"
 	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/stretchr/testify/assert"
 
 	helmChart "helm.sh/helm/v3/pkg/chart"
-	// "helm.sh/helm/v3/pkg/release"
-	// "helm.sh/helm/v3/pkg/time"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/time"
 )
 
 func installAction(t *testing.T) *Install {
@@ -59,142 +59,147 @@ func TestInstallReleaseCycle(t *testing.T) {
 	instAction := installAction(t)
 	expectedError := "ABORTING: Nested recursion #10. we don't have a SAT solver yet, chances are you are in a cycle!"
 
-	_, err := instAction.Run(buildChart(), map[string]interface{}{}, cli.New(), log.Current, 10)
+	_, err := instAction.Run(buildChart(), map[string]interface{}{}, cli.New(), log.Current)
 	if err == nil {
 		t.Errorf("on test %q expected error, got '%v'", expectedError, err)
 	}
 	is.Equal(expectedError, err.Error())
 }
 
-// func TestInstallAllSharedDeps(t *testing.T) {
+func TestInstallRun(t *testing.T) {
 
-// 	for _, tcase := range []struct {
-// 		name           string
-// 		chart          *helmChart.Chart
-// 		golden         string
-// 		wantError      bool
-// 		error          string
-// 		wantDebug      bool
-// 		debug          string
-// 		addRelStub     bool
-// 		optionalDeps   optionalDepsStrategy
-// 		wantNSFromFlag string
-// 	}{
-// 		{
-// 			name:      "chart has no shared-deps",
-// 			chart:     buildChart(withHypperAnnotations()),
-// 			golden:    "output/install-no-shared-deps.txt",
-// 			wantDebug: true,
-// 		},
-// 		{
-// 			name:      "chart metadata has malformed yaml",
-// 			chart:     buildChart(withMalformedSharedDeps()),
-// 			golden:    "output/install-malformed-shared-deps.txt",
-// 			wantError: true,
-// 			error:     "yaml: line 2: mapping values are not allowed in this context",
-// 		},
-// 		{
-// 			name:   "dependencies get correctly installed",
-// 			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
-// 			golden: "output/install-correctly-shared-deps.txt",
-// 		},
-// 		{
-// 			name:   "dependencies without annotations get correctly installed",
-// 			chart:  buildChart(withHypperAnnotations(), withSharedDepsWithoutAnnotations()),
-// 			golden: "output/install-shared-deps-without-annotations.txt",
-// 		},
-// 		{
-// 			name:           "dependencies with NamespaceFromFlag get correctly installed",
-// 			chart:          buildChart(withHypperAnnotations(), withSharedDeps()),
-// 			golden:         "output/install-shared-deps-with-ns-from-flag.txt",
-// 			wantNSFromFlag: "ns-from-flag",
-// 		},
-// 		{
-// 			name:       "dependencies are already installed",
-// 			chart:      buildChart(withHypperAnnotations(), withSharedDeps()),
-// 			golden:     "output/install-shared-dep-installed.txt",
-// 			addRelStub: true,
-// 		},
-// 		{
-// 			name:       "dependencies are already installed in out-of-range ver",
-// 			chart:      buildChart(withHypperAnnotations(), withOutOfRangeSharedDeps()),
-// 			golden:     "output/install-shared-dep-installed-out-of-range.txt",
-// 			addRelStub: true,
-// 			wantError:  true,
-// 			error:      "Shared dep version out of range; 0.1.0 is not equal to 1.1.0",
-// 		},
-// 		{
-// 			name:         "optional dependencies get correctly installed",
-// 			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
-// 			golden:       "output/install-correctly-optional-shared-deps.txt",
-// 			optionalDeps: OptionalDepsAll,
-// 		},
-// 		{
-// 			name:         "optional dependencies get correctly skipped",
-// 			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
-// 			golden:       "output/skip-optional-shared-deps.txt",
-// 			optionalDeps: OptionalDepsNone,
-// 		},
-// 	} {
-// 		var settings *cli.EnvSettings
-// 		if tcase.wantNSFromFlag != "" {
-// 			settings = cli.NewWithNamespace(tcase.wantNSFromFlag)
-// 			settings.NamespaceFromFlag = true
-// 		} else {
-// 			settings = cli.New()
-// 		}
-// 		settings.Debug = tcase.wantDebug
+	for _, tcase := range []struct {
+		name           string
+		chart          *helmChart.Chart
+		golden         string
+		wantError      bool
+		error          string
+		wantDebug      bool
+		debug          string
+		addRelStub     bool
+		optionalDeps   optionalDepsStrategy
+		wantNSFromFlag string
+		numRels        int
+	}{
+		{
+			name:      "chart has no shared-deps",
+			chart:     buildChart(withHypperAnnotations()),
+			golden:    "output/install-no-shared-deps.txt",
+			wantDebug: true,
+			numRels:   1,
+		},
+		{
+			name:      "chart metadata has malformed yaml",
+			chart:     buildChart(withMalformedSharedDeps()),
+			golden:    "output/install-malformed-shared-deps.txt",
+			wantError: true,
+			error:     "yaml: line 2: mapping values are not allowed in this context",
+			numRels:   0,
+		},
+		{
+			name:   "dependencies get correctly installed",
+			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden: "output/install-correctly-shared-deps.txt",
+		},
+		{
+			name:   "dependencies without annotations get correctly installed",
+			chart:  buildChart(withHypperAnnotations(), withSharedDepsWithoutAnnotations()),
+			golden: "output/install-shared-deps-without-annotations.txt",
+		},
+		{
+			name:           "dependencies with NamespaceFromFlag get correctly installed",
+			chart:          buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:         "output/install-shared-deps-with-ns-from-flag.txt",
+			wantNSFromFlag: "ns-from-flag",
+		},
+		{
+			name:       "dependencies are already installed",
+			chart:      buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:     "output/install-shared-dep-installed.txt",
+			addRelStub: true,
+		},
+		{
+			name:       "dependencies are already installed in out-of-range ver",
+			chart:      buildChart(withHypperAnnotations(), withOutOfRangeSharedDeps()),
+			golden:     "output/install-shared-dep-installed-out-of-range.txt",
+			addRelStub: true,
+			wantError:  true,
+			error:      "Shared dep version out of range; 0.1.0 is not equal to 1.1.0",
+			numRels:    0,
+		},
+		{
+			name:         "optional dependencies get correctly installed",
+			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
+			golden:       "output/install-correctly-optional-shared-deps.txt",
+			optionalDeps: OptionalDepsAll,
+		},
+		{
+			name:         "optional dependencies get correctly skipped",
+			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
+			golden:       "output/skip-optional-shared-deps.txt",
+			optionalDeps: OptionalDepsNone,
+		},
+	} {
+		var settings *cli.EnvSettings
+		if tcase.wantNSFromFlag != "" {
+			settings = cli.NewWithNamespace(tcase.wantNSFromFlag)
+			settings.NamespaceFromFlag = true
+		} else {
+			settings = cli.New()
+		}
+		settings.Debug = tcase.wantDebug
 
-// 		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
-// 		buf := new(bytes.Buffer)
-// 		logger := logcli.NewStandard()
-// 		logger.InfoOut = buf
-// 		logger.WarnOut = buf
-// 		logger.ErrorOut = buf
-// 		logger.DebugOut = buf
-// 		if tcase.wantDebug {
-// 			logger.Level = log.DebugLevel
-// 		}
-// 		log.Current = logger
+		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+		buf := new(bytes.Buffer)
+		logger := logcli.NewStandard()
+		logger.InfoOut = buf
+		logger.WarnOut = buf
+		logger.ErrorOut = buf
+		logger.DebugOut = buf
+		if tcase.wantDebug {
+			logger.Level = log.DebugLevel
+		}
+		log.Current = logger
 
-// 		instAction := installAction(t)
-// 		instAction.OptionalDeps = tcase.optionalDeps
+		instAction := installAction(t)
+		instAction.OptionalDeps = tcase.optionalDeps
 
-// 		if tcase.addRelStub {
-// 			now := time.Now()
-// 			rel := &release.Release{
-// 				Name: "my-shared-dep",
-// 				Info: &release.Info{
-// 					FirstDeployed: now,
-// 					LastDeployed:  now,
-// 					Status:        release.StatusDeployed,
-// 					Description:   "Named Release Stub",
-// 				},
-// 				Version:   1,
-// 				Namespace: "my-shared-dep-ns",
-// 				Chart:     buildChart(),
-// 			}
-// 			instAction.Config.SetNamespace("spaced")
-// 			err := instAction.Config.Releases.Create(rel)
-// 			if err != nil {
-// 				t.Fatalf("Failed creating rel stub: %s", err)
-// 			}
-// 		}
+		if tcase.addRelStub {
+			now := time.Now()
+			rel := &release.Release{
+				Name: "my-shared-dep",
+				Info: &release.Info{
+					FirstDeployed: now,
+					LastDeployed:  now,
+					Status:        release.StatusDeployed,
+					Description:   "Named Release Stub",
+				},
+				Version:   1,
+				Namespace: "my-shared-dep-ns",
+				Chart:     buildChart(),
+			}
+			instAction.Config.SetNamespace("spaced")
+			err := instAction.Config.Releases.Create(rel)
+			if err != nil {
+				t.Fatalf("Failed creating rel stub: %s", err)
+			}
+		}
+		is := assert.New(t)
 
-// 		err := instAction.InstallAllSharedDeps(tcase.chart, settings, log.Current, 0)
+		rels, err := instAction.Run(tcase.chart, map[string]interface{}{}, settings, log.Current)
+		is.Equal(tcase.numRels, len(rels))
 
-// 		if (err != nil) != tcase.wantError {
-// 			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
-// 		}
-// 		if tcase.wantError {
-// 			is := assert.New(t)
-// 			is.Equal(tcase.error, err.Error())
-// 		}
-// 		if tcase.golden != "" {
-// 			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
-// 		}
-// 	}
-// }
+		if (err != nil) != tcase.wantError {
+			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
+		}
+		if tcase.wantError {
+			is.Equal(tcase.error, err.Error())
+		}
+		if tcase.golden != "" {
+			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
+		}
+	}
+}
 
 // func TestInstallSharedDep(t *testing.T) {
 

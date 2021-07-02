@@ -18,7 +18,6 @@ package action
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 
@@ -84,9 +83,8 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 
 // Run executes the installation
 //
-// If DryRun is set to true, this will prepare the release, but not install it
-// lvl is used for printing nested stagered output on recursion. Starts at 0.
-func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger, lvl int) ([]*release.Release, error) {
+// If DryRun is set to true, this will prepare the release, but not install it.
+func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
 
 	// TODO obtain lock
 	// defer release lock
@@ -163,10 +161,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	s.Solve(logger)
 
-	// FIXME action.Install not installing correct version
-	// FIXME local chart doesn't get DepRel filled
-
-	fmt.Println(s.FormatOutput(solver.Table))
+	// fmt.Println(s.FormatOutput(solver.Table))
 
 	installedRels := make([]*release.Release, 0)
 	if s.IsSAT() {
