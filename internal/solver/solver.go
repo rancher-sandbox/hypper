@@ -413,9 +413,11 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 			Negated: false, // installed
 		}}
 
-		// add weighted constraints to select newest version
-		sliceConstr := maxsat.WeightedClause(weightedLit, coeffs[i])
-		constr = append(constr, sliceConstr)
+		if pkgDifferVersion.DesiredState == pkg.Present {
+			// add weighted constraints to select newest version
+			sliceConstr := maxsat.WeightedClause(weightedLit, coeffs[i])
+			constr = append(constr, sliceConstr)
+		}
 	}
 	atLeast := len(lits) - 1
 	sliceConstr := maxsat.HardPBConstr(lits, nil, atLeast)
