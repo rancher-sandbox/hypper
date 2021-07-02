@@ -97,8 +97,13 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// DesiredState: Present
 	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "")
 
-	// FIXME deprels are not taken if wantedPkg is local and not in repos
-	// FIXME wantedPkg from repos is not taken correctly: failed to download hypper/our-app
+	// wantedPkg := solver.PkgDBInstance.GetPackageByFingerprint(pkg.CreateFingerPrint(i.ReleaseName, version, i.Namespace))
+	// if wantedPkg != nil {
+	// 	wantedPkg.DesiredState = pkg.Present
+	// } else {
+	// 	// if pkg not in db
+	// 	wantedPkg = pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
+	// }
 
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
@@ -121,32 +126,40 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	s.PkgDB.DebugPrintDB(logger)
 
+	// FIXME deprels are not built if wantedPkg is local and not in repos
+
 	// Promote optional deps to normal deps, depending on the strategy selected:
+	// TODO use wantedPkg instead of wantedPkgInDB once wantedPkg from local chart gets depRel correctly built
+	wantedPkgInDB := solver.PkgDBInstance.GetPackageByFingerprint(wantedPkg.GetFingerPrint())
 	switch i.OptionalDeps {
 	case OptionalDepsAll:
-		logger.Debugf("Promoting all optional deps of package %s to normal deps\n", wantedPkg.GetFingerPrint())
+		logger.Debugf("Promoting all optional deps of package %s to normal deps\n", wantedPkgInDB.GetFingerPrint())
 		// promote all optional deps of wanted package to normal deps:
-		for _, rel := range wantedPkg.DependsOptionalRel {
-			wantedPkg.DependsRel = append(wantedPkg.DependsRel, rel)
+		for _, rel := range wantedPkgInDB.DependsOptionalRel {
+			wantedPkgInDB.DependsRel = append(wantedPkgInDB.DependsRel, rel)
 		}
 	case OptionalDepsNone:
-		logger.Debugf("Disregarding all optional deps of package %s\n", wantedPkg.GetFingerPrint())
+		logger.Debugf("Disregarding all optional deps of package %s\n", wantedPkgInDB.GetFingerPrint())
 	case OptionalDepsAsk:
-		logger.Debugf("Asking for each optional deps of package %s if they should be promoted\n", wantedPkg.GetFingerPrint())
-		for _, rel := range wantedPkg.DependsOptionalRel {
+		logger.Debugf("Asking for each optional deps of package %s if they should be promoted\n", wantedPkgInDB.GetFingerPrint())
+		for _, rel := range wantedPkgInDB.DependsOptionalRel {
 			reader := bufio.NewReader(os.Stdin)
 			question := eyecandy.ESPrintf(settings.NoEmojis,
 				":red_question_mark:Install optional shared dependency \"%s\" of chart \"%s\"?",
 				rel.BaseFingerprint,
-				wantedPkg.ChartName,
+				wantedPkgInDB.ChartName,
 			)
 			if promptBool(question, reader, logger) {
-				wantedPkg.DependsRel = append(wantedPkg.DependsRel, rel)
+				wantedPkgInDB.DependsRel = append(wantedPkgInDB.DependsRel, rel)
 			}
 		}
 	}
 
 	s.Solve(logger)
+
+	// FIXME action.Install not installing correct version
+	// FIXME passing --version=0.0.1 gives us 0.0.2 from the solver
+	// FIXME local chart doesn't get DepRel filled
 
 	fmt.Println(s.FormatOutput(solver.Table))
 
