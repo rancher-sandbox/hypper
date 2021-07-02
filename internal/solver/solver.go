@@ -353,20 +353,23 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 			lits = append(lits, lit)
 		}
 
-		// at least 1 of all the versions that satisfy semver
-		sliceConstr := maxsat.HardPBConstr(lits, nil, 1)
-		constr = append(constr, sliceConstr)
-
 		if len(satisfyingVersions) == 0 {
 			// there are no packages that match the version we depend on, add
 			// that to inconsistencies
-			// TODO create acyclic graph of result instead
 			incons := fmt.Sprintf("Package %s depends on %s, semver %s, but nothing satisfies it\n",
 				p.GetFingerPrint(), deprel.BaseFingerprint, deprel.SemverRange)
 			s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incons)
-			break
 		}
 
+		// at least 1 of all the versions that satisfy semver, and not(A)
+		//
+		// for cases where the dependency package is not in repos (and we don't
+		// know its default ns), this keeps doing the correct thing. As asking for:
+		//   A == true
+		//   not(A) + (no known B verions) == true
+		// will result in UNSAT.
+		sliceConstr := maxsat.HardPBConstr(lits, nil, 1)
+		constr = append(constr, sliceConstr)
 	}
 	return constr
 }
