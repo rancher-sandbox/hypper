@@ -137,14 +137,14 @@ func (s *Solver) Solve(logger log.Logger) {
 
 	// create problem with constraints, and solve
 	problem := maxsat.New(constrs...)
-	solver := problem.Solver()
-	result := solver.Optimal(nil, nil)
+	result, _ := problem.Solve()
 
-	// result.Weight is 0, means all constraints could be solved
-	if result.Status.String() == "SAT" && result.Weight == 0 {
+	if result != nil { // SAT
+		//	there is a result model, generate pkg sets then:
+		s.GeneratePkgSets(result)
 		s.PkgResultSet.Status = "SAT"
-		// there is a result.model, generate pkg sets then:
-		s.GeneratePkgSets(result.Model)
+	} else {
+		s.PkgResultSet.Status = "UNSAT"
 	}
 
 	logger.Debugf("Result %v\n", result)
@@ -155,17 +155,15 @@ func (s *Solver) IsSAT() bool {
 }
 
 // GeneratePkgSets obtains back the sets of packages from IDs.
-func (s *Solver) GeneratePkgSets(model []bool) {
+func (s *Solver) GeneratePkgSets(model maxsat.Model) {
 
 	s.PkgResultSet.ToInstall = []*pkg.Pkg{}
 	s.PkgResultSet.ToRemove = []*pkg.Pkg{}
 	s.PkgResultSet.PresentUnchanged = []*pkg.Pkg{}
 
-	// iterate through the db:
-	for _, p := range s.PkgDB.mapFingerprintToPkg {
-		// obtain pkgResult from model:
-		pkgResult := model[p.ID-1]
-
+	// iterate through the model:
+	for fp, pkgResult := range model {
+		p := s.PkgDB.GetPackageByFingerprint(fp)
 		// segregate packages into PkgResultSet:
 		if pkgResult && p.CurrentState == pkg.Present {
 			s.PkgResultSet.PresentUnchanged = append(s.PkgResultSet.PresentUnchanged, p)
