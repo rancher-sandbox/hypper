@@ -131,3 +131,21 @@ func (p *Pkg) Encode() (string, error) {
 
 	return string(encodedPackage), nil
 }
+
+func (p *Pkg) String() (retString string) {
+	retString = retString +
+		fmt.Sprintf("fp: %s Currentstate: %v DesiredState: %v PinnedVersion: %v ChartName: %s\n",
+			p.GetFingerPrint(),
+			// p.ReleaseName, p.Version, p.Namespace,
+			p.CurrentState, p.DesiredState, p.Version,
+			p.ChartName,
+			// p.Repository,
+		)
+	for _, rel := range p.DependsRel {
+		retString = retString + fmt.Sprintf("          DepRel: %v\n", rel)
+	}
+	for _, rel := range p.DependsOptionalRel {
+		retString = retString + fmt.Sprintf("          DepOptionalRel: %v\n", rel)
+	}
+	return
+}

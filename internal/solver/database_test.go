@@ -15,10 +15,3 @@ limitations under the License.
 */
 
 package solver
-
-// Print all db
-// fmt.Println("DB contents:")
-// for i := 1; i <= s.PkgDB.Size(); i++ { // IDs start with 1
-// 	p := s.PkgDB.GetPackageByPbID(i)
-// 	fmt.Printf("Package: %s  Currentstate: %v   DesiredState: %v Version: %v \n", p.Name,p.CurrentState,p.DesiredState, p.Version)
-// }

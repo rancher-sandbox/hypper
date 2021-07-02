@@ -116,15 +116,8 @@ func CalculateSemverDistanceToZero(semversion string) (distance int) {
 
 func (pkgdb *PkgDB) DebugPrintDB(logger log.Logger) {
 	logger.Debugf("Printing DB")
-	for fp, p := range pkgdb.mapFingerprintToPkg {
-		logger.Debugf("fp: %s ID: %d RelName: %s ChartName: %s Currentstate: %v   DesiredState: %v Version: %v NS: %v\n",
-			fp, p.ID, p.ReleaseName, p.ChartName, p.CurrentState, p.DesiredState, p.Version, p.Namespace)
-		for _, rel := range p.DependsRel {
-			logger.Debugf("   DepRel: %v\n", rel)
-		}
-		for _, rel := range p.DependsOptionalRel {
-			logger.Debugf("   DepOptionalRel: %s\n", rel)
-		}
+	for _, p := range pkgdb.mapFingerprintToPkg {
+		logger.Debug(p.String())
 	}
 }
 

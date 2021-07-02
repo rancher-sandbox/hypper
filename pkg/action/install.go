@@ -263,7 +263,7 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger
 
 func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
 
-	logger.Debugf("Installing package: %v\n", p)
+	logger.Debug("Installing package: " + p.String())
 
 	clientInstall := NewInstall(i.Config)
 	// we need to automatically satisfy all install options (i.CreateNamespace,
