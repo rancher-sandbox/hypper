@@ -224,12 +224,6 @@ func (s *Solver) buildConstraintPresent(p *pkg.Pkg) (constr []maxsat.Constr) {
 		Var:     p.GetFingerPrint(),
 		Negated: false, // installed
 	}
-	// assign the package an id, to recover from model later:
-	if p.ID == -1 {
-		// first time we use this package, set id
-		s.PkgDB.lastElem++
-		p.ID = s.PkgDB.lastElem
-	}
 
 	sliceConstr := maxsat.HardClause(lit)
 	constr = append(constr, sliceConstr)
@@ -281,12 +275,6 @@ func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 					Var:     pkgDifferVersion.GetFingerPrint(),
 					Negated: false, // installed
 				}
-				// assign the package an id, to recover from model later:
-				if pkgDifferVersion.ID == -1 {
-					// first time we use this package, set id
-					s.PkgDB.lastElem++
-					pkgDifferVersion.ID = s.PkgDB.lastElem
-				}
 
 				coeffs = append(coeffs, 1)
 				lits = append(lits, lit)
@@ -310,12 +298,6 @@ func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 		lit := maxsat.Lit{
 			Var:     p.GetFingerPrint(),
 			Negated: true, // not installed
-		}
-		// assign the package an id, to recover from model later:
-		if p.ID == -1 {
-			// first time we use this package, set id
-			s.PkgDB.lastElem++
-			p.ID = s.PkgDB.lastElem
 		}
 
 		sliceConstr := maxsat.HardClause(lit)
@@ -371,14 +353,6 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 				Negated: false, // installed
 			}
 
-			// assign the dependency an id, to recover from model later:
-			depP := s.PkgDB.GetPackageByFingerprint(fp)
-			if depP.ID == -1 {
-				// first time we use this package, set id
-				s.PkgDB.lastElem++
-				depP.ID = s.PkgDB.lastElem
-			}
-
 			lits = append(lits, lit)
 		}
 
@@ -428,13 +402,6 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 	lits := []maxsat.Lit{}
 	for i, fp := range fps { // for all the packages that only differ in version
 		pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
-
-		// assign the package an id, to recover from model later:
-		if pkgDifferVersion.ID == -1 {
-			// first time we use this package, set id
-			s.PkgDB.lastElem++
-			pkgDifferVersion.ID = s.PkgDB.lastElem
-		}
 
 		// create lit for atleast(not(B1), not(B2),  num -1):
 		lit := maxsat.Lit{

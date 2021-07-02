@@ -37,8 +37,6 @@ const (
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	ID int `json:"-" yaml:"-"` // ID, position on the solver model
-
 	// unique key
 	ReleaseName string // Release name, or default chart release-name
 	Version     string // sem ver (without a range)
@@ -62,7 +60,6 @@ func NewPkg(relName, chartName, version, namespace string,
 	currentState, desiredState, pinnedVer tristate, repo string) *Pkg {
 
 	p := &Pkg{
-		ID:                 -1,
 		ReleaseName:        relName,
 		Version:            version,
 		Namespace:          namespace,

@@ -45,7 +45,6 @@ type PkgDB struct {
 	// 	semver string
 	// 	semverDistToZero int // major * 10^6 + minor * 10^4 + patch
 	// }
-	lastElem int
 	// MaxSemverDistance
 }
 
@@ -210,9 +209,6 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
 			MergePkgs(*pInDB, *p)
 	} else {
 		// package not there, add it
-		if pkgdb.lastElem == int(^uint(0)>>1) {
-			panic("Attempting to add too many packages.")
-		}
 		pkgdb.mapFingerprintToPkg[fp] = p
 	}
 
@@ -232,8 +228,4 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
 		// 	pkgdb.maxSemverDistance = distance
 		// }
 	}
-}
-
-func (pkgdb *PkgDB) Size() int {
-	return pkgdb.lastElem
 }
