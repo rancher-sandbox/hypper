@@ -95,8 +95,12 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	// TODO chrt.Metadata.Version & repo, are incorrect and irrelevant
 	// we are just updating an already existing package from the repos with
 	// DesiredState: Present
-	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, chrt.Metadata.Version, i.Namespace, pkg.Unknown, pkg.Present, "")
+	version := i.ChartPathOptions.Version
+	if i.Version == "" {
+		version = chrt.Metadata.Version
+	}
 
+	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
 	// wantedPkg := solver.PkgDBInstance.GetPackageByFingerprint(pkg.CreateFingerPrint(i.ReleaseName, version, i.Namespace))
 	// if wantedPkg != nil {
 	// 	wantedPkg.DesiredState = pkg.Present
