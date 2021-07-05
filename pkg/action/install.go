@@ -84,7 +84,7 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 // Run executes the installation
 //
 // If DryRun is set to true, this will prepare the release, but not install it.
-func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
+func (i *Install) Run(wantedChrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
 
 	// TODO obtain lock
 	// defer release lock
@@ -94,12 +94,12 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	pinnedVer := pkg.Unknown
 	if i.Version == "" {
 		// no pinned ver, take the chart as a filler for fp:
-		version = chrt.Metadata.Version
+		version = wantedChrt.Metadata.Version
 	} else {
 		pinnedVer = pkg.Present
 	}
 
-	wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
+	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
 	// wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
 	// wantedPkg := solver.PkgDBInstance.GetPackageByFingerprint(pkg.CreateFingerPrint(i.ReleaseName, version, i.Namespace))
 	// if wantedPkg != nil {
@@ -123,14 +123,12 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 
 	s := solver.New()
 
-	err = BuildWorld(s.PkgDB, rf.Repositories, rels, []*pkg.Pkg{wantedPkg}, settings, logger)
+	err = BuildWorld(s.PkgDB, rf.Repositories, rels, wantedPkg, wantedChrt, settings, logger)
 	if err != nil {
 		return nil, err
 	}
 
 	s.PkgDB.DebugPrintDB(logger)
-
-	// FIXME deprels are not built if wantedPkg is local and not in repos
 
 	// Promote optional deps to normal deps, depending on the strategy selected:
 	// TODO use wantedPkg instead of wantedPkgInDB once wantedPkg from local chart gets depRel correctly built

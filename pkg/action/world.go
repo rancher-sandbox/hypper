@@ -33,16 +33,20 @@ import (
 	helmRepo "helm.sh/helm/v3/pkg/repo"
 )
 
+// chrtEntry is a helper to iterate through all versions of a chart in the repo
+// index.yaml
+type chrtEntry struct {
+	chartVersions []*helmRepo.ChartVersion
+	url           string
+}
+
 // FIXME assume all charts come from just 1 repo. We will generalize later.
 func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
-	releases []*release.Release, toModify []*pkg.Pkg,
+	releases []*release.Release,
+	toModify *pkg.Pkg, toModifyChart *helmChart.Chart,
 	settings *cli.EnvSettings, logger log.Logger) (err error) {
 
 	// concatenate all index entries from all repositories:
-	type chrtEntry struct {
-		chartVersions []*helmRepo.ChartVersion
-		url           string
-	}
 	repoEntries := make(map[string]chrtEntry)
 	for _, r := range repositories {
 		idxFilepath := filepath.Join(settings.RepositoryCache, helmpath.CacheIndexFile(r.Name))
@@ -66,82 +70,24 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 		// for all the versions of a chart:
 		for _, chrtVer := range chrtVersions.chartVersions {
 
-			// add chart to db:
+			// create pkg:
 			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settings.Namespace())  //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name) // TODO default name for helm repos
 			repo := chrtVersions.url
 			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
 
-			// unmarshal dependencies:
-			sharedDepsYaml := chrtVer.Annotations["hypper.cattle.io/shared-dependencies"]
-			var sharedDeps []*helmChart.Dependency
-			// unmarshalling Helm's Dependency because gopkg.in/yaml.v2 doesn't do composite types
-			if err := yaml.UnmarshalStrict([]byte(sharedDepsYaml), &sharedDeps); err != nil {
-				log.Errorf("Chart.yaml metadata is malformed for repo entry \"%s\", \"%s\"\n", chrtName, chrtVer)
+			// fill dep relations
+			if err := CreateDepRelsFromAnnot(p, chrtVer.Annotations, repoEntries); err != nil {
 				return err
 			}
 
-			// for all deps in chrtVer.Annotations, find the dep in repo entries
-			// to obtain its default ns:
-			for _, dep := range sharedDeps {
-				// find dependency:
-				depChrtVer, ok := repoEntries[dep.Name]
-				if !ok {
-					log.Warnf("Dependency \"%s\" not found in repos, continuing", dep.Name)
-				}
-
-				// TODO each version can have a different default ns
-				// Iterate through all depChrtVer
-
-				//   obtain default ns of dep
-				depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-				depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
-
-				//add relation to pkg
-				p.DependsRel = append(p.DependsRel, &pkg.PkgRel{
-					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
-					SemverRange:     dep.Version,
-				})
-			}
-
-			// unmarshal optional dependencies:
-			optSharedDepsYaml := chrtVer.Annotations["hypper.cattle.io/optional-dependencies"]
-			var optSharedDeps []*helmChart.Dependency
-			// unmarshalling Helm's Dependency because gopkg.in/yaml.v2 doesn't do composite types
-			if err := yaml.UnmarshalStrict([]byte(optSharedDepsYaml), &optSharedDeps); err != nil {
-				log.Errorf("Chart.yaml metadata is malformed for repo entry \"%s\", \"%s\"\n", chrtName, chrtVer)
-				return err
-			}
-
-			// for all deps in chrtVer.Annotations, find the dep in repo entries
-			// to obtain its default ns:
-			for _, dep := range optSharedDeps {
-				// find dependency:
-				depChrtVer, ok := repoEntries[dep.Name]
-				if !ok {
-					log.Warnf("Dependency \"%s\" not found in repos, continuing", dep.Name)
-				}
-
-				// TODO each version can have a different default ns
-				// Iterate through all depChrtVer
-
-				//   obtain default ns of dep
-				depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-				depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
-
-				//add relation to pkg
-				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
-					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
-					SemverRange:     dep.Version,
-				})
-			}
-
+			// add chart to db:
 			pkgdb.Add(p)
 		}
 	}
 
 	// add releases to db
-	// FIXME releases not getting depRel, depOptionalRel
+	// FIXME releases not in repos are missing depRel, depOptionalRel
 	for _, r := range releases {
 		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace)
 		p := pkgdb.GetPackageByFingerprint(fp)
@@ -150,17 +96,71 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			p.CurrentState = pkg.Present
 		} else {
 			// release is not in repos
-			// we don't know the repo where the release has originally been installed from, so we add it as stale package
-			// with an empty repo string
+			// we don't know the repo where the release has originally been
+			// installed from, so we add it as stale package with an empty repo
+			// string
 			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, pkg.Present, "")
 			pkgdb.Add(p)
 		}
 	}
 
-	// add toModify to db
-	for _, p := range toModify {
-		pkgdb.Add(p)
+	// calculate dep rels for toModify
+	// fill dep relations
+	if err := CreateDepRelsFromAnnot(toModify, toModifyChart.Metadata.Annotations, repoEntries); err != nil {
+		return err
 	}
 
+	// add toModify to db
+	pkgdb.Add(toModify)
+
+	return nil
+}
+
+// CreateDepRelsFromAnnot fills the p.DepRel and p.DepOptionalRel
+func CreateDepRelsFromAnnot(p *pkg.Pkg, chartAnnot map[string]string, repoEntries map[string]chrtEntry) (err error) {
+
+	// unmarshal dependencies:
+	cases := []string{"hypper.cattle.io/shared-dependencies", "hypper.cattle.io/optional-dependencies"}
+
+	for _, c := range cases {
+		sharedDepsYaml := chartAnnot[c]
+		var sharedDeps []*helmChart.Dependency
+		// unmarshalling Helm's Dependency because gopkg.in/yaml.v2 doesn't do composite types
+		if err := yaml.UnmarshalStrict([]byte(sharedDepsYaml), &sharedDeps); err != nil {
+			log.Errorf("Chart.yaml metadata is malformed for repo entry \"%s\", \"%s\"\n", p.ChartName, p.Version)
+			return err
+		}
+
+		// for all deps in chrtVer.Annotations, find the dep in repo entries
+		// to obtain its default ns:
+		for _, dep := range sharedDeps {
+			// find dependency:
+			depChrtVer, ok := repoEntries[dep.Name]
+			if !ok {
+				log.Warnf("Dependency \"%s\" not found in repos, continuing", dep.Name)
+			}
+
+			// TODO each version can have a different default ns
+			// Iterate through all depChrtVer
+
+			//   obtain default ns of dep
+			depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+			depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
+
+			switch c {
+			case "hypper.cattle.io/shared-dependencies":
+				//add relation to pkg
+				p.DependsRel = append(p.DependsRel, &pkg.PkgRel{
+					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
+					SemverRange:     dep.Version,
+				})
+			case "hypper.cattle.io/optional-dependencies":
+				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
+					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
+					SemverRange:     dep.Version,
+				})
+			}
+		}
+	}
 	return nil
 }
