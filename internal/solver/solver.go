@@ -21,6 +21,7 @@ package solver
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/Masterminds/log-go"
@@ -175,7 +176,21 @@ func (s *Solver) GeneratePkgSets(model maxsat.Model) {
 	}
 }
 
+func (s *Solver) SortPkgSets() {
+	sort.Strings(s.PkgResultSet.Inconsistencies)
+	sort.SliceStable(s.PkgResultSet.PresentUnchanged, func(i, j int) bool {
+		return s.PkgResultSet.PresentUnchanged[i].ChartName < s.PkgResultSet.PresentUnchanged[j].ChartName
+	})
+	sort.SliceStable(s.PkgResultSet.ToInstall, func(i, j int) bool {
+		return s.PkgResultSet.ToInstall[i].ChartName < s.PkgResultSet.ToInstall[j].ChartName
+	})
+	sort.SliceStable(s.PkgResultSet.ToRemove, func(i, j int) bool {
+		return s.PkgResultSet.ToRemove[i].ChartName < s.PkgResultSet.ToRemove[j].ChartName
+	})
+}
+
 func (s *Solver) FormatOutput(t OutputMode) (output string) {
+	s.SortPkgSets()
 	var sb strings.Builder
 	switch t {
 	case Table:
