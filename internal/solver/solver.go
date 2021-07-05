@@ -116,7 +116,6 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []maxsat.Constr) {
 		// p is a release, and is not going to be changed
 		packageConstrs := s.buildConstraintPresent(p)
 		constrs = append(constrs, packageConstrs...)
-		// TODO p is a release, and is not going to be upgraded
 	}
 
 	if p.DesiredState != pkg.Unknown {
@@ -134,6 +133,7 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []maxsat.Constr) {
 
 func (s *Solver) Solve(logger log.Logger) {
 	// generate constraints for all packages
+	logger.Debug("Building constraints…")
 	constrs := []maxsat.Constr{}
 	for _, p := range s.PkgDB.mapFingerprintToPkg {
 		constrs = append(constrs, s.BuildConstraints(p)...)
@@ -144,7 +144,7 @@ func (s *Solver) Solve(logger log.Logger) {
 		logger.Debugf("    %v\n", c)
 
 	}
-	logger.Debug("Starting to solve")
+	logger.Debug("Solving…")
 
 	// create problem with constraints, and solve
 	problem := maxsat.New(constrs...)

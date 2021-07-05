@@ -101,14 +101,6 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	}
 
 	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
-	// wantedPkg := pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
-	// wantedPkg := solver.PkgDBInstance.GetPackageByFingerprint(pkg.CreateFingerPrint(i.ReleaseName, version, i.Namespace))
-	// if wantedPkg != nil {
-	// 	wantedPkg.DesiredState = pkg.Present
-	// } else {
-	// 	// if pkg not in db
-	// 	wantedPkg = pkg.NewPkg(i.ReleaseName, chrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, i.ChartPathOptions.RepoURL)
-	// }
 
 	// get all releases
 	rels, err := i.GetAllReleases(settings)
@@ -158,19 +150,12 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 
 	s.Solve(logger)
 
-	// fmt.Println(s.FormatOutput(solver.Table))
-
 	installedRels := make([]*release.Release, 0)
 	if s.IsSAT() {
 		for _, p := range s.PkgResultSet.ToInstall {
 
-			// TODO
-			// if i.NoSharedDeps && package.isDependency {
-			// 	  // skip this package and not install it
-			//    continue
-			// }
-
 			if i.NoSharedDeps && p.GetFingerPrint() != wantedPkg.GetFingerPrint() {
+				logger.Infof("Skipping dependency %s, flag `no-shared-deps` has been set", p.ChartName)
 				continue
 			}
 
@@ -198,7 +183,6 @@ func (i *Install) Chart(args []string) (string, error) {
 		return args[1], nil
 	}
 
-	// len(args) == 1
 	return args[0], nil
 }
 

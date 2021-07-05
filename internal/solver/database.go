@@ -41,11 +41,6 @@ type PkgDB struct {
 	mapFingerprintToPkg map[string]*pkg.Pkg
 	// map: BaseFingerprint -> Semver version -> Fingerprint
 	mapBaseFingerprintToVersions map[string]map[string]string
-	// struct {
-	// 	semver string
-	// 	semverDistToZero int // major * 10^6 + minor * 10^4 + patch
-	// }
-	// MaxSemverDistance
 }
 
 var PkgDBInstance *PkgDB
@@ -75,15 +70,8 @@ func (pkgdb *PkgDB) GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p 
 	}
 	for _, fp := range mapOfVersions {
 		fps = append(fps, fp)
-		// weights = append(weights, CalculateSemverDistanceToZero(semver))
 	}
 
-	// sort fps by weights
-	//
-	// TODO it would be more efficient to move mapBaseFingerprintToVersions[] to
-	// a sorted list of versions: []fingerprint[]semver. And insert elements in
-	// a sorted way on creation.
-	//
 	// Sort fps by weight
 	sort.Slice(fps,
 		func(i, j int) bool {
@@ -94,7 +82,6 @@ func (pkgdb *PkgDB) GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p 
 	)
 	// create corresponding weight slice
 	for i := range fps {
-		//weights[i] = CalculateSemverDistanceToZero(pkgdb.GetPackageByFingerprint(fp).Version)
 		weights = append(weights, i+1)
 	}
 
@@ -104,12 +91,6 @@ func (pkgdb *PkgDB) GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p 
 func CalculateSemverDistanceToZero(semversion string) (distance int) {
 
 	sv := semver.MustParse(semversion)
-	// if sv.Major() > uint64(10^4) || sv.Minor() > uint64(10^4) || sv.Patch() > uint64(10^4) {
-	// 	fmt.Printf("\n%v\n", sv)
-	// 	panic("Semver out of range")
-	// }
-	// return 10^14 - (int(sv.Major())*10 ^ 13 + int(sv.Minor())*10 ^ 9 + int(sv.Patch()))
-	// distance = int(math.Pow(10, 16)) - (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
 	distance = (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
 	return distance
 }
@@ -120,30 +101,6 @@ func (pkgdb *PkgDB) DebugPrintDB(logger log.Logger) {
 		logger.Debug(p.String())
 	}
 }
-
-// // needed to find if a pkg is a dependency, to skip when i.NoSharedDeps
-// func (pkgdb *PkgDB) IsDependency(fp string) bool {
-// 	for _, p := range pkgdb.mapFingerprintToPkg {
-// 		for _, depfp := range p.DependsRel {
-// 			if fp == depfp {
-// 				return true
-// 			}
-// 		}
-// 	}
-// 	return false
-// }
-
-// // needed to find if a pkg is an optional dependency, to skip when i.NoSharedDeps
-// func (pkgdb *PkgDB) IsDependencyOptional(fp string) bool {
-// 	for _, p := range pkgdb.mapFingerprintToPkg {
-// 		for _, depfp := range p.DependsOptionalRel {
-// 			if fp == depfp {
-// 				return true
-// 			}
-// 		}
-// 	}
-// 	return false
-// }
 
 func CreatePkgDBInstance() *PkgDB {
 	PkgDBInstance = &PkgDB{
@@ -206,7 +163,6 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
 	}
 
 	// build map of same versions
-	// TODO this is broken, depending in the order of pkgs being added
 	bfp := p.GetBaseFingerPrint()
 	_, ok = pkgdb.mapBaseFingerprintToVersions[bfp]
 	if !ok { // if pkg first of all packages that differ only in version
@@ -216,9 +172,5 @@ func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
 	if !ok {
 		// add pkg to map of pkgs that differ only in version:
 		pkgdb.mapBaseFingerprintToVersions[bfp][p.Version] = fp
-		// TODO calculate maximum semver distance between this package and installed package?
-		// if pkgdb.maxSemverDistance < distance {
-		// 	pkgdb.maxSemverDistance = distance
-		// }
 	}
 }

@@ -238,9 +238,6 @@ func TestSolver(t *testing.T) {
 	}
 }
 
-// TestBuildWorld {
-//}
-
 func TestFormatOutput(t *testing.T) {
 
 	for _, tcase := range []struct {

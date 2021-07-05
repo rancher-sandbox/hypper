@@ -141,7 +141,6 @@ func CreateDepRelsFromAnnot(p *pkg.Pkg, chartAnnot map[string]string, repoEntrie
 			}
 
 			// TODO each version can have a different default ns
-			// Iterate through all depChrtVer
 
 			//   obtain default ns of dep
 			depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
