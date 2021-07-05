@@ -171,6 +171,10 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 			//    continue
 			// }
 
+			if i.NoSharedDeps && p.GetFingerPrint() != wantedPkg.GetFingerPrint() {
+				continue
+			}
+
 			// install package:
 			rel, err := i.InstallPkg(p, settings, logger)
 			if err != nil {
