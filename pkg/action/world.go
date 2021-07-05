@@ -87,7 +87,6 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	}
 
 	// add releases to db
-	// FIXME releases not in repos are missing depRel, depOptionalRel
 	for _, r := range releases {
 		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace)
 		p := pkgdb.GetPackageByFingerprint(fp)
@@ -100,6 +99,12 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			// installed from, so we add it as stale package with an empty repo
 			// string
 			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, pkg.Present, "")
+			// fill dep relations:
+			// FIXME releases depending on charts not on the repos are not done
+			// yet, need to pull the chart to obtain default ns
+			if err := CreateDepRelsFromAnnot(p, r.Chart.Metadata.Annotations, repoEntries); err != nil {
+				return err
+			}
 			pkgdb.Add(p)
 		}
 	}
@@ -137,14 +142,18 @@ func CreateDepRelsFromAnnot(p *pkg.Pkg, chartAnnot map[string]string, repoEntrie
 			// find dependency:
 			depChrtVer, ok := repoEntries[dep.Name]
 			if !ok {
-				log.Warnf("Dependency \"%s\" not found in repos, continuing", dep.Name)
+				log.Warnf("Dependency \"%s\" not found in repos, skipping it", dep.Name)
+				continue
 			}
 
 			// TODO each version can have a different default ns
 
-			//   obtain default ns of dep
+			// obtain default ns of dep
 			depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 			depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
+
+			// FIXME if dependency chart not in repo, we are defaulting to
+			// default release name and namespace
 
 			switch c {
 			case "hypper.cattle.io/shared-dependencies":
