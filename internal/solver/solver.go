@@ -174,6 +174,7 @@ func (s *Solver) GeneratePkgSets(model maxsat.Model) {
 			s.PkgResultSet.ToRemove = append(s.PkgResultSet.ToRemove, p)
 		}
 	}
+	s.SortPkgSets()
 }
 
 func (s *Solver) SortPkgSets() {
@@ -190,7 +191,6 @@ func (s *Solver) SortPkgSets() {
 }
 
 func (s *Solver) FormatOutput(t OutputMode) (output string) {
-	s.SortPkgSets()
 	var sb strings.Builder
 	switch t {
 	case Table:
