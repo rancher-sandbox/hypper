@@ -139,9 +139,7 @@ func (i *Install) Run(chrt *helmChart.Chart, vals map[string]interface{}, settin
 	case OptionalDepsAll:
 		logger.Debugf("Promoting all optional deps of package %s to normal deps\n", wantedPkgInDB.GetFingerPrint())
 		// promote all optional deps of wanted package to normal deps:
-		for _, rel := range wantedPkgInDB.DependsOptionalRel {
-			wantedPkgInDB.DependsRel = append(wantedPkgInDB.DependsRel, rel)
-		}
+		wantedPkgInDB.DependsRel = append(wantedPkgInDB.DependsRel, wantedPkgInDB.DependsOptionalRel...)
 	case OptionalDepsNone:
 		logger.Debugf("Disregarding all optional deps of package %s\n", wantedPkgInDB.GetFingerPrint())
 	case OptionalDepsAsk:

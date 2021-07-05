@@ -73,7 +73,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
 
 			// unmarshal dependencies:
-			sharedDepsYaml, _ := chrtVer.Annotations["hypper.cattle.io/shared-dependencies"]
+			sharedDepsYaml := chrtVer.Annotations["hypper.cattle.io/shared-dependencies"]
 			var sharedDeps []*helmChart.Dependency
 			// unmarshalling Helm's Dependency because gopkg.in/yaml.v2 doesn't do composite types
 			if err := yaml.UnmarshalStrict([]byte(sharedDepsYaml), &sharedDeps); err != nil {
@@ -105,7 +105,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			}
 
 			// unmarshal optional dependencies:
-			optSharedDepsYaml, _ := chrtVer.Annotations["hypper.cattle.io/optional-dependencies"]
+			optSharedDepsYaml := chrtVer.Annotations["hypper.cattle.io/optional-dependencies"]
 			var optSharedDeps []*helmChart.Dependency
 			// unmarshalling Helm's Dependency because gopkg.in/yaml.v2 doesn't do composite types
 			if err := yaml.UnmarshalStrict([]byte(optSharedDepsYaml), &optSharedDeps); err != nil {
