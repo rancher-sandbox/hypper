@@ -21,6 +21,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/rancher-sandbox/hypper/internal/solver"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 
 	"github.com/pkg/errors"
@@ -146,7 +147,7 @@ func newUpgradeCmd(cfg *action.Configuration, logger log.Logger) *cobra.Command 
 					instClient.Description = client.Description
 					instClient.ReleaseName = client.ReleaseName
 
-					rels, err := runInstall(args, instClient, valueOpts, logger)
+					rels, err := runInstall(solver.InstallOne, args, instClient, valueOpts, logger)
 					if err != nil {
 						return err
 					}

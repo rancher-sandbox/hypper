@@ -31,18 +31,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Solver struct {
-	PkgDB        *PkgDB       // DB containing packages
-	PkgResultSet PkgResultSet // outcome of sat solving
-	// TODO Strategy
-	//
-	// Install1: tries to install, if UNSAT, tells why, and that you may be wanting to do upgrade.
-	//           Or, check before s.Solve() by querying that the chart to be installed
-	//           doesn't have a releasename already in use.
-	// Upgrade1: don't add a constraintPresent for the specific release/package to be upgraded.
-	//           We get a package to be installed, which conflicts with a release. Find release,
-	//           mark as DesiredState:Absent. Which means, checking the releases before s.Solve(),
-	//           because an upgrade of a chart that is not a release cannot be performed.
+type SolverStrategy int
+
+const (
+	InstallOne SolverStrategy = iota
+	// Install 1 package. If chart to be installed has a releaseName and NS
+	// already in use, result is UNSAT, and informs that you may be wanting to
+	// do upgrade.
+
+	UpgradeOne
+	// Don't add a constraintPresent for the specific release/package to be upgraded.
+	// We get a package to be installed, which conflicts with a release. Find release,
+	// mark as DesiredState:Absent. Which means, checking the releases before s.Solve(),
+	// because an upgrade of a chart that is not a release cannot be performed.
+
+	// TODO
 	// Upgrade1ToMajor: same as Upgrade, but tune semver distances.
 	// Upgrade1ToMinor: same as Upgrade, but tune semver distances.
 	// UpgradeAll: don't add a constraintPresent for all the current releases,
@@ -55,6 +58,12 @@ type Solver struct {
 	// AutoremoveAll: all packages not marked as autoinstalled can be dropped. Not
 	//                enough with setting their desiredState to absent, they may be
 	//                dependencies.
+)
+
+type Solver struct {
+	PkgDB        *PkgDB       // DB containing packages
+	PkgResultSet PkgResultSet // outcome of sat solving
+	Strategy     SolverStrategy
 }
 
 // PkgResultSet contains the status outcome of solving, and the different sets of
@@ -77,10 +86,11 @@ const (
 )
 
 // New creates a new Solver, initializing its database.
-func New() (s *Solver) {
+func New(strategy SolverStrategy) (s *Solver) {
 	s = &Solver{
 		PkgDB:        CreatePkgDBInstance(),
 		PkgResultSet: PkgResultSet{},
+		Strategy:     strategy,
 	}
 	s.PkgResultSet.Inconsistencies = []string{}
 	return s
@@ -250,12 +260,24 @@ func (s *Solver) buildConstraintToModify(p *pkg.Pkg) (constr []maxsat.Constr) {
 		for _, fp := range fps { // for all the packages that only differ in version
 			pkgDifferVersion := s.PkgDB.GetPackageByFingerprint(fp)
 			if pkgDifferVersion.DesiredState == pkg.Present {
-				// package is scheduled for an upgrade, this is not possible
-				// as we aren't separating install and upgrade implementation yet
-				incons := fmt.Sprintf("Package %s is scheduled for upgrade, did you mean \"hypper upgrade\" instead of \"hypper install\"\n",
-					p.GetFingerPrint())
-				s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incons)
-				break
+				if s.Strategy == InstallOne {
+					// package is scheduled for an upgrade, this is not possible
+					// as we aren't separating install and upgrade implementation yet
+					incons := fmt.Sprintf("Package %s is scheduled for upgrade, did you mean \"hypper upgrade\" instead of \"hypper install\"\n",
+						p.GetFingerPrint())
+					s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incons)
+					break
+				}
+				if s.Strategy == UpgradeOne {
+					// we have found a package, pkgDifferVersion, to upgrade the release in p.
+					// Add constraint for new package.
+					lit := []maxsat.Lit{{
+						Var:     pkgDifferVersion.GetFingerPrint(),
+						Negated: false, // installed
+					}}
+					sliceConstr := maxsat.HardPBConstr(lit, nil, 1)
+					constr = append(constr, sliceConstr)
+				}
 			}
 		}
 	}

@@ -224,7 +224,7 @@ func TestSolver(t *testing.T) {
 			logger.DebugOut = buf
 			log.Current = logger
 
-			s := New()
+			s := New(InstallOne)
 			s.BuildWorldMock(tcase.pkgs)
 			s.Solve(logger)
 			is := assert.New(t)
@@ -299,7 +299,7 @@ func TestFormatOutput(t *testing.T) {
 		logger.DebugOut = buf
 		log.Current = logger
 
-		s := New()
+		s := New(InstallOne)
 		s.BuildWorldMock(tcase.pkgs)
 		s.Solve(logger)
 		is := assert.New(t)

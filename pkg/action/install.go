@@ -84,7 +84,8 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 // Run executes the installation
 //
 // If DryRun is set to true, this will prepare the release, but not install it.
-func (i *Install) Run(wantedChrt *helmChart.Chart, vals map[string]interface{}, settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
+func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Chart, vals map[string]interface{},
+	settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
 
 	// TODO obtain lock
 	// defer release lock
@@ -121,7 +122,7 @@ func (i *Install) Run(wantedChrt *helmChart.Chart, vals map[string]interface{}, 
 		return nil, err
 	}
 
-	s := solver.New()
+	s := solver.New(strategy)
 
 	err = BuildWorld(s.PkgDB, rf.Repositories, rels, wantedPkg, wantedChrt, settings, logger)
 	if err != nil {

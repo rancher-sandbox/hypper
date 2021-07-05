@@ -30,6 +30,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/rancher-sandbox/hypper/internal/solver"
 	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/thediveo/enumflag"
@@ -80,7 +81,7 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 		Args:  require.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			// TODO decide how to use returned rel:
-			_, err := runInstall(args, client, valueOpts, logger)
+			_, err := runInstall(solver.InstallOne, args, client, valueOpts, logger)
 			if err != nil {
 				return err
 			}
@@ -104,7 +105,7 @@ func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Instal
 	f.BoolVar(&client.DryRun, "dry-run", false, "simulate an install")
 }
 
-func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) ([]*release.Release, error) {
+func runInstall(strategy solver.SolverStrategy, args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) ([]*release.Release, error) {
 
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
@@ -199,5 +200,5 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	return client.Run(chartRequested, vals, settings, logger)
+	return client.Run(solver.InstallOne, chartRequested, vals, settings, logger)
 }

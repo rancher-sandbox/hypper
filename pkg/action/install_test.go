@@ -25,6 +25,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logcli "github.com/Masterminds/log-go/impl/cli"
+	"github.com/rancher-sandbox/hypper/internal/solver"
 	"github.com/rancher-sandbox/hypper/internal/test"
 	"github.com/rancher-sandbox/hypper/pkg/chart"
 	"github.com/rancher-sandbox/hypper/pkg/cli"
@@ -59,7 +60,7 @@ func TestInstallReleaseCycle(t *testing.T) {
 	instAction := installAction(t)
 	expectedError := "ABORTING: Nested recursion #10. we don't have a SAT solver yet, chances are you are in a cycle!"
 
-	_, err := instAction.Run(buildChart(), map[string]interface{}{}, cli.New(), log.Current)
+	_, err := instAction.Run(solver.InstallOne, buildChart(), map[string]interface{}{}, cli.New(), log.Current)
 	if err == nil {
 		t.Errorf("on test %q expected error, got '%v'", expectedError, err)
 	}
@@ -186,7 +187,7 @@ func TestInstallRun(t *testing.T) {
 		}
 		is := assert.New(t)
 
-		rels, err := instAction.Run(tcase.chart, map[string]interface{}{}, settings, log.Current)
+		rels, err := instAction.Run(solver.InstallOne, tcase.chart, map[string]interface{}{}, settings, log.Current)
 		is.Equal(tcase.numRels, len(rels))
 
 		if (err != nil) != tcase.wantError {
