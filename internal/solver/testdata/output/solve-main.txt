@@ -10,6 +10,16 @@ presentunchanged:
   desiredstate: 0
   pinnedver: 0
 toinstall:
+- releasename: myawesomedep
+  version: 0.1.100
+  namespace: myawesomedeptargetns
+  chartname: myawesomedep
+  dependsrel: []
+  dependsoptionalrel: []
+  repository: ourrepo
+  currentstate: 0
+  desiredstate: 0
+  pinnedver: 0
 - releasename: wantedbaz
   version: 1.0.0
   namespace: wantedbazns
@@ -21,16 +31,6 @@ toinstall:
   repository: ourrepo
   currentstate: 0
   desiredstate: 1
-  pinnedver: 0
-- releasename: myawesomedep
-  version: 0.1.100
-  namespace: myawesomedeptargetns
-  chartname: myawesomedep
-  dependsrel: []
-  dependsoptionalrel: []
-  repository: ourrepo
-  currentstate: 0
-  desiredstate: 0
   pinnedver: 0
 toremove: []
 status: SAT

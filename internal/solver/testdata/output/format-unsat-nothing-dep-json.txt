@@ -1,1 +1,1 @@
-{"PresentUnchanged":[],"ToInstall":[],"ToRemove":[],"Status":"UNSAT","Inconsistencies":["Package wantedbaz-1.0.0-targetns depends on depfoo-targetns, semver ^1.0.0, but nothing satisfies it\n"]}
+{"PresentUnchanged":null,"ToInstall":null,"ToRemove":null,"Status":"UNSAT","Inconsistencies":["Package wantedbaz-1.0.0-targetns depends on depfoo-targetns, semver ^1.0.0, but nothing satisfies it\n"]}
