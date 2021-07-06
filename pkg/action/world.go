@@ -40,7 +40,12 @@ type chrtEntry struct {
 	url           string
 }
 
-// FIXME assume all charts come from just 1 repo. We will generalize later.
+// BuildWorld adds all known charts to the package database:
+//
+// - For all the repos, it iterates through the chart entries and adds a package
+//   to the DB for each version of the chart.
+// - For all releases and wanted packages, it adds a package or updates a
+//   present package in the DB.
 func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	releases []*release.Release,
 	toModify *pkg.Pkg, toModifyChart *helmChart.Chart,
@@ -124,7 +129,9 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	return nil
 }
 
-// CreateDepRelsFromAnnot fills the p.DepRel and p.DepOptionalRel
+// CreateDepRelsFromAnnot fills the p.DepRel and p.DepOptionalRel of a package,
+// by unmarshalling and checking the Metadata.Annotations of the chart that
+// corresponds to that package.
 func CreateDepRelsFromAnnot(p *pkg.Pkg, chartAnnot map[string]string, repoEntries map[string]chrtEntry) (err error) {
 
 	// unmarshal dependencies:

@@ -57,7 +57,7 @@ const (
 type Install struct {
 	*action.Install
 
-	// hypper specific
+	// Hypper specific:
 	NoSharedDeps      bool
 	OptionalDeps      optionalDepsStrategy
 	NoCreateNamespace bool
@@ -84,6 +84,12 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 // Run executes the installation
 //
 // If DryRun is set to true, this will prepare the release, but not install it.
+// It returns a slice of releases deployed to the cluster.
+//
+// It will create a DB of packages from all known charts in repos, releases and
+// desired ones. Then, it will solve with the SAT solver, and if relevant,
+// install the wanted chart and its dependencies. If dependencies are already
+// satisfied, they will be silently skipped.
 func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Chart, vals map[string]interface{},
 	settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
 
@@ -224,6 +230,8 @@ func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release
 	return i.GetReleases()
 }
 
+// LoadChartFromPkg loads the chart for the desired package, using the already
+// set repository and version in the action.Install.
 func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
 	i.ChartPathOptions.RepoURL = p.Repository
 	i.ChartPathOptions.Version = p.Version
@@ -241,6 +249,8 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger
 	return chartRequested, nil
 }
 
+// InstallPkg installs the passed package by pulling its related chart. It takes
+// care of using the desired namespace for it.
 func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
 
 	logger.Debug("Installing package: " + p.String())

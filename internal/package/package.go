@@ -30,14 +30,12 @@ const (
 	Absent
 )
 
-// Pkg is the minimum object the solver reasons about. It is comprised of a
-// chart, its version, and its characteristics when installed (release name,
-// namespace, etc).
+// Pkg is the minimum object the solver reasons about.
 // Note that each package is unique. The same chart, with the same default
 // release name & ns, but different version, is a different package. E.g:
 // prometheus-1.2.0 and prometheus-1.3.0 are different packages.
 type Pkg struct {
-	// unique key
+	// unique key:
 	ReleaseName string // Release name, or default chart release-name
 	Version     string // sem ver (without a range)
 	Namespace   string // Installed ns, or default chart namespace
@@ -51,11 +49,14 @@ type Pkg struct {
 	PinnedVer          tristate  // if we have a pinnedVer or not in pkg.Version
 }
 
+// PkgRel codifies a shared dependency relation to another package
 type PkgRel struct {
 	BaseFingerprint string // base fingerprint of dependency with releasename, namespace
-	SemverRange     string // e.g: 1.0.0, ~1.0.0
+	SemverRange     string // e.g: 1.0.0, ~1.0.0, ^1.0.0
 }
 
+// NewPkg creates a new Pkg struct. It does not give value to DependsRel,
+// DependsOptionalRel.
 func NewPkg(relName, chartName, version, namespace string,
 	currentState, desiredState, pinnedVer tristate, repo string) *Pkg {
 
@@ -75,8 +76,7 @@ func NewPkg(relName, chartName, version, namespace string,
 	return p
 }
 
-// NewPkgMock creates a new package, with a digest based in the package name,
-// and a nil chart pointer.
+// NewPkgMock creates a new package.
 // Useful for testing.
 func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []*PkgRel,
@@ -104,6 +104,7 @@ func (p *Pkg) GetFingerPrint() string {
 	return fmt.Sprintf("%s-%s-%s", p.ReleaseName, p.Version, p.Namespace)
 }
 
+// CreateFingerPrint creates a fingerprint from the specific strings.
 func CreateFingerPrint(releaseName, version, ns string) string {
 	return fmt.Sprintf("%s-%s-%s", releaseName, version, ns)
 }
@@ -120,8 +121,7 @@ func CreateBaseFingerPrint(name, ns string) string {
 	return fmt.Sprintf("%s-%s", name, ns)
 }
 
-// Encode encodes the package to string.
-// It returns an ID which can be used to retrieve the package later on.
+// Encode encodes the package to string in a JSON.
 func (p *Pkg) Encode() (string, error) {
 
 	encodedPackage, err := p.JSON()
@@ -132,6 +132,8 @@ func (p *Pkg) Encode() (string, error) {
 	return string(encodedPackage), nil
 }
 
+// String returns a string of some of the Pkg fields.
+// Useful for debug output.
 func (p *Pkg) String() (retString string) {
 	retString = retString +
 		fmt.Sprintf("fp: %s Currentstate: %v DesiredState: %v PinnedVersion: %v ChartName: %s\n",

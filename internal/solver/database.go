@@ -26,13 +26,10 @@ import (
 	"github.com/Masterminds/semver/v3"
 )
 
-// PkgDB implements a database of 2 keys (ID, fingerprint) and 1 value
-// (*pkg.Pkg). Each package contains also a table of IDs for packages that
-// are the similar to the current package and only differ in the version.
-//
-// The ID key starts at 1, as Pseudo-Boolean IDs cannot be 0.
-//
-// When packages get added to the database, they get assigned an ID.
+// PkgDB implements a database of 1 key (packages' fingerprints) and 1 value
+// (*pkg.Pkg). Each package contains also a table of base fingerprints for
+// packages that are the similar to the current package and only differ in the
+// version.
 //
 // If a package is already present in the database, when adding, it would get
 // merged with the existent entry in a way to complete unknown info of that
