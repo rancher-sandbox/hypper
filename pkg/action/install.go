@@ -166,7 +166,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 			}
 
 			// install package:
-			rel, err := i.InstallPkg(p, settings, logger)
+			rel, err := i.InstallPkg(p, wantedPkg, wantedChrt, settings, logger)
 			if err != nil {
 				return installedRels, err
 			}
@@ -243,7 +243,9 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger
 
 // InstallPkg installs the passed package by pulling its related chart. It takes
 // care of using the desired namespace for it.
-func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
+func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmChart.Chart,
+	settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
+	// FIXME don't pass wantedPkg and wantedChart and skip things more cleanly
 
 	logger.Debug("Installing package: " + p.String())
 
@@ -256,9 +258,26 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 		return nil, err
 	}
 
-	chartRequested, err := clientInstall.LoadChartFromPkg(p, settings, logger)
-	if err != nil {
-		return nil, err
+	var chartRequested *helmChart.Chart
+	var chartpath string
+	if p.GetFingerPrint() == wantedPkg.GetFingerPrint() {
+		// don't load chart, we already have it in wantedChart
+		chartRequested = wantedChart
+	} else {
+		// we don't have a chart, load it
+		clientInstall.ChartPathOptions.RepoURL = p.Repository
+		clientInstall.ChartPathOptions.Version = p.Version
+		chartpath, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
+		if err != nil {
+			return nil, err
+		}
+
+		logger.Debugf("CHART PATH: %s\n", chartpath)
+
+		chartRequested, err = loader.Load(chartpath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	getter := getter.All(settings.EnvSettings)
@@ -273,6 +292,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:
 	SetNamespace(clientInstall, chartRequested, p.Namespace, settings.NamespaceFromFlag)
+	var err error
 	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, p.ReleaseName)
 	if err != nil {
 		return nil, err
@@ -285,15 +305,6 @@ func (i *Install) InstallPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.L
 	if chartRequested.Metadata.Deprecated {
 		logger.Warnf("Chart \"$s\" is deprecated", chartRequested.Name())
 	}
-
-	// re-obtain the chartpath again, for Metadata.Dependencies. FIXME deduplicate.
-	clientInstall.ChartPathOptions.RepoURL = p.Repository
-	chartpath, err := clientInstall.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Debugf("CHART PATH: %s\n", chartpath)
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
