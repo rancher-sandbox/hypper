@@ -109,7 +109,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
 
 	// get all releases
-	rels, err := i.GetAllReleases(settings)
+	rels, err := i.GetAllReleases()
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func CheckIfInstallable(ch *helmChart.Chart) error {
 	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
 }
 
-func (i *Install) GetReleases() (releases []*release.Release, err error) {
+func (i *Install) GetAllReleases() (releases []*release.Release, err error) {
 	// obtain the releases for the specific ns that we are searching into
 	clientList := NewList(i.Config)
 	clientList.SetStateMask()
@@ -220,14 +220,6 @@ func (i *Install) GetReleases() (releases []*release.Release, err error) {
 		return nil, err
 	}
 	return releases, nil
-}
-
-func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release.Release, err error) {
-
-	if err := i.Config.Init(settings.RESTClientGetter(), "", os.Getenv("HELM_DRIVER"), i.Config.Log); err != nil {
-		return nil, err
-	}
-	return i.GetReleases()
 }
 
 // LoadChartFromPkg loads the chart for the desired package, using the already
