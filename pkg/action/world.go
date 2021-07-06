@@ -64,6 +64,9 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 		}
 	}
 
+	// save ns from kube client, for performance reasons
+	settingsNS := settings.Namespace()
+
 	// add repos to db
 	// for all chart entries in repos:
 	for chrtName, chrtVersions := range repoEntries {
@@ -71,7 +74,7 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 		for _, chrtVer := range chrtVersions.chartVersions {
 
 			// create pkg:
-			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settings.Namespace())  //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settingsNS)            //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
 			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name) // TODO default name for helm repos
 			repo := chrtVersions.url
 			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
