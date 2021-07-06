@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSolver(t *testing.T) {
+func TestInstall(t *testing.T) {
 
 	for _, tcase := range []struct {
 		name         string
@@ -200,18 +200,6 @@ func TestSolver(t *testing.T) {
 			},
 			resultStatus: "SAT",
 		},
-		// {
-		// 	name:   "update package",
-		// 	golden: "output/solve-sat-update-package.txt",
-		// 	pkgs: []*pkg.Pkg{
-		// 		// releases:
-		// 		pkg.NewPkgMock("toupdatebar", "1.0.0", "toupdatebarns", nil, nil, pkg.Present, pkg.Unknown),
-		// 		pkg.NewPkgMock("installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
-		// 		// package to update:
-		// 		pkg.NewPkgMock("toupdatebar", "1.3.0", "toupdatebarns", nil, nil, pkg.Unknown, pkg.Present),
-		// 	},
-		// 	resultStatus: "SAT",
-		// },
 	} {
 		t.Run(tcase.name, func(t *testing.T) {
 
