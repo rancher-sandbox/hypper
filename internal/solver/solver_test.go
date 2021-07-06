@@ -246,6 +246,7 @@ func TestFormatOutput(t *testing.T) {
 		goldenYaml  string
 		goldenJson  string
 		goldenTable string
+		status      string
 	}{
 		{
 			name:        "empty world",
@@ -253,6 +254,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenJson:  "output/format-empty-json.txt",
 			goldenTable: "output/format-empty-table.txt",
 			pkgs:        []*pkg.Pkg{},
+			status:      "SAT",
 		},
 		{
 			name:        "satisfiable, install 1",
@@ -262,6 +264,7 @@ func TestFormatOutput(t *testing.T) {
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
 			},
+			status: "SAT",
 		},
 		{
 			name:        "satisfiable, upgrade a release",
@@ -271,6 +274,7 @@ func TestFormatOutput(t *testing.T) {
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
 			},
+			status: "SAT",
 		},
 		{
 			name:        "unsatisfiable, nothing provides dep",
@@ -285,6 +289,7 @@ func TestFormatOutput(t *testing.T) {
 					}},
 					nil, pkg.Absent, pkg.Present),
 			},
+			status: "UNSAT",
 		},
 	} {
 		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
@@ -300,7 +305,7 @@ func TestFormatOutput(t *testing.T) {
 		s.BuildWorldMock(tcase.pkgs)
 		s.Solve(logger)
 		is := assert.New(t)
-		is.Equal("SAT", s.PkgResultSet.Status)
+		is.Equal(tcase.status, s.PkgResultSet.Status)
 
 		test.AssertGoldenString(t, s.FormatOutput(YAML), tcase.goldenYaml)
 		test.AssertGoldenString(t, s.FormatOutput(JSON), tcase.goldenJson)
