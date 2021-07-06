@@ -48,75 +48,81 @@ func installAction(t *testing.T) *Install {
 func TestInstallRun(t *testing.T) {
 
 	for _, tcase := range []struct {
-		name           string
-		chart          *helmChart.Chart
-		golden         string
-		wantError      bool
-		error          string
-		wantDebug      bool
-		debug          string
-		addRelStub     bool
-		optionalDeps   optionalDepsStrategy
-		wantNSFromFlag string
-		numRels        int
+		name            string
+		chart           *helmChart.Chart
+		golden          string
+		wantError       bool
+		error           string
+		wantDebug       bool
+		debug           string
+		addRelStub      bool
+		optionalDeps    optionalDepsStrategy
+		wantNSFromFlag  string
+		numReturnedRels int
 	}{
 		{
-			name:      "chart has no shared-deps",
-			chart:     buildChart(withHypperAnnotations()),
-			golden:    "output/install-no-shared-deps.txt",
-			wantDebug: true,
-			numRels:   1,
+			name:            "chart has no shared-deps",
+			chart:           buildChart(withHypperAnnotations()),
+			golden:          "output/install-no-shared-deps.txt",
+			addRelStub:      true,
+			numReturnedRels: 1,
 		},
 		{
-			name:      "chart metadata has malformed yaml",
-			chart:     buildChart(withMalformedSharedDeps()),
-			golden:    "output/install-malformed-shared-deps.txt",
-			wantError: true,
-			error:     "yaml: line 2: mapping values are not allowed in this context",
-			numRels:   0,
+			name:            "chart metadata has malformed yaml",
+			chart:           buildChart(withMalformedSharedDeps()),
+			golden:          "output/install-malformed-shared-deps.txt",
+			error:           "yaml: line 2: mapping values are not allowed in this context",
+			wantError:       true,
+			numReturnedRels: 0,
 		},
 		{
-			name:   "dependencies get correctly installed",
-			chart:  buildChart(withHypperAnnotations(), withSharedDeps()),
-			golden: "output/install-correctly-shared-deps.txt",
+			name:            "dependencies get correctly installed",
+			chart:           buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:          "output/install-correctly-shared-deps.txt",
+			numReturnedRels: 2,
 		},
 		{
-			name:   "dependencies without annotations get correctly installed",
-			chart:  buildChart(withHypperAnnotations(), withSharedDepsWithoutAnnotations()),
-			golden: "output/install-shared-deps-without-annotations.txt",
+			name:            "dependencies without annotations get correctly installed",
+			chart:           buildChart(withHypperAnnotations(), withSharedDepsWithoutAnnotations()),
+			golden:          "output/install-shared-deps-without-annotations.txt",
+			numReturnedRels: 2,
 		},
 		{
-			name:           "dependencies with NamespaceFromFlag get correctly installed",
-			chart:          buildChart(withHypperAnnotations(), withSharedDeps()),
-			golden:         "output/install-shared-deps-with-ns-from-flag.txt",
-			wantNSFromFlag: "ns-from-flag",
+			name:            "dependencies with NamespaceFromFlag get correctly installed",
+			chart:           buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:          "output/install-shared-deps-with-ns-from-flag.txt",
+			wantNSFromFlag:  "ns-from-flag",
+			numReturnedRels: 2,
 		},
 		{
-			name:       "dependencies are already installed",
-			chart:      buildChart(withHypperAnnotations(), withSharedDeps()),
-			golden:     "output/install-shared-dep-installed.txt",
-			addRelStub: true,
+			name:            "dependencies are already installed",
+			chart:           buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:          "output/install-shared-dep-installed.txt",
+			addRelStub:      true,
+			numReturnedRels: 1,
 		},
 		{
-			name:       "dependencies are already installed in out-of-range ver",
-			chart:      buildChart(withHypperAnnotations(), withOutOfRangeSharedDeps()),
-			golden:     "output/install-shared-dep-installed-out-of-range.txt",
-			addRelStub: true,
-			wantError:  true,
-			error:      "Shared dep version out of range; 0.1.0 is not equal to 1.1.0",
-			numRels:    0,
+			name:            "dependencies are already installed in out-of-range ver",
+			chart:           buildChart(withHypperAnnotations(), withOutOfRangeSharedDeps()),
+			golden:          "output/install-shared-dep-installed-out-of-range.txt",
+			addRelStub:      true,
+			wantError:       true,
+			error:           "Chart \"hello\" depends on \"my-shared-dep\" in namespace \"my-shared-dep-ns\", semver \"1.1.0\", but nothing satisfies it",
+			numReturnedRels: 0,
 		},
 		{
-			name:         "optional dependencies get correctly installed",
-			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
-			golden:       "output/install-correctly-optional-shared-deps.txt",
-			optionalDeps: OptionalDepsAll,
+			name:            "optional dependencies get correctly installed",
+			chart:           buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
+			golden:          "output/install-correctly-optional-shared-deps.txt",
+			optionalDeps:    OptionalDepsAll,
+			numReturnedRels: 2,
 		},
 		{
-			name:         "optional dependencies get correctly skipped",
-			chart:        buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
-			golden:       "output/skip-optional-shared-deps.txt",
-			optionalDeps: OptionalDepsNone,
+			name:            "optional dependencies get correctly skipped",
+			chart:           buildChart(withHypperAnnotations(), withOptionalSharedDeps()),
+			golden:          "output/skip-optional-shared-deps.txt",
+			optionalDeps:    OptionalDepsNone,
+			numReturnedRels: 1,
 		},
 	} {
 		var settings *cli.EnvSettings
@@ -166,11 +172,12 @@ func TestInstallRun(t *testing.T) {
 		is := assert.New(t)
 
 		rels, err := instAction.Run(solver.InstallOne, tcase.chart, map[string]interface{}{}, settings, log.Current)
-		is.Equal(tcase.numRels, len(rels))
+		is.Equal(tcase.numReturnedRels, len(rels))
 
-		if (err != nil) != tcase.wantError {
-			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
+		if (err != nil) && !tcase.wantError {
+			t.Errorf("on test %q, got unexpected error '%v'", tcase.name, err)
 		}
+
 		if tcase.wantError {
 			is.Equal(tcase.error, err.Error())
 		}

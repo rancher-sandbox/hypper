@@ -1,2 +1,2 @@
-🛳  Installing shared dependencies for chart "hello":
-🛳  - Installing chart "empty" as "empty" in namespace "luke-skywalker"…
+🛳  Installing chart "hello" as "my-hypper-name" in namespace "luke-skywalker"…
+🛳  Installing chart "empty" as "empty" in namespace "default"…
