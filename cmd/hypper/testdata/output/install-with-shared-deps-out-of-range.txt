@@ -1,3 +1,1 @@
-🛳  Installing shared dependencies for chart "empty":
-ERROR: ❌  Satisfiable version for chart "testdata/testcharts/shared-dep" not found, aborting
-ERROR: Satisfiable chart version not found; 0.1.0 is less than 0.3.0
+ERROR: ❌  Chart "empty" depends on "my-shared-dep" in namespace "my-shared-dep-ns", semver "~0.3.0", but nothing satisfies it
