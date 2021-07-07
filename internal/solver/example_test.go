@@ -39,8 +39,9 @@ func ExampleSolver() {
 		pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 			// dependency relations of wantedbaz:
 			[]*pkg.PkgRel{{
-				BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-				SemverRange:     "~0.1.0",
+				ReleaseName: "myawesomedep",
+				Namespace:   "myawesomedeptargetns",
+				SemverRange: "~0.1.0",
 			}},
 			nil, pkg.Unknown, pkg.Present),
 		// releases already in the cluster:
@@ -96,7 +97,8 @@ func ExampleSolver() {
 	//   namespace: wantedbazns
 	//   chartname: wantedbaz
 	//   dependsrel:
-	//   - basefingerprint: myawesomedep-myawesomedeptargetns
+	//   - releasename: myawesomedep
+	//     namespace: myawesomedeptargetns
 	//     semverrange: ~0.1.0
 	//   dependsoptionalrel: []
 	//   repository: ourrepo

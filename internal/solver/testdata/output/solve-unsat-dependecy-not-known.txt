@@ -3,5 +3,5 @@ toinstall: []
 toremove: []
 status: UNSAT
 inconsistencies:
-- |
-  Package wantedbaz-1.0.0-wantedbazns depends on myawesomedep-myawesomedeptargetns, semver ^1.0.0, but nothing satisfies it
+- Chart "wantedbaz" depends on "myawesomedep" in namespace "myawesomedeptargetns",
+  semver "^1.0.0", but nothing satisfies it

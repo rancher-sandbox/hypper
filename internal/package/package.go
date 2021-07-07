@@ -51,8 +51,10 @@ type Pkg struct {
 
 // PkgRel codifies a shared dependency relation to another package
 type PkgRel struct {
-	BaseFingerprint string // base fingerprint of dependency with releasename, namespace
-	SemverRange     string // e.g: 1.0.0, ~1.0.0, ^1.0.0
+	// unique key for base fingerprint:
+	ReleaseName string
+	Namespace   string
+	SemverRange string // e.g: 1.0.0, ~1.0.0, ^1.0.0
 }
 
 // NewPkg creates a new Pkg struct. It does not give value to DependsRel,

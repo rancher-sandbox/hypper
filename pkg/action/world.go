@@ -183,13 +183,15 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 			case "hypper.cattle.io/shared-dependencies":
 				//add relation to pkg
 				p.DependsRel = append(p.DependsRel, &pkg.PkgRel{
-					BaseFingerprint: pkg.CreateBaseFingerPrint(depRelName, depNS),
-					SemverRange:     dep.Version,
+					ReleaseName: depRelName,
+					Namespace:   depNS,
+					SemverRange: dep.Version,
 				})
 			case "hypper.cattle.io/optional-dependencies":
 				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
-					BaseFingerprint: pkg.CreateBaseFingerPrint(depRelName, depNS),
-					SemverRange:     dep.Version,
+					ReleaseName: depRelName,
+					Namespace:   depNS,
+					SemverRange: dep.Version,
 				})
 			}
 		}

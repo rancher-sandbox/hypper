@@ -25,7 +25,8 @@ toinstall:
   namespace: wantedbazns
   chartname: wantedbaz
   dependsrel:
-  - basefingerprint: myawesomedep-myawesomedeptargetns
+  - releasename: myawesomedep
+    namespace: myawesomedeptargetns
     semverrange: ~0.1.0
   dependsoptionalrel: []
   repository: ourrepo

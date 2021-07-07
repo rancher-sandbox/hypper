@@ -5,7 +5,8 @@ toinstall:
   namespace: targetns
   chartname: wantedbar
   dependsrel:
-  - basefingerprint: wantedbaz-targetns
+  - releasename: wantedbaz
+    namespace: targetns
     semverrange: ^1.0.0
   dependsoptionalrel: []
   repository: ourrepo
@@ -17,7 +18,8 @@ toinstall:
   namespace: targetns
   chartname: wantedbaz
   dependsrel:
-  - basefingerprint: wantedfoo-targetns
+  - releasename: wantedfoo
+    namespace: targetns
     semverrange: ^1.0.0
   dependsoptionalrel: []
   repository: ourrepo
@@ -29,7 +31,8 @@ toinstall:
   namespace: targetns
   chartname: wantedfoo
   dependsrel:
-  - basefingerprint: wantedbar-targetns
+  - releasename: wantedbar
+    namespace: targetns
     semverrange: ^1.0.0
   dependsoptionalrel: []
   repository: ourrepo

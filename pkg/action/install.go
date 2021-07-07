@@ -154,7 +154,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 			reader := bufio.NewReader(os.Stdin)
 			question := eyecandy.ESPrintf(settings.NoEmojis,
 				":red_question_mark:Install optional shared dependency \"%s\" of chart \"%s\"?",
-				rel.BaseFingerprint,
+				rel.ReleaseName,
 				wantedPkgInDB.ChartName,
 			)
 			if promptBool(question, reader, logger) {

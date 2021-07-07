@@ -362,7 +362,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// build constraints for 'Depends' relations
 	for _, deprel := range p.DependsRel {
 		// obtain all IDs for the packages that only differ in version
-		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(deprel.BaseFingerprint)
+		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(pkg.CreateBaseFingerPrint(deprel.ReleaseName, deprel.Namespace))
 		satisfyingVersions := []string{} // slice of fingerprints
 		for depVersion, depFingerprint := range mapOfVersions {
 			// build list of packages that differ only in version and that satisfy semver
@@ -395,8 +395,8 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 		if len(satisfyingVersions) == 0 {
 			// there are no packages that match the version we depend on, add
 			// that to inconsistencies
-			incons := fmt.Sprintf("Chart %s depends on %s, semver %s, but nothing satisfies it",
-				p.ChartName, deprel.BaseFingerprint, deprel.SemverRange)
+			incons := fmt.Sprintf("Chart \"%s\" depends on \"%s\" in namespace \"%s\", semver \"%s\", but nothing satisfies it",
+				p.ChartName, deprel.ReleaseName, deprel.Namespace, deprel.SemverRange)
 			s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incons)
 		}
 

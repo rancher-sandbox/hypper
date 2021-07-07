@@ -52,8 +52,9 @@ func TestInstall(t *testing.T) {
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "~0.1.0",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "~0.1.0",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 				// releases:
@@ -73,8 +74,9 @@ func TestInstall(t *testing.T) {
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "0.1.103",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "0.1.103",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -91,8 +93,9 @@ func TestInstall(t *testing.T) {
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "~0.1.0",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "~0.1.0",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -110,8 +113,9 @@ func TestInstall(t *testing.T) {
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "^1.2.0",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "^1.2.0",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -126,8 +130,9 @@ func TestInstall(t *testing.T) {
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "^1.0.0",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "^1.0.0",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -141,8 +146,9 @@ func TestInstall(t *testing.T) {
 				// toModify:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "^1.0.0",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "^1.0.0",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -157,8 +163,9 @@ func TestInstall(t *testing.T) {
 				// release, depends on pkg that is going to be removed:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("myawesomedep", "myawesomedeptargetns"),
-						SemverRange:     "~0.1.0",
+						ReleaseName: "myawesomedep",
+						Namespace:   "myawesomedeptargetns",
+						SemverRange: "~0.1.0",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -171,22 +178,25 @@ func TestInstall(t *testing.T) {
 				// package 1, depends on 2:
 				pkg.NewPkgMock("wantedfoo", "1.0.0", "targetns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("wantedbar", "targetns"),
-						SemverRange:     "^1.0.0",
+						ReleaseName: "wantedbar",
+						Namespace:   "targetns",
+						SemverRange: "^1.0.0",
 					}},
 					nil, pkg.Absent, pkg.Present),
 				// package 2, depends on 3:
 				pkg.NewPkgMock("wantedbar", "1.0.0", "targetns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("wantedbaz", "targetns"),
-						SemverRange:     "^1.0.0",
+						ReleaseName: "wantedbaz",
+						Namespace:   "targetns",
+						SemverRange: "^1.0.0",
 					}},
 					nil, pkg.Absent, pkg.Unknown),
 				// package 1, depends on 1:
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("wantedfoo", "targetns"),
-						SemverRange:     "^1.0.0",
+						ReleaseName: "wantedfoo",
+						Namespace:   "targetns",
+						SemverRange: "^1.0.0",
 					}},
 					nil, pkg.Absent, pkg.Unknown),
 			},
@@ -272,8 +282,9 @@ func TestFormatOutput(t *testing.T) {
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
 					[]*pkg.PkgRel{{
-						BaseFingerprint: pkg.CreateBaseFingerPrint("depfoo", "targetns"),
-						SemverRange:     "^1.0.0",
+						ReleaseName: "depfoo",
+						Namespace:   "targetns",
+						SemverRange: "^1.0.0",
 					}},
 					nil, pkg.Absent, pkg.Present),
 			},
