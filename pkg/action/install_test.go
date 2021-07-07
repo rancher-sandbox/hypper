@@ -59,6 +59,7 @@ func TestInstallRun(t *testing.T) {
 		optionalDeps    optionalDepsStrategy
 		wantNSFromFlag  string
 		numReturnedRels int
+		wantDryRun      bool
 	}{
 		{
 			name:            "chart has no shared-deps",
@@ -124,6 +125,13 @@ func TestInstallRun(t *testing.T) {
 			optionalDeps:    OptionalDepsNone,
 			numReturnedRels: 1,
 		},
+		{
+			name:            "install chart and dependency with --dry-run",
+			chart:           buildChart(withHypperAnnotations(), withSharedDeps()),
+			golden:          "output/install-shared-deps-dry-run.txt",
+			numReturnedRels: 2,
+			wantDryRun:      true,
+		},
 	} {
 		var settings *cli.EnvSettings
 		if tcase.wantNSFromFlag != "" {
@@ -148,6 +156,7 @@ func TestInstallRun(t *testing.T) {
 
 		instAction := installAction(t)
 		instAction.OptionalDeps = tcase.optionalDeps
+		instAction.DryRun = tcase.wantDryRun
 
 		if tcase.addRelStub {
 			now := time.Now()
@@ -180,137 +189,21 @@ func TestInstallRun(t *testing.T) {
 
 		if tcase.wantError {
 			is.Equal(tcase.error, err.Error())
+		} else {
+			if tcase.wantDryRun {
+				for _, r := range rels {
+					is.Equal("pending-install", r.Info.Status.String(), "Expected status of the installed dependency.")
+				}
+			}
 		}
+
 		if tcase.golden != "" {
 			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
 		}
 	}
 }
 
-// func TestInstallSharedDep(t *testing.T) {
-
-// 	for _, tcase := range []struct {
-// 		name       string
-// 		dep        *chart.Dependency
-// 		wantError  bool
-// 		error      string
-// 		wantDryRun bool
-// 		status     string
-// 		relName    string
-// 		ns         string
-// 	}{
-// 		{
-// 			name: "dry-run-is-passed",
-// 			dep: &chart.Dependency{
-// 				Dependency: &helmChart.Dependency{
-// 					Name:       "testdata/charts/vanilla-helm",
-// 					Version:    "0.1.0",
-// 					Repository: "",
-// 				},
-// 				IsOptional: false,
-// 			},
-// 			wantDryRun: true,
-// 			status:     "pending-install",
-// 		},
-// 		{
-// 			name: "dep installed correctly",
-// 			dep: &chart.Dependency{
-// 				Dependency: &helmChart.Dependency{
-// 					Name:       "testdata/charts/vanilla-helm",
-// 					Version:    "^0.1.0",
-// 					Repository: "",
-// 				},
-// 				IsOptional: false,
-// 			},
-// 			status:  "deployed",
-// 			ns:      "spaced",
-// 			relName: "empty",
-// 		},
-// 		{
-// 			name: "dep with annot installed correctly",
-// 			dep: &chart.Dependency{
-// 				Dependency: &helmChart.Dependency{
-// 					Name:       "testdata/charts/shared-dep",
-// 					Version:    "~0.1.0",
-// 					Repository: "",
-// 				},
-// 				IsOptional: false,
-// 			},
-// 			status:  "deployed",
-// 			ns:      "my-shared-dep-ns",
-// 			relName: "my-shared-dep",
-// 		},
-// 		{
-// 			name: "install non-existent dep",
-// 			dep: &chart.Dependency{
-// 				Dependency: &helmChart.Dependency{
-// 					Name:       "nonexistent-chart",
-// 					Version:    "0.1.0",
-// 					Repository: "",
-// 				},
-// 				IsOptional: false,
-// 			},
-// 			wantError: true,
-// 			error:     "failed to download \"nonexistent-chart\" (hint: running `helm repo update` may help)",
-// 		},
-// 		{
-// 			name: "shared-dep version cannot be found",
-// 			dep: &chart.Dependency{
-// 				Dependency: &helmChart.Dependency{
-// 					Name:       "testdata/charts/shared-dep",
-// 					Version:    "1.1.0",
-// 					Repository: "",
-// 				},
-// 				IsOptional: false,
-// 			},
-// 			wantError: true,
-// 			error:     "Satisfiable chart version not found; 0.1.0 is not equal to 1.1.0",
-// 		},
-// 		{
-// 			name: "shared-dep version non-parseable",
-// 			dep: &chart.Dependency{
-// 				Dependency: &helmChart.Dependency{
-// 					Name:       "testdata/charts/shared-dep",
-// 					Version:    "foo0.1.0",
-// 					Repository: "",
-// 				},
-// 				IsOptional: false,
-// 			},
-// 			wantError: true,
-// 			error:     "improper constraint: foo0.1.0",
-// 		},
-// 	} {
-// 		is := assert.New(t)
-
-// 		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
-// 		buf := new(bytes.Buffer)
-// 		logger := logcli.NewStandard()
-// 		logger.InfoOut = buf
-// 		logger.WarnOut = buf
-// 		logger.ErrorOut = buf
-// 		logger.DebugOut = buf
-// 		log.Current = logger
-
-// 		settings := cli.New()
-
-// 		instAction := installAction(t)
-
-// 		instAction.DryRun = tcase.wantDryRun
-
-// 		res, err := instAction.InstallSharedDep(tcase.dep, tcase.ns, settings, log.Current, 0)
-// 		if (err != nil) != tcase.wantError {
-// 			t.Errorf("on test %q expected error, got '%v'", tcase.name, err)
-// 		}
-// 		if tcase.wantError {
-// 			is.Equal(tcase.error, err.Error())
-// 		} else {
-// 			is.Equal(res.Info.Status.String(), tcase.status, "Expected status of the installed dependency.")
-// 			if tcase.status == "deployed" {
-// 				is.Equal(res.Name, tcase.relName, "Expected release name from dependency.")
-// 				is.Equal(res.Namespace, tcase.ns, "Expected parent ns.")
-// 			}
-// 		}
-// 	}
+// func TestInstallPkg(t *testing.T) {
 // }
 
 func TestInstallSetNamespace(t *testing.T) {
