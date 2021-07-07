@@ -164,8 +164,8 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 					return err
 				}
 				// obtain default ns and release name of dep:
-				depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-				depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, "") // TODO default name for helm repos
+				depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, settings.Namespace())
+				depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, depChart.Name())
 
 				// Add dep to DB
 				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
@@ -173,8 +173,8 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 				pkgdb.Add(depP)
 			} else {
 				// obtain default ns and release name of dep:
-				depNS = GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-				depRelName = GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "") // TODO default name for helm repos
+				depNS = GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, settings.Namespace())
+				depRelName = GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, dep.Name)
 			}
 
 			// TODO each version can have a different default ns
