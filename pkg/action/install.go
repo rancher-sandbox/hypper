@@ -96,6 +96,17 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	// TODO obtain lock
 	// defer release lock
 
+	// get all releases
+	clientInstallForGetRels := NewInstall(i.Config)
+	// do a deep copy, in case install struct changes in the future:
+	if err := copier.Copy(&clientInstallForGetRels, &i); err != nil {
+		return nil, err
+	}
+	rels, err := clientInstallForGetRels.GetAllReleases()
+	if err != nil {
+		return nil, err
+	}
+
 	// honour settings.NamespaceFromFlag:
 	SetNamespace(i, wantedChrt, settings.Namespace(), settings.NamespaceFromFlag)
 
@@ -111,12 +122,6 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 
 	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace,
 		pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
-
-	// get all releases
-	rels, err := i.GetAllReleases()
-	if err != nil {
-		return nil, err
-	}
 
 	// get all repo entries
 	rf, err := repo.LoadFile(settings.RepositoryConfig)
@@ -216,10 +221,9 @@ func CheckIfInstallable(ch *helmChart.Chart) error {
 }
 
 // GetAllReleases obtains the releases in all namespaces that we have access to.
-func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release.Release, err error) {
-	if err := i.Config.Init(settings.RESTClientGetter(), "", os.Getenv("HELM_DRIVER"), i.Config.Log); err != nil {
-		return nil, err
-	}
+func (i *Install) GetAllReleases() (releases []*release.Release, err error) {
+	// use empty namespace, to target all namespaces the kubeclient has access to:
+	i.Config.SetNamespace("")
 	return i.GetReleases()
 }
 
