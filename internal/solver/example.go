@@ -55,12 +55,12 @@ func ExampleSolve() {
 	log.Current = logger
 	logger.Level = log.DebugLevel
 
-	s := New(InstallOne)
+	s := New(InstallOne, logger)
 
 	s.PkgDB.DebugPrintDB(logger)
 	s.BuildWorldMock(pkgs)
 
-	s.Solve(logger)
+	s.Solve()
 	s.PkgDB.DebugPrintDB(logger)
 
 	fmt.Println(s.FormatOutput(YAML))

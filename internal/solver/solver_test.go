@@ -212,9 +212,9 @@ func TestInstall(t *testing.T) {
 			logger.DebugOut = buf
 			log.Current = logger
 
-			s := New(InstallOne)
+			s := New(InstallOne, logger)
 			s.BuildWorldMock(tcase.pkgs)
-			s.Solve(logger)
+			s.Solve()
 			is := assert.New(t)
 			is.Equal(tcase.resultStatus, s.PkgResultSet.Status)
 
@@ -289,9 +289,9 @@ func TestFormatOutput(t *testing.T) {
 		logger.DebugOut = buf
 		log.Current = logger
 
-		s := New(InstallOne)
+		s := New(InstallOne, logger)
 		s.BuildWorldMock(tcase.pkgs)
-		s.Solve(logger)
+		s.Solve()
 		is := assert.New(t)
 		is.Equal(tcase.status, s.PkgResultSet.Status)
 

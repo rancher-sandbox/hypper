@@ -120,7 +120,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		return nil, err
 	}
 
-	s := solver.New(strategy)
+	s := solver.New(strategy, logger)
 
 	err = BuildWorld(s.PkgDB, rf.Repositories, rels, wantedPkg, wantedChrt, settings, logger)
 	if err != nil {
@@ -154,7 +154,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		}
 	}
 
-	s.Solve(logger)
+	s.Solve()
 
 	installedRels := make([]*release.Release, 0)
 	if s.IsSAT() {

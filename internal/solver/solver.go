@@ -64,6 +64,7 @@ type Solver struct {
 	PkgDB        *PkgDB       // DB containing packages
 	PkgResultSet PkgResultSet // outcome of sat solving
 	Strategy     SolverStrategy
+	logger       log.Logger
 }
 
 // PkgResultSet contains the status outcome of solving, and the different sets of
@@ -86,11 +87,12 @@ const (
 )
 
 // New creates a new Solver, initializing its database.
-func New(strategy SolverStrategy) (s *Solver) {
+func New(strategy SolverStrategy, logger log.Logger) (s *Solver) {
 	s = &Solver{
 		PkgDB:        CreatePkgDBInstance(),
 		PkgResultSet: PkgResultSet{},
 		Strategy:     strategy,
+		logger:       logger,
 	}
 	s.PkgResultSet.Inconsistencies = []string{}
 	return s
@@ -131,20 +133,20 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []maxsat.Constr) {
 	return constrs
 }
 
-func (s *Solver) Solve(logger log.Logger) {
+func (s *Solver) Solve() {
 	// generate constraints for all packages
-	logger.Debug("Building constraints…")
+	s.logger.Debug("Building constraints…")
 	constrs := []maxsat.Constr{}
 	for _, p := range s.PkgDB.mapFingerprintToPkg {
 		constrs = append(constrs, s.BuildConstraints(p)...)
 	}
 
-	logger.Debug("Constraints:")
+	s.logger.Debug("Constraints:")
 	for _, c := range constrs {
-		logger.Debugf("    %v\n", c)
+		s.logger.Debugf("    %v\n", c)
 
 	}
-	logger.Debug("Solving…")
+	s.logger.Debug("Solving…")
 
 	// create problem with constraints, and solve
 	problem := maxsat.New(constrs...)
@@ -158,7 +160,7 @@ func (s *Solver) Solve(logger log.Logger) {
 		s.PkgResultSet.Status = "UNSAT"
 	}
 
-	logger.Debugf("Result %v\n", result)
+	s.logger.Debugf("Result %v\n", result)
 }
 
 func (s *Solver) IsSAT() bool {
