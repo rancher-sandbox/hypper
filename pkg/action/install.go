@@ -165,8 +165,8 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 
 	s.Solve()
 
-	installedRels := make([]*release.Release, 0)
 	if s.IsSAT() {
+		installedRels := make([]*release.Release, 0)
 		for _, p := range s.PkgResultSet.ToInstall {
 
 			if i.NoSharedDeps && p.GetFingerPrint() != wantedPkg.GetFingerPrint() {
@@ -181,9 +181,15 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 			}
 			installedRels = append(installedRels, rel)
 		}
+		return installedRels, nil
+	} else {
+		// UNSAT, error with inconsistencies
+		incons := ""
+		for _, incon := range s.PkgResultSet.Inconsistencies {
+			incons = incons + incon
+		}
+		return make([]*release.Release, 0), errors.New(incons)
 	}
-
-	return installedRels, nil
 }
 
 // Chart returns the chart that should be used.

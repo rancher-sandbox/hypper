@@ -395,8 +395,8 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 		if len(satisfyingVersions) == 0 {
 			// there are no packages that match the version we depend on, add
 			// that to inconsistencies
-			incons := fmt.Sprintf("Package %s depends on %s, semver %s, but nothing satisfies it\n",
-				p.GetFingerPrint(), deprel.BaseFingerprint, deprel.SemverRange)
+			incons := fmt.Sprintf("Chart %s depends on %s, semver %s, but nothing satisfies it",
+				p.ChartName, deprel.BaseFingerprint, deprel.SemverRange)
 			s.PkgResultSet.Inconsistencies = append(s.PkgResultSet.Inconsistencies, incons)
 		}
 
