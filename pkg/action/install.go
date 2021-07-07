@@ -215,8 +215,16 @@ func CheckIfInstallable(ch *helmChart.Chart) error {
 	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
 }
 
-func (i *Install) GetAllReleases() (releases []*release.Release, err error) {
-	// obtain the releases for the specific ns that we are searching into
+// GetAllReleases obtains the releases in all namespaces that we have access to.
+func (i *Install) GetAllReleases(settings *cli.EnvSettings) (releases []*release.Release, err error) {
+	if err := i.Config.Init(settings.RESTClientGetter(), "", os.Getenv("HELM_DRIVER"), i.Config.Log); err != nil {
+		return nil, err
+	}
+	return i.GetReleases()
+}
+
+// GetReleases obtains the releases in the specific namespace that we are searching into.
+func (i *Install) GetReleases() (releases []*release.Release, err error) {
 	clientList := NewList(i.Config)
 	clientList.SetStateMask()
 	releases, err = clientList.Run()
