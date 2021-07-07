@@ -96,6 +96,9 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	// TODO obtain lock
 	// defer release lock
 
+	// honour settings.NamespaceFromFlag:
+	SetNamespace(i, wantedChrt, settings.Namespace(), settings.NamespaceFromFlag)
+
 	// create pkg with chart to be installed:
 	version := i.ChartPathOptions.Version
 	pinnedVer := pkg.Unknown
