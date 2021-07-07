@@ -46,7 +46,7 @@ type chrtEntry struct {
 //   to the DB for each version of the chart.
 // - For all releases and wanted packages, it adds a package or updates a
 //   present package in the DB.
-func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
+func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 	releases []*release.Release,
 	toModify *pkg.Pkg, toModifyChart *helmChart.Chart,
 	settings *cli.EnvSettings, logger log.Logger) (err error) {
@@ -85,7 +85,8 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
 
 			// fill dep relations
-			if err := CreateDepRelsFromAnnot(p, chrtVer.Annotations, repoEntries); err != nil {
+			if err := i.CreateDepRelsFromAnnot(p, chrtVer.Annotations, repoEntries,
+				pkgdb, settings, logger); err != nil {
 				return err
 			}
 
@@ -108,9 +109,8 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 			// string
 			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, pkg.Present, "")
 			// fill dep relations:
-			// FIXME releases depending on charts not on the repos are not done
-			// yet, need to pull the chart to obtain default ns
-			if err := CreateDepRelsFromAnnot(p, r.Chart.Metadata.Annotations, repoEntries); err != nil {
+			if err := i.CreateDepRelsFromAnnot(p, r.Chart.Metadata.Annotations, repoEntries,
+				pkgdb, settings, logger); err != nil {
 				return err
 			}
 			pkgdb.Add(p)
@@ -119,7 +119,8 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 
 	// calculate dep rels for toModify
 	// fill dep relations
-	if err := CreateDepRelsFromAnnot(toModify, toModifyChart.Metadata.Annotations, repoEntries); err != nil {
+	if err := i.CreateDepRelsFromAnnot(toModify, toModifyChart.Metadata.Annotations, repoEntries,
+		pkgdb, settings, logger); err != nil {
 		return err
 	}
 
@@ -132,7 +133,10 @@ func BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry,
 // CreateDepRelsFromAnnot fills the p.DepRel and p.DepOptionalRel of a package,
 // by unmarshalling and checking the Metadata.Annotations of the chart that
 // corresponds to that package.
-func CreateDepRelsFromAnnot(p *pkg.Pkg, chartAnnot map[string]string, repoEntries map[string]chrtEntry) (err error) {
+func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
+	chartAnnot map[string]string, repoEntries map[string]chrtEntry,
+	pkgdb *solver.PkgDB,
+	settings *cli.EnvSettings, logger log.Logger) (err error) {
 
 	// unmarshal dependencies:
 	cases := []string{"hypper.cattle.io/shared-dependencies", "hypper.cattle.io/optional-dependencies"}
@@ -149,32 +153,42 @@ func CreateDepRelsFromAnnot(p *pkg.Pkg, chartAnnot map[string]string, repoEntrie
 		// for all deps in chrtVer.Annotations, find the dep in repo entries
 		// to obtain its default ns:
 		for _, dep := range sharedDeps {
+			var depNS, depRelName string
 			// find dependency:
 			depChrtVer, ok := repoEntries[dep.Name]
-			if !ok {
-				log.Warnf("Dependency \"%s\" not found in repos, skipping it", dep.Name)
-				continue
+			if !ok { // dep not in repo
+				// pull chart to obtain default ns
+				log.Debugf("Dependency \"%s\" not found in repos, loading chart", dep.Name)
+				depChart, err := i.LoadChart(dep.Name, dep.Repository, dep.Version, settings, logger)
+				if err != nil {
+					return err
+				}
+				// obtain default ns and release name of dep:
+				depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+				depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, "") // TODO default name for helm repos
+
+				// Add dep to DB
+				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
+					pkg.Unknown, pkg.Unknown, pkg.Unknown, "") // TODO unknown repo
+				pkgdb.Add(depP)
+			} else {
+				// obtain default ns and release name of dep:
+				depNS = GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
+				depRelName = GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "") // TODO default name for helm repos
 			}
 
 			// TODO each version can have a different default ns
-
-			// obtain default ns of dep
-			depNS := GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, "") //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-			depName := GetNameFromAnnot(depChrtVer.chartVersions[0].Annotations, "")    // TODO default name for helm repos
-
-			// FIXME if dependency chart not in repo, we are defaulting to
-			// default release name and namespace
 
 			switch c {
 			case "hypper.cattle.io/shared-dependencies":
 				//add relation to pkg
 				p.DependsRel = append(p.DependsRel, &pkg.PkgRel{
-					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
+					BaseFingerprint: pkg.CreateBaseFingerPrint(depRelName, depNS),
 					SemverRange:     dep.Version,
 				})
 			case "hypper.cattle.io/optional-dependencies":
 				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
-					BaseFingerprint: pkg.CreateBaseFingerPrint(depName, depNS),
+					BaseFingerprint: pkg.CreateBaseFingerPrint(depRelName, depNS),
 					SemverRange:     dep.Version,
 				})
 			}

@@ -106,7 +106,8 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		pinnedVer = pkg.Present
 	}
 
-	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace, pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
+	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace,
+		pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
 
 	// get all releases
 	rels, err := i.GetAllReleases()
@@ -122,7 +123,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 
 	s := solver.New(strategy, logger)
 
-	err = BuildWorld(s.PkgDB, rf.Repositories, rels, wantedPkg, wantedChrt, settings, logger)
+	err = i.BuildWorld(s.PkgDB, rf.Repositories, rels, wantedPkg, wantedChrt, settings, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -222,12 +223,12 @@ func (i *Install) GetAllReleases() (releases []*release.Release, err error) {
 	return releases, nil
 }
 
-// LoadChartFromPkg loads the chart for the desired package, using the already
-// set repository and version in the action.Install.
-func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
-	i.ChartPathOptions.RepoURL = p.Repository
-	i.ChartPathOptions.Version = p.Version
-	cp, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
+func (i *Install) LoadChart(chartName, repo, version string,
+	settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
+
+	i.ChartPathOptions.RepoURL = repo
+	i.ChartPathOptions.Version = version
+	cp, err := i.ChartPathOptions.LocateChart(chartName, settings.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +240,15 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg, settings *cli.EnvSettings, logger
 		return nil, err
 	}
 	return chartRequested, nil
+}
+
+// LoadChartFromPkg loads the chart for the desired package, using the already
+// set repository and version in the action.Install.
+func (i *Install) LoadChartFromPkg(p *pkg.Pkg,
+	settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
+
+	return i.LoadChart(p.ChartName, p.Repository, p.Version,
+		settings, logger)
 }
 
 // InstallPkg installs the passed package by pulling its related chart. It takes
@@ -265,16 +275,8 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 		chartRequested = wantedChart
 	} else {
 		// we don't have a chart, load it
-		clientInstall.ChartPathOptions.RepoURL = p.Repository
-		clientInstall.ChartPathOptions.Version = p.Version
-		chartpath, err := i.ChartPathOptions.LocateChart(p.ChartName, settings.EnvSettings)
-		if err != nil {
-			return nil, err
-		}
-
-		logger.Debugf("CHART PATH: %s\n", chartpath)
-
-		chartRequested, err = loader.Load(chartpath)
+		var err error
+		chartRequested, err = clientInstall.LoadChart(p.ChartName, p.Repository, p.Version, settings, logger)
 		if err != nil {
 			return nil, err
 		}
