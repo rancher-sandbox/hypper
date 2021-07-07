@@ -51,6 +51,8 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 	toModify *pkg.Pkg, toModifyChart *helmChart.Chart,
 	settings *cli.EnvSettings, logger log.Logger) (err error) {
 
+	logger.Debug("Building package DB…")
+
 	// concatenate all index entries from all repositories:
 	repoEntries := make(map[string]chrtEntry)
 	for _, r := range repositories {

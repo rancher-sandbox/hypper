@@ -136,7 +136,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		return nil, err
 	}
 
-	s.PkgDB.DebugPrintDB(logger)
+	// s.PkgDB.DebugPrintDB(logger)
 
 	// Promote optional deps to normal deps, depending on the strategy selected:
 	// TODO use wantedPkg instead of wantedPkgInDB once wantedPkg from local chart gets depRel correctly built

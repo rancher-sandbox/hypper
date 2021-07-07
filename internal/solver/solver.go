@@ -141,11 +141,11 @@ func (s *Solver) Solve() {
 		constrs = append(constrs, s.BuildConstraints(p)...)
 	}
 
-	s.logger.Debug("Constraints:")
-	for _, c := range constrs {
-		s.logger.Debugf("    %v\n", c)
+	// s.logger.Debug("Constraints:")
+	// for _, c := range constrs {
+	// 	s.logger.Debugf("    %v\n", c)
+	// }
 
-	}
 	s.logger.Debug("Solving…")
 
 	// create problem with constraints, and solve
@@ -156,11 +156,13 @@ func (s *Solver) Solve() {
 		//	there is a result model, generate pkg sets then:
 		s.GeneratePkgSets(result)
 		s.PkgResultSet.Status = "SAT"
+		s.logger.Debug("Result: SAT\n")
 	} else {
 		s.PkgResultSet.Status = "UNSAT"
+		s.logger.Debug("Result: UNSAT\n")
 	}
 
-	s.logger.Debugf("Result %v\n", result)
+	// s.logger.Debugf("Result %v\n", result)
 }
 
 func (s *Solver) IsSAT() bool {
