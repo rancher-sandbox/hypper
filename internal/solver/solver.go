@@ -60,6 +60,9 @@ const (
 	//                dependencies.
 )
 
+// Solver performs SAT solving of dependency problems. It codifies the state of
+// the world into packages, saved into a package database. It gets created with
+// a specific SolverStrategy, and contains the results in PkgResultSet.
 type Solver struct {
 	PkgDB        *PkgDB       // DB containing packages
 	PkgResultSet PkgResultSet // outcome of sat solving
