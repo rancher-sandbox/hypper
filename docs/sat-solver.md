@@ -4,14 +4,19 @@
 
 The problem space is defined by a set of packages that depend on each other in
 various ways. A **package** is comprised of:
-- A **ReleaseName**, either where to installed it, or where it is already
+- A **release name**, either where to install it, or where it is already
   installed.
 - A **semver** version.
 - A Kubernetes **namespace**. Either where to install it, or where is it
-  installed, if already installed.
-- A **Helm Digest** (hash) of the Hypper **chart**.
-- Implicitly, defined relations to other packages: **Depends**,
-  **Optional-Depends**.
+  already installed.
+- Defined relations to other packages: **Depends**,
+  **Optional-Depends**. These relations consist in a **release name**, a
+  **namespace**, and a **semver range**.
+- Information on how to obtain the Helm or Hypper **chart** associated to the
+  package.
+
+The tuple **release name**, **semver**, **namespace** of a package acts as a
+unique key for it.
 
 Also, not considered now but could be considered in the future:
 - Relations to other packages: **Provides**, **Conflicts**.
