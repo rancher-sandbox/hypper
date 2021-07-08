@@ -1,1 +1,1 @@
-🛳  Installing chart "hello" as "my-hypper-name" in namespace "luke-skywalker"…
+🛳  Installing chart "hello" as "test-install-release" in namespace "luke-skywalker"…
