@@ -301,17 +301,17 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 
 	var chartRequested *helmChart.Chart
 	var chartpath string
-	if p.GetFingerPrint() == wantedPkg.GetFingerPrint() {
-		// don't load chart, we already have it in wantedChart
+	if p.GetFingerPrint() == wantedPkg.GetFingerPrint() { // wantedPkg
+		// don't load chart, we already have it
 		chartRequested = wantedChart
-	} else {
+	} else { // dependency
 		// we don't have a chart, load it
 		var err error
 		chartRequested, err = clientInstall.LoadChartFromPkg(p, settings, logger)
 		if err != nil {
 			return nil, err
 		}
-		// it is a dependency, default to empty vals:
+		// default to empty vals:
 		vals = make(map[string]interface{})
 	}
 

@@ -158,6 +158,7 @@ func runInstall(strategy solver.SolverStrategy, args []string, client *action.In
 	action.SetNamespace(client, chartRequested, settings.Namespace(), settings.NamespaceFromFlag)
 
 	if client.ReleaseName == "" {
+		// calculate releaseName either from args, metadata, or chart name:
 		client.ReleaseName, err = action.GetName(chartRequested, client.NameTemplate, args...)
 		if err != nil {
 			return nil, err
