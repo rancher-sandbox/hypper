@@ -133,73 +133,78 @@ func TestInstallRun(t *testing.T) {
 			wantDryRun:      true,
 		},
 	} {
-		var settings *cli.EnvSettings
-		if tcase.wantNSFromFlag != "" {
-			settings = cli.NewWithNamespace(tcase.wantNSFromFlag)
-			settings.NamespaceFromFlag = true
-		} else {
-			settings = cli.New()
-		}
-		settings.Debug = tcase.wantDebug
+		t.Run(tcase.name, func(t *testing.T) {
 
-		// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
-		buf := new(bytes.Buffer)
-		logger := logcli.NewStandard()
-		logger.InfoOut = buf
-		logger.WarnOut = buf
-		logger.ErrorOut = buf
-		logger.DebugOut = buf
-		if tcase.wantDebug {
-			logger.Level = log.DebugLevel
-		}
-		log.Current = logger
-
-		instAction := installAction(t)
-		instAction.OptionalDeps = tcase.optionalDeps
-		instAction.DryRun = tcase.wantDryRun
-
-		if tcase.addRelStub {
-			now := time.Now()
-			rel := &release.Release{
-				Name: "my-shared-dep",
-				Info: &release.Info{
-					FirstDeployed: now,
-					LastDeployed:  now,
-					Status:        release.StatusDeployed,
-					Description:   "Named Release Stub",
-				},
-				Version:   1,
-				Namespace: "my-shared-dep-ns",
-				Chart:     buildChart(),
+			var settings *cli.EnvSettings
+			if tcase.wantNSFromFlag != "" {
+				settings = cli.NewWithNamespace(tcase.wantNSFromFlag)
+				settings.NamespaceFromFlag = true
+			} else {
+				settings = cli.New()
 			}
-			instAction.Config.SetNamespace("spaced")
-			err := instAction.Config.Releases.Create(rel)
-			if err != nil {
-				t.Fatalf("Failed creating rel stub: %s", err)
+			settings.Debug = tcase.wantDebug
+
+			// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
+			buf := new(bytes.Buffer)
+			logger := logcli.NewStandard()
+			logger.InfoOut = buf
+			logger.WarnOut = buf
+			logger.ErrorOut = buf
+			logger.DebugOut = buf
+			if tcase.wantDebug {
+				logger.Level = log.DebugLevel
 			}
-		}
-		is := assert.New(t)
+			log.Current = logger
 
-		rels, err := instAction.Run(solver.InstallOne, tcase.chart, map[string]interface{}{}, settings, log.Current)
-		is.Equal(tcase.numReturnedRels, len(rels))
+			instAction := installAction(t)
+			instAction.OptionalDeps = tcase.optionalDeps
+			instAction.DryRun = tcase.wantDryRun
 
-		if (err != nil) && !tcase.wantError {
-			t.Errorf("on test %q, got unexpected error '%v'", tcase.name, err)
-		}
-
-		if tcase.wantError {
-			is.Equal(tcase.error, err.Error())
-		} else {
-			if tcase.wantDryRun {
-				for _, r := range rels {
-					is.Equal("pending-install", r.Info.Status.String(), "Expected status of the installed dependency.")
+			if tcase.addRelStub {
+				now := time.Now()
+				rel := &release.Release{
+					Name: "my-shared-dep",
+					Info: &release.Info{
+						FirstDeployed: now,
+						LastDeployed:  now,
+						Status:        release.StatusDeployed,
+						Description:   "Named Release Stub",
+					},
+					Version:   1,
+					Namespace: "my-shared-dep-ns",
+					Chart:     buildChart(),
+				}
+				instAction.Config.SetNamespace("spaced")
+				err := instAction.Config.Releases.Create(rel)
+				if err != nil {
+					t.Fatalf("Failed creating rel stub: %s", err)
 				}
 			}
-		}
+			is := assert.New(t)
 
-		if tcase.golden != "" {
-			test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
-		}
+			rels, err := instAction.Run(solver.InstallOne, tcase.chart, map[string]interface{}{}, settings, log.Current)
+			is.Equal(tcase.numReturnedRels, len(rels))
+
+			if (err != nil) && !tcase.wantError {
+				t.Errorf("on test %q, got unexpected error '%v'", tcase.name, err)
+			}
+
+			if tcase.wantError {
+				is.Equal(tcase.error, err.Error())
+			} else {
+				if tcase.wantDryRun {
+					for _, r := range rels {
+						is.Equal("pending-install", r.Info.Status.String(), "Expected status of the installed dependency.")
+					}
+				}
+			}
+
+			if tcase.golden != "" {
+				test.AssertGoldenBytes(t, buf.Bytes(), tcase.golden)
+			}
+
+		})
+
 	}
 }
 
