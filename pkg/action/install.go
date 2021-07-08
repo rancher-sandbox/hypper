@@ -110,6 +110,15 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	// honour settings.NamespaceFromFlag:
 	SetNamespace(i, wantedChrt, settings.Namespace(), settings.NamespaceFromFlag)
 
+	if i.ReleaseName == "" {
+		// no release provided, obtain it from annotations or chart name
+		var err error
+		i.ReleaseName, err = GetName(wantedChrt, i.NameTemplate)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// create pkg with chart to be installed:
 	version := i.ChartPathOptions.Version
 	pinnedVer := pkg.Unknown
@@ -317,11 +326,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 	// Set Namespace, Releasename for the install client without reevaluating them
 	// from the dependent:
 	SetNamespace(clientInstall, chartRequested, p.Namespace, settings.NamespaceFromFlag)
-	var err error
-	clientInstall.ReleaseName, err = GetName(chartRequested, clientInstall.NameTemplate, p.ReleaseName)
-	if err != nil {
-		return nil, err
-	}
+	clientInstall.ReleaseName = p.ReleaseName
 
 	if err := CheckIfInstallable(chartRequested); err != nil {
 		return nil, err
