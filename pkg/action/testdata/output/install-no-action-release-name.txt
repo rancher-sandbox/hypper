@@ -1,0 +1,1 @@
+🛳  Installing chart "hello" as "my-hypper-name" in namespace "hypper"…

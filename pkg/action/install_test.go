@@ -48,18 +48,19 @@ func installAction(t *testing.T) *Install {
 func TestInstallRun(t *testing.T) {
 
 	for _, tcase := range []struct {
-		name            string
-		chart           *helmChart.Chart
-		golden          string
-		wantError       bool
-		error           string
-		wantDebug       bool
-		debug           string
-		addRelStub      bool
-		optionalDeps    optionalDepsStrategy
-		wantNSFromFlag  string
-		numReturnedRels int
-		wantDryRun      bool
+		name                  string
+		chart                 *helmChart.Chart
+		golden                string
+		wantError             bool
+		error                 string
+		wantDebug             bool
+		debug                 string
+		addRelStub            bool
+		optionalDeps          optionalDepsStrategy
+		wantNSFromFlag        string
+		numReturnedRels       int
+		wantDryRun            bool
+		skipActionReleaseName bool
 	}{
 		{
 			name:            "chart has no shared-deps",
@@ -67,6 +68,14 @@ func TestInstallRun(t *testing.T) {
 			golden:          "output/install-no-shared-deps.txt",
 			addRelStub:      true,
 			numReturnedRels: 1,
+		},
+		{
+			name:                  "chart has no shared-deps and no action releaseName",
+			chart:                 buildChart(withHypperAnnotations()),
+			golden:                "output/install-no-action-release-name.txt",
+			addRelStub:            true,
+			numReturnedRels:       1,
+			skipActionReleaseName: true,
 		},
 		{
 			name:            "chart metadata has malformed yaml",
@@ -159,6 +168,10 @@ func TestInstallRun(t *testing.T) {
 			instAction := installAction(t)
 			instAction.OptionalDeps = tcase.optionalDeps
 			instAction.DryRun = tcase.wantDryRun
+
+			if tcase.skipActionReleaseName {
+				instAction.ReleaseName = ""
+			}
 
 			if tcase.addRelStub {
 				now := time.Now()
