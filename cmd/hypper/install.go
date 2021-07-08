@@ -83,6 +83,7 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 			// TODO decide how to use returned rel:
 			_, err := runInstall(solver.InstallOne, args, client, valueOpts, logger)
 			if err != nil {
+				err = errors.New(eyecandy.ESPrintf(settings.NoEmojis, ":x: %s", err))
 				return err
 			}
 			logger.Info(eyecandy.ESPrint(settings.NoEmojis, ":clapping_hands:Done!"))
