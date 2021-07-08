@@ -171,7 +171,7 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 
 				// Add dep to DB
 				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
-					pkg.Unknown, pkg.Unknown, pkg.Unknown, "") // TODO unknown repo
+					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository)
 				pkgdb.Add(depP)
 			} else {
 				// obtain default ns and release name of dep:

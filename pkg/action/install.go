@@ -298,7 +298,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 	} else {
 		// we don't have a chart, load it
 		var err error
-		chartRequested, err = clientInstall.LoadChart(p.ChartName, p.Repository, p.Version, settings, logger)
+		chartRequested, err = clientInstall.LoadChartFromPkg(p, settings, logger)
 		if err != nil {
 			return nil, err
 		}
