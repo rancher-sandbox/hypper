@@ -1,5 +1,7 @@
 ## Using a SAT solver for solving dependencies
 
+(Note: SVGs in the document may not be visible if using a dark theme)
+
 The problem space is defined by a set of packages that depend on each other in
 various ways. A **package** is comprised of:
 - A **ReleaseName**, either where to installed it, or where it is already
