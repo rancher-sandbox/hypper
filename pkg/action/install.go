@@ -175,7 +175,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 			}
 
 			// install package:
-			rel, err := i.InstallPkg(p, wantedPkg, wantedChrt, settings, logger)
+			rel, err := i.InstallPkg(p, wantedPkg, wantedChrt, vals, settings, logger)
 			if err != nil {
 				return installedRels, err
 			}
@@ -275,6 +275,7 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg,
 // InstallPkg installs the passed package by pulling its related chart. It takes
 // care of using the desired namespace for it.
 func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmChart.Chart,
+	vals map[string]interface{},
 	settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
 	// FIXME don't pass wantedPkg and wantedChart and skip things more cleanly
 
@@ -301,10 +302,11 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 		if err != nil {
 			return nil, err
 		}
+		// it is a dependency, default to empty vals:
+		vals = make(map[string]interface{})
 	}
 
 	getter := getter.All(settings.EnvSettings)
-	vals := make(map[string]interface{}) // TODO calculate vals instead of {}
 
 	logger.Debugf("Original chart version: %q", chartRequested.Metadata.Version)
 	if clientInstall.Devel {
