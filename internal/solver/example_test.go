@@ -30,20 +30,22 @@ import (
 
 func ExampleSolver() {
 
+	wantedPkg := pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+		// dependency relations of wantedbaz:
+		[]*pkg.PkgRel{{
+			ReleaseName: "myawesomedep",
+			Namespace:   "myawesomedeptargetns",
+			SemverRange: "~0.1.0",
+		}},
+		nil, pkg.Unknown, pkg.Present)
+
 	// Create a slice of mock packages:
 	pkgs := []*pkg.Pkg{
 		pkg.NewPkgMock("notinstalledbar", "1.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
 		pkg.NewPkgMock("notinstalledbar", "2.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
 		pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
 		// package to modify (install, in this case, see pkg.DesiredState set to Present):
-		pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
-			// dependency relations of wantedbaz:
-			[]*pkg.PkgRel{{
-				ReleaseName: "myawesomedep",
-				Namespace:   "myawesomedeptargetns",
-				SemverRange: "~0.1.0",
-			}},
-			nil, pkg.Unknown, pkg.Present),
+		wantedPkg,
 		// releases already in the cluster:
 		pkg.NewPkgMock("installedfoo", "1.0.0", "installedns", nil, nil, pkg.Present, pkg.Unknown),
 	}
@@ -65,7 +67,7 @@ func ExampleSolver() {
 	s.PkgDB.DebugPrintDB(logger)
 
 	// Call the solver
-	s.Solve()
+	s.Solve(wantedPkg)
 
 	fmt.Println(s.FormatOutput(YAML))
 
@@ -82,29 +84,33 @@ func ExampleSolver() {
 	//   desiredstate: 0
 	//   pinnedver: 0
 	// toinstall:
-	// - releasename: myawesomedep
-	//   version: 0.1.100
-	//   namespace: myawesomedeptargetns
-	//   chartname: myawesomedep
-	//   dependsrel: []
-	//   dependsoptionalrel: []
-	//   repository: ourrepo
-	//   currentstate: 0
-	//   desiredstate: 0
-	//   pinnedver: 0
-	// - releasename: wantedbaz
-	//   version: 1.0.0
-	//   namespace: wantedbazns
-	//   chartname: wantedbaz
-	//   dependsrel:
-	//   - releasename: myawesomedep
-	//     namespace: myawesomedeptargetns
-	//     semverrange: ~0.1.0
-	//   dependsoptionalrel: []
-	//   repository: ourrepo
-	//   currentstate: 0
-	//   desiredstate: 1
-	//   pinnedver: 0
+	//   node:
+	//     releasename: wantedbaz
+	//     version: 1.0.0
+	//     namespace: wantedbazns
+	//     chartname: wantedbaz
+	//     dependsrel:
+	//     - releasename: myawesomedep
+	//       namespace: myawesomedeptargetns
+	//       semverrange: ~0.1.0
+	//     dependsoptionalrel: []
+	//     repository: ourrepo
+	//     currentstate: 0
+	//     desiredstate: 1
+	//     pinnedver: 0
+	//   relations:
+	//   - node:
+	//       releasename: myawesomedep
+	//       version: 0.1.100
+	//       namespace: myawesomedeptargetns
+	//       chartname: myawesomedep
+	//       dependsrel: []
+	//       dependsoptionalrel: []
+	//       repository: ourrepo
+	//       currentstate: 0
+	//       desiredstate: 0
+	//       pinnedver: 0
+	//     relations: []
 	// toremove: []
 	// status: SAT
 	// inconsistencies: []

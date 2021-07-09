@@ -32,6 +32,7 @@ func TestInstall(t *testing.T) {
 
 	for _, tcase := range []struct {
 		name         string
+		wantedPkg    *pkg.Pkg
 		pkgs         []*pkg.Pkg
 		golden       string
 		resultStatus string
@@ -45,6 +46,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "solve for the example in main",
 			golden: "output/solve-main.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "myawesomedep",
+					Namespace:   "myawesomedeptargetns",
+					SemverRange: "~0.1.0",
+				}},
+				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("notinstalledbar", "1.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
 				pkg.NewPkgMock("notinstalledbar", "2.0.0", "notinstalledtargetns", nil, nil, pkg.Unknown, pkg.Unknown),
@@ -65,6 +73,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "install a pkg and dep, finding specific version",
 			golden: "output/solve-sat-dependecy-specific-ver.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "myawesomedep",
+					Namespace:   "myawesomedeptargetns",
+					SemverRange: "0.1.103",
+				}},
+				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				// dependency that doesn't match semver range:
 				pkg.NewPkgMock("myawesomedep", "2.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
@@ -85,6 +100,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "install a pkg and dep, finding minor version",
 			golden: "output/solve-sat-dependecy-minor.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "myawesomedep",
+					Namespace:   "myawesomedeptargetns",
+					SemverRange: "~0.1.0",
+				}},
+				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				// dependency that doesn't match semver range:
 				pkg.NewPkgMock("myawesomedep", "2.1.100", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
@@ -104,6 +126,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "install a pkg and dep, finding major version",
 			golden: "output/solve-sat-dependecy-major.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "myawesomedep",
+					Namespace:   "myawesomedeptargetns",
+					SemverRange: "^1.2.0",
+				}},
+				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				// dependency that don't match semver range:
 				pkg.NewPkgMock("myawesomedep", "2.0.0", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
@@ -124,6 +153,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "install a pkg and dep, being no matching version for the dep",
 			golden: "output/solve-unsat-dependecy-no-version.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "myawesomedep",
+					Namespace:   "myawesomedeptargetns",
+					SemverRange: "^1.0.0",
+				}},
+				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				// no dependency satisfies the constraint:
 				pkg.NewPkgMock("myawesomedep", "3.0.0", "myawesomedeptargetns", nil, nil, pkg.Unknown, pkg.Unknown),
@@ -141,6 +177,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "install a pkg and dep, dependency not in db",
 			golden: "output/solve-unsat-dependecy-not-known.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "myawesomedep",
+					Namespace:   "myawesomedeptargetns",
+					SemverRange: "^1.0.0",
+				}},
+				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				// dependency not in database (not in repos, for example)
 				// toModify:
@@ -155,8 +198,9 @@ func TestInstall(t *testing.T) {
 			resultStatus: "UNSAT",
 		},
 		{
-			name:   "unsatisfiable, remove a dependency",
-			golden: "output/solve-unsat-remove-dep.txt",
+			name:      "unsatisfiable, remove a dependency",
+			golden:    "output/solve-unsat-remove-dep.txt",
+			wantedPkg: pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Present, pkg.Absent),
 			pkgs: []*pkg.Pkg{
 				// release, to be removed:
 				pkg.NewPkgMock("myawesomedep", "0.1.100", "myawesomedeptargetns", nil, nil, pkg.Present, pkg.Absent),
@@ -174,6 +218,13 @@ func TestInstall(t *testing.T) {
 		{
 			name:   "install several looped deps",
 			golden: "output/solve-sat-loop-deps.txt",
+			wantedPkg: pkg.NewPkgMock("wantedfoo", "1.0.0", "targetns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "wantedbar",
+					Namespace:   "targetns",
+					SemverRange: "^1.0.0",
+				}},
+				nil, pkg.Absent, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				// package 1, depends on 2:
 				pkg.NewPkgMock("wantedfoo", "1.0.0", "targetns",
@@ -203,8 +254,9 @@ func TestInstall(t *testing.T) {
 			resultStatus: "SAT",
 		},
 		{
-			name:   "remove package",
-			golden: "output/solve-sat-remove-package.txt",
+			name:      "remove package",
+			golden:    "output/solve-sat-remove-package.txt",
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
 			},
@@ -224,7 +276,7 @@ func TestInstall(t *testing.T) {
 
 			s := New(InstallOne, logger)
 			s.BuildWorldMock(tcase.pkgs)
-			s.Solve()
+			s.Solve(tcase.wantedPkg)
 			is := assert.New(t)
 			is.Equal(tcase.resultStatus, s.PkgResultSet.Status)
 
@@ -240,6 +292,7 @@ func TestFormatOutput(t *testing.T) {
 
 	for _, tcase := range []struct {
 		name        string
+		wantedPkg   *pkg.Pkg
 		pkgs        []*pkg.Pkg
 		goldenYaml  string
 		goldenJson  string
@@ -251,6 +304,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-empty-yaml.txt",
 			goldenJson:  "output/format-empty-json.txt",
 			goldenTable: "output/format-empty-table.txt",
+			wantedPkg:   &pkg.Pkg{},
 			pkgs:        []*pkg.Pkg{},
 			status:      "SAT",
 		},
@@ -259,6 +313,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-sat-install1-yaml.txt",
 			goldenJson:  "output/format-sat-install1-json.txt",
 			goldenTable: "output/format-sat-install1-table.txt",
+			wantedPkg:   &pkg.Pkg{},
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
 			},
@@ -269,6 +324,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-sat-upgrade-yaml.txt",
 			goldenJson:  "output/format-sat-upgrade-json.txt",
 			goldenTable: "output/format-sat-upgrade-table.txt",
+			wantedPkg:   &pkg.Pkg{},
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
 			},
@@ -279,6 +335,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-unsat-nothing-dep-yaml.txt",
 			goldenJson:  "output/format-unsat-nothing-dep-json.txt",
 			goldenTable: "output/format-unsat-nothing-dep-table.txt",
+			wantedPkg:   &pkg.Pkg{},
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
 					[]*pkg.PkgRel{{
@@ -302,7 +359,7 @@ func TestFormatOutput(t *testing.T) {
 
 		s := New(InstallOne, logger)
 		s.BuildWorldMock(tcase.pkgs)
-		s.Solve()
+		s.Solve(tcase.wantedPkg)
 		is := assert.New(t)
 		is.Equal(tcase.status, s.PkgResultSet.Status)
 

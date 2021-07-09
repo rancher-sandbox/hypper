@@ -172,23 +172,14 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		}
 	}
 
-	s.Solve()
+	// s.PkgDB.DebugPrintDB(logger)
+
+	s.Solve(wantedPkgInDB)
 
 	if s.IsSAT() {
-		installedRels := make([]*release.Release, 0)
-		for _, p := range s.PkgResultSet.ToInstall {
-
-			if i.NoSharedDeps && p.GetFingerPrint() != wantedPkg.GetFingerPrint() {
-				logger.Infof("Skipping dependency %s, flag `no-shared-deps` has been set", p.ChartName)
-				continue
-			}
-
-			// install package:
-			rel, err := i.InstallPkg(p, wantedPkg, wantedChrt, vals, settings, logger)
-			if err != nil {
-				return installedRels, err
-			}
-			installedRels = append(installedRels, rel)
+		installedRels, err := i.recursiveInstall(s.PkgResultSet.ToInstall, wantedPkgInDB, wantedChrt, vals, 0, settings, logger)
+		if err != nil {
+			return installedRels, err
 		}
 		return installedRels, nil
 	} else {
@@ -199,6 +190,33 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		}
 		return make([]*release.Release, 0), errors.New(incons)
 	}
+}
+
+func (i *Install) recursiveInstall(tr *solver.PkgTree,
+	wantedPkg *pkg.Pkg, wantedChrt *helmChart.Chart, vals map[string]interface{}, lvl int,
+	settings *cli.EnvSettings, logger log.Logger) (installedRels []*release.Release, err error) {
+
+	if i.NoSharedDeps && tr.Node.GetFingerPrint() != wantedPkg.GetFingerPrint() {
+		logger.Infof("Skipping dependency %s, flag `no-shared-deps` has been set", tr.Node.ChartName)
+	} else {
+		// install node:
+		rel, err := i.InstallPkg(tr.Node, wantedPkg, wantedChrt, vals, lvl, settings, logger)
+		if err != nil {
+			return installedRels, err
+		}
+		installedRels = append(installedRels, rel)
+	}
+
+	// install dependencies of node:
+	for _, depTR := range tr.Relations {
+		// for all deps, call recursively:
+		installedDeps, err := i.recursiveInstall(depTR, wantedPkg, wantedChrt, vals, lvl+1, settings, logger)
+		if err != nil {
+			return installedDeps, err
+		}
+		installedRels = append(installedRels, installedDeps...)
+	}
+	return installedRels, err
 }
 
 // Chart returns the chart that should be used.
@@ -284,7 +302,7 @@ func (i *Install) LoadChartFromPkg(p *pkg.Pkg,
 // InstallPkg installs the passed package by pulling its related chart. It takes
 // care of using the desired namespace for it.
 func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmChart.Chart,
-	vals map[string]interface{},
+	vals map[string]interface{}, lvl int,
 	settings *cli.EnvSettings, logger log.Logger) (*release.Release, error) {
 	// FIXME don't pass wantedPkg and wantedChart and skip things more cleanly
 
@@ -368,8 +386,8 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 		}
 	}
 
-	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing chart \"%s\" as \"%s\" in namespace \"%s\"…",
-		chartRequested.Name(), clientInstall.ReleaseName, clientInstall.Namespace))
+	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…",
+		strings.Repeat("  ", lvl), chartRequested.Name(), clientInstall.ReleaseName, clientInstall.Namespace))
 	helmInstall := clientInstall.Install
 	i.Config.SetNamespace(clientInstall.Namespace)
 	rel, err := helmInstall.Run(chartRequested, vals) // wrap Helm's i.Run for now

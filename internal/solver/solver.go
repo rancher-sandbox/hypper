@@ -69,6 +69,14 @@ type Solver struct {
 	PkgResultSet PkgResultSet // outcome of sat solving
 	Strategy     SolverStrategy
 	logger       log.Logger
+	model        maxsat.Model
+}
+
+// PkgTree is a polytree (directed, acyclic graph) of packages.
+// Used for storing the tree of packages to be installed.
+type PkgTree struct {
+	Node      *pkg.Pkg
+	Relations []*PkgTree
 }
 
 // PkgResultSet contains the status outcome of solving, and the different sets of
@@ -76,7 +84,7 @@ type Solver struct {
 // It will be marshalled into Yaml and Json.
 type PkgResultSet struct {
 	PresentUnchanged []*pkg.Pkg
-	ToInstall        []*pkg.Pkg
+	ToInstall        *PkgTree
 	ToRemove         []*pkg.Pkg
 	Status           string
 	Inconsistencies  []string
@@ -137,7 +145,7 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []maxsat.Constr) {
 	return constrs
 }
 
-func (s *Solver) Solve() {
+func (s *Solver) Solve(wantedPkg *pkg.Pkg) {
 	// generate constraints for all packages
 	s.logger.Debug("Building constraints…")
 	var (
@@ -166,11 +174,11 @@ func (s *Solver) Solve() {
 
 	// create problem with constraints, and solve
 	problem := maxsat.New(constrs...)
-	result, _ := problem.Solve()
+	s.model, _ = problem.Solve()
 
-	if result != nil { // SAT
+	if s.model != nil { // SAT
 		//	there is a result model, generate pkg sets then:
-		s.GeneratePkgSets(result)
+		s.GeneratePkgSets(wantedPkg)
 		s.PkgResultSet.Status = "SAT"
 		s.logger.Debug("Result: SAT\n")
 	} else {
@@ -178,7 +186,7 @@ func (s *Solver) Solve() {
 		s.logger.Debug("Result: UNSAT\n")
 	}
 
-	// s.logger.Debugf("Result %v\n", result)
+	// s.logger.Debugf("Result %v\n", s.model)
 }
 
 func (s *Solver) IsSAT() bool {
@@ -186,25 +194,61 @@ func (s *Solver) IsSAT() bool {
 }
 
 // GeneratePkgSets obtains back the sets of packages from IDs.
-func (s *Solver) GeneratePkgSets(model maxsat.Model) {
+func (s *Solver) GeneratePkgSets(wantedPkg *pkg.Pkg) {
 
-	s.PkgResultSet.ToInstall = []*pkg.Pkg{}
 	s.PkgResultSet.ToRemove = []*pkg.Pkg{}
 	s.PkgResultSet.PresentUnchanged = []*pkg.Pkg{}
 
 	// iterate through the model:
-	for fp, pkgResult := range model {
+	for fp, pkgResult := range s.model {
 		p := s.PkgDB.GetPackageByFingerprint(fp)
 		// segregate packages into PkgResultSet:
 		if pkgResult && p.CurrentState == pkg.Present {
 			s.PkgResultSet.PresentUnchanged = append(s.PkgResultSet.PresentUnchanged, p)
-		} else if pkgResult && p.CurrentState != pkg.Present {
-			s.PkgResultSet.ToInstall = append(s.PkgResultSet.ToInstall, p)
 		} else if !pkgResult && p.CurrentState == pkg.Present {
 			s.PkgResultSet.ToRemove = append(s.PkgResultSet.ToRemove, p)
 		}
 	}
-	s.SortPkgSets()
+
+	s.PkgResultSet.ToInstall = &PkgTree{}
+	visited := map[string]bool{}
+	// add dependencies of wantedPkg
+	s.PkgResultSet.ToInstall = s.recBuildTree(wantedPkg, visited)
+}
+
+func (s *Solver) recBuildTree(p *pkg.Pkg, visited map[string]bool) *PkgTree {
+	if p == nil {
+		return nil
+	}
+	tr := &PkgTree{
+		Node:      p,
+		Relations: []*PkgTree{},
+	}
+	for _, depRel := range p.DependsRel {
+		// find Dep in model
+		// obtain fp of dep
+		depBFP := pkg.CreateBaseFingerPrint(depRel.ReleaseName, depRel.Namespace)
+		// see if there's a package in the model that has the same BFP:
+		for modelFP, pkgResult := range s.model {
+			modelP := s.PkgDB.GetPackageByFingerprint(modelFP)
+			if !pkgResult {
+				continue // skip pkgs in model that are not be installed
+			}
+			modelBFP := modelP.GetBaseFingerPrint()
+			if modelBFP == depBFP { // found our dependency in the model
+				// if DepRel is in visisted; continue:
+				if present, _ := visited[modelFP]; present {
+					continue
+				}
+				// add to visited:
+				visited[modelFP] = true
+
+				// if dependency is not known, add to tree and recursive call:
+				tr.Relations = append(tr.Relations, s.recBuildTree(modelP, visited))
+			}
+		}
+	}
+	return tr
 }
 
 func (s *Solver) SortPkgSets() {
@@ -212,12 +256,21 @@ func (s *Solver) SortPkgSets() {
 	sort.SliceStable(s.PkgResultSet.PresentUnchanged, func(i, j int) bool {
 		return s.PkgResultSet.PresentUnchanged[i].ChartName < s.PkgResultSet.PresentUnchanged[j].ChartName
 	})
-	sort.SliceStable(s.PkgResultSet.ToInstall, func(i, j int) bool {
-		return s.PkgResultSet.ToInstall[i].ChartName < s.PkgResultSet.ToInstall[j].ChartName
-	})
 	sort.SliceStable(s.PkgResultSet.ToRemove, func(i, j int) bool {
 		return s.PkgResultSet.ToRemove[i].ChartName < s.PkgResultSet.ToRemove[j].ChartName
 	})
+}
+
+func PrintPkgTree(tr *PkgTree, lvl int) (output string) {
+	var sb strings.Builder
+	if tr == nil {
+		return ""
+	}
+	sb.WriteString(fmt.Sprintf("%s\t%s\n", tr.Node.ReleaseName, tr.Node.Version))
+	for _, rel := range tr.Relations {
+		sb.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat("\t", lvl), PrintPkgTree(rel, lvl+1)))
+	}
+	return sb.String()
 }
 
 func (s *Solver) FormatOutput(t OutputMode) (output string) {
@@ -227,9 +280,7 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 		// TODO: Refurbish this to create some fancy emoji/table output
 		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
 		sb.WriteString("Packages to be installed:\n")
-		for _, p := range s.PkgResultSet.ToInstall {
-			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
-		}
+		PrintPkgTree(s.PkgResultSet.ToInstall, 0)
 		sb.WriteString("\n")
 		sb.WriteString("Packages to be removed:\n")
 		for _, p := range s.PkgResultSet.ToRemove {
