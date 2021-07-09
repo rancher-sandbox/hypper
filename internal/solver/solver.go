@@ -210,10 +210,12 @@ func (s *Solver) GeneratePkgSets(wantedPkg *pkg.Pkg) {
 		}
 	}
 
-	s.PkgResultSet.ToInstall = &PkgTree{}
-	visited := map[string]bool{}
-	// add dependencies of wantedPkg
-	s.PkgResultSet.ToInstall = s.recBuildTree(wantedPkg, visited)
+	if s.Strategy == InstallOne {
+		s.PkgResultSet.ToInstall = &PkgTree{}
+		visited := map[string]bool{}
+		// add dependencies of wantedPkg
+		s.PkgResultSet.ToInstall = s.recBuildTree(wantedPkg, visited)
+	}
 }
 
 func (s *Solver) recBuildTree(p *pkg.Pkg, visited map[string]bool) *PkgTree {
