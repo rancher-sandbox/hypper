@@ -19,6 +19,7 @@ package solver
 import (
 	"math"
 	"sort"
+	"sync"
 
 	"github.com/Masterminds/log-go"
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
@@ -38,6 +39,7 @@ type PkgDB struct {
 	mapFingerprintToPkg map[string]*pkg.Pkg
 	// map: BaseFingerprint -> Semver version -> Fingerprint
 	mapBaseFingerprintToVersions map[string]map[string]string
+	*sync.Mutex
 }
 
 var PkgDBInstance *PkgDB
@@ -86,7 +88,6 @@ func (pkgdb *PkgDB) GetOrderedPackageFingerprintsThatDifferOnVersionByPackage(p 
 }
 
 func CalculateSemverDistanceToZero(semversion string) (distance int) {
-
 	sv := semver.MustParse(semversion)
 	distance = (int(sv.Major())*int(math.Pow(10, 13)) + int(sv.Minor())*int(math.Pow(10, 9)) + int(sv.Patch()))
 	return distance
@@ -103,6 +104,7 @@ func CreatePkgDBInstance() *PkgDB {
 	PkgDBInstance = &PkgDB{
 		mapFingerprintToPkg:          make(map[string]*pkg.Pkg),
 		mapBaseFingerprintToVersions: make(map[string]map[string]string),
+		Mutex:                        &sync.Mutex{},
 	}
 	return PkgDBInstance
 }
@@ -111,10 +113,10 @@ func GetPkgdDBInstance() *PkgDB {
 	return PkgDBInstance
 }
 
-// MergePkgs gives you a resulting package that is a copy of the new package,
+// mergePkgs gives you a resulting package that is a copy of the new package,
 // but making sure that unknown inthe known CurrenState and DesiredState is not changed,
 // and only unknown info is getting filled.
-func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
+func mergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 	result = &old
 
 	// Merge CurrentState and DesiredState
@@ -148,12 +150,15 @@ func MergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 // already present in the database, it makes sure to update it, in a way that
 // only unknown info to that package is added.
 func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
+	pkgdb.Lock()
+	defer pkgdb.Unlock()
+
 	fp := p.GetFingerPrint()
 	pInDB, ok := pkgdb.mapFingerprintToPkg[fp]
 	if ok {
 		// package already in DB, merge
 		pkgdb.mapFingerprintToPkg[p.GetFingerPrint()] =
-			MergePkgs(*pInDB, *p)
+			mergePkgs(*pInDB, *p)
 	} else {
 		// package not there, add it
 		pkgdb.mapFingerprintToPkg[fp] = p
