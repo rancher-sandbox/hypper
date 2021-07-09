@@ -386,8 +386,11 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 		}
 	}
 
+	// pretty print:
 	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…",
 		strings.Repeat("  ", lvl), chartRequested.Name(), clientInstall.ReleaseName, clientInstall.Namespace))
+
+	// perform instal:
 	helmInstall := clientInstall.Install
 	i.Config.SetNamespace(clientInstall.Namespace)
 	rel, err := helmInstall.Run(chartRequested, vals) // wrap Helm's i.Run for now

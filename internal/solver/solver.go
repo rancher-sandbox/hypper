@@ -218,17 +218,23 @@ func (s *Solver) GeneratePkgSets(wantedPkg *pkg.Pkg) {
 
 func (s *Solver) recBuildTree(p *pkg.Pkg, visited map[string]bool) *PkgTree {
 	if p == nil {
+		// we are a leaf, stop
 		return nil
 	}
+
+	// create tree with p:
 	tr := &PkgTree{
 		Node:      p,
 		Relations: []*PkgTree{},
 	}
+
+	// add p to visited:
+	visited[p.GetFingerPrint()] = true
+
+	// recursively create trees with dependencies of p:
 	for _, depRel := range p.DependsRel {
-		// find Dep in model
-		// obtain fp of dep
 		depBFP := pkg.CreateBaseFingerPrint(depRel.ReleaseName, depRel.Namespace)
-		// see if there's a package in the model that has the same BFP:
+		// see if dependency is in the model:
 		for modelFP, pkgResult := range s.model {
 			modelP := s.PkgDB.GetPackageByFingerprint(modelFP)
 			if !pkgResult {
@@ -236,13 +242,10 @@ func (s *Solver) recBuildTree(p *pkg.Pkg, visited map[string]bool) *PkgTree {
 			}
 			modelBFP := modelP.GetBaseFingerPrint()
 			if modelBFP == depBFP { // found our dependency in the model
-				// if DepRel is in visisted; continue:
-				if present, _ := visited[modelFP]; present {
+				// if dependency was already visited, skip:
+				if visited[modelFP] {
 					continue
 				}
-				// add to visited:
-				visited[modelFP] = true
-
 				// if dependency is not known, add to tree and recursive call:
 				tr.Relations = append(tr.Relations, s.recBuildTree(modelP, visited))
 			}
