@@ -550,17 +550,12 @@ func (s *Solver) buildConstraintAtMost1(p *pkg.Pkg) (constr []maxsat.Constr) {
 func semverSatisfies(semverRange string, ourSemver string) bool {
 
 	// generate semver constraint and check:
-	c, err := semver.NewConstraint(semverRange)
-	if err != nil {
-		// TODO Handle constraint not being parseable.
-		return false
-	}
+	c, _ := semver.NewConstraint(semverRange)
+	// p.DepRel have already been marshalled, no error possible here
 
-	v, err := semver.NewVersion(ourSemver)
-	if err != nil {
-		// TODO Handle version not being parseable.
-		return false
-	}
+	v, _ := semver.NewVersion(ourSemver)
+	// dependency has already been marshalled, no error possible here
+
 	// Check if the version meets the constraints.
 	return c.Check(v)
 }
