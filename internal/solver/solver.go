@@ -285,7 +285,7 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 		// TODO: Refurbish this to create some fancy emoji/table output
 		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
 		sb.WriteString("Packages to be installed:\n")
-		PrintPkgTree(s.PkgResultSet.ToInstall, 0)
+		sb.WriteString(PrintPkgTree(s.PkgResultSet.ToInstall, 0))
 		sb.WriteString("\n")
 		sb.WriteString("Packages to be removed:\n")
 		for _, p := range s.PkgResultSet.ToRemove {
