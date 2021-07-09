@@ -1,2 +1,2 @@
 🛳  Installing chart "hello" as "test-install-release" in namespace "hypper"…
-🛳  Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…
+🛳    Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…

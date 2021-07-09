@@ -295,7 +295,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-empty-yaml.txt",
 			goldenJson:  "output/format-empty-json.txt",
 			goldenTable: "output/format-empty-table.txt",
-			wantedPkg:   &pkg.Pkg{},
+			wantedPkg:   nil,
 			pkgs:        []*pkg.Pkg{},
 			status:      "SAT",
 		},
@@ -304,7 +304,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-sat-install1-yaml.txt",
 			goldenJson:  "output/format-sat-install1-json.txt",
 			goldenTable: "output/format-sat-install1-table.txt",
-			wantedPkg:   &pkg.Pkg{},
+			wantedPkg:   pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Absent, pkg.Present),
 			},
@@ -315,7 +315,7 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-sat-upgrade-yaml.txt",
 			goldenJson:  "output/format-sat-upgrade-json.txt",
 			goldenTable: "output/format-sat-upgrade-table.txt",
-			wantedPkg:   &pkg.Pkg{},
+			wantedPkg:   pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("bar", "1.0.0", "targetns", nil, nil, pkg.Present, pkg.Present),
 			},
@@ -326,7 +326,13 @@ func TestFormatOutput(t *testing.T) {
 			goldenYaml:  "output/format-unsat-nothing-dep-yaml.txt",
 			goldenJson:  "output/format-unsat-nothing-dep-json.txt",
 			goldenTable: "output/format-unsat-nothing-dep-table.txt",
-			wantedPkg:   &pkg.Pkg{},
+			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
+				[]*pkg.PkgRel{{
+					ReleaseName: "depfoo",
+					Namespace:   "targetns",
+					SemverRange: "^1.0.0",
+				}},
+				nil, pkg.Absent, pkg.Present),
 			pkgs: []*pkg.Pkg{
 				pkg.NewPkgMock("wantedbaz", "1.0.0", "targetns",
 					[]*pkg.PkgRel{{

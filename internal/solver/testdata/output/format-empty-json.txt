@@ -1,1 +1,1 @@
-{"PresentUnchanged":[],"ToInstall":[],"ToRemove":[],"Status":"SAT","Inconsistencies":[]}
+{"PresentUnchanged":[],"ToInstall":null,"ToRemove":[],"Status":"SAT","Inconsistencies":[]}

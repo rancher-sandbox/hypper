@@ -9,7 +9,19 @@ presentunchanged:
   currentstate: 1
   desiredstate: 1
   pinnedver: 0
-toinstall: []
+toinstall:
+  node:
+    releasename: bar
+    version: 1.0.0
+    namespace: targetns
+    chartname: bar
+    dependsrel: []
+    dependsoptionalrel: []
+    repository: ourrepo
+    currentstate: 1
+    desiredstate: 1
+    pinnedver: 0
+  relations: []
 toremove: []
 status: SAT
 inconsistencies:
