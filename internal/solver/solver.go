@@ -240,10 +240,15 @@ func (s *Solver) recBuildTree(p *pkg.Pkg, visited map[string]bool) *PkgTree {
 		for modelFP, pkgResult := range s.model {
 			modelP := s.PkgDB.GetPackageByFingerprint(modelFP)
 			if !pkgResult {
-				continue // skip pkgs in model that are not be installed
+				continue // skip deps in model that are not be installed
+			}
+			if pkgResult && modelP.CurrentState == pkg.Present {
+				continue // skip deps that are releases
 			}
 			modelBFP := modelP.GetBaseFingerPrint()
-			if modelBFP == depBFP { // found our dependency in the model
+			if modelBFP == depBFP {
+				// found our dependency in the model and we want to install it
+
 				// if dependency was already visited, skip:
 				if visited[modelFP] {
 					continue
