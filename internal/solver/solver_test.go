@@ -253,15 +253,6 @@ func TestInstall(t *testing.T) {
 			},
 			resultStatus: "SAT",
 		},
-		{
-			name:      "remove package",
-			golden:    "output/solve-sat-remove-package.txt",
-			wantedPkg: pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
-			pkgs: []*pkg.Pkg{
-				pkg.NewPkgMock("wantedbaz", "1.0.0", "wantedbazns", nil, nil, pkg.Present, pkg.Absent),
-			},
-			resultStatus: "SAT",
-		},
 	} {
 		t.Run(tcase.name, func(t *testing.T) {
 
