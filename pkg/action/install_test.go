@@ -151,6 +151,8 @@ func TestInstallRun(t *testing.T) {
 			} else {
 				settings = cli.New()
 			}
+			settings.RepositoryCache = "testdata/hypperhome/hypper/repository"
+			settings.RepositoryConfig = "testdata/hypperhome/hypper/repositories.yaml"
 			settings.Debug = tcase.wantDebug
 
 			// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
