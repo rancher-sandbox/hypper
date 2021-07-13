@@ -51,6 +51,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "myawesomedep",
 					Namespace:   "myawesomedeptargetns",
 					SemverRange: "~0.1.0",
+					ChartName:   "myawesomedep",
 				}},
 				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -63,6 +64,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "~0.1.0",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 				// releases:
@@ -78,6 +80,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "myawesomedep",
 					Namespace:   "myawesomedeptargetns",
 					SemverRange: "0.1.103",
+					ChartName:   "myawesomedep",
 				}},
 				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -92,6 +95,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "0.1.103",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -105,6 +109,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "myawesomedep",
 					Namespace:   "myawesomedeptargetns",
 					SemverRange: "~0.1.0",
+					ChartName:   "myawesomedep",
 				}},
 				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -118,6 +123,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "~0.1.0",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -131,6 +137,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "myawesomedep",
 					Namespace:   "myawesomedeptargetns",
 					SemverRange: "^1.2.0",
+					ChartName:   "myawesomedep",
 				}},
 				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -145,6 +152,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "^1.2.0",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -158,6 +166,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "myawesomedep",
 					Namespace:   "myawesomedeptargetns",
 					SemverRange: "^1.0.0",
+					ChartName:   "myawesomedep",
 				}},
 				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -169,6 +178,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "^1.0.0",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -182,6 +192,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "myawesomedep",
 					Namespace:   "myawesomedeptargetns",
 					SemverRange: "^1.0.0",
+					ChartName:   "myawesomedep",
 				}},
 				nil, pkg.Unknown, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -192,6 +203,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "^1.0.0",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -210,6 +222,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "myawesomedep",
 						Namespace:   "myawesomedeptargetns",
 						SemverRange: "~0.1.0",
+						ChartName:   "myawesomedep",
 					}},
 					nil, pkg.Unknown, pkg.Present),
 			},
@@ -223,6 +236,7 @@ func TestInstall(t *testing.T) {
 					ReleaseName: "wantedbar",
 					Namespace:   "targetns",
 					SemverRange: "^1.0.0",
+					ChartName:   "wantedbar",
 				}},
 				nil, pkg.Absent, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -232,6 +246,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "wantedbar",
 						Namespace:   "targetns",
 						SemverRange: "^1.0.0",
+						ChartName:   "wantedbar",
 					}},
 					nil, pkg.Absent, pkg.Present),
 				// package 2, depends on 3:
@@ -240,6 +255,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "wantedbaz",
 						Namespace:   "targetns",
 						SemverRange: "^1.0.0",
+						ChartName:   "wantedbaz",
 					}},
 					nil, pkg.Absent, pkg.Unknown),
 				// package 1, depends on 1:
@@ -248,6 +264,7 @@ func TestInstall(t *testing.T) {
 						ReleaseName: "wantedfoo",
 						Namespace:   "targetns",
 						SemverRange: "^1.0.0",
+						ChartName:   "wantedfoo",
 					}},
 					nil, pkg.Absent, pkg.Unknown),
 			},
@@ -331,6 +348,7 @@ func TestFormatOutput(t *testing.T) {
 					ReleaseName: "depfoo",
 					Namespace:   "targetns",
 					SemverRange: "^1.0.0",
+					ChartName:   "depfoo",
 				}},
 				nil, pkg.Absent, pkg.Present),
 			pkgs: []*pkg.Pkg{
@@ -339,6 +357,7 @@ func TestFormatOutput(t *testing.T) {
 						ReleaseName: "depfoo",
 						Namespace:   "targetns",
 						SemverRange: "^1.0.0",
+						ChartName:   "depfoo",
 					}},
 					nil, pkg.Absent, pkg.Present),
 			},

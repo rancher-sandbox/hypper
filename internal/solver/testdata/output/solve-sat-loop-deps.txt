@@ -9,6 +9,7 @@ toinstall:
     - releasename: wantedbar
       namespace: targetns
       semverrange: ^1.0.0
+      chartname: wantedbar
     dependsoptionalrel: []
     repository: ourrepo
     currentstate: 2
@@ -24,6 +25,7 @@ toinstall:
       - releasename: wantedbaz
         namespace: targetns
         semverrange: ^1.0.0
+        chartname: wantedbaz
       dependsoptionalrel: []
       repository: ourrepo
       currentstate: 2
@@ -39,6 +41,7 @@ toinstall:
         - releasename: wantedfoo
           namespace: targetns
           semverrange: ^1.0.0
+          chartname: wantedfoo
         dependsoptionalrel: []
         repository: ourrepo
         currentstate: 2

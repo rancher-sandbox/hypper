@@ -36,6 +36,7 @@ func ExampleSolver() {
 			ReleaseName: "myawesomedep",
 			Namespace:   "myawesomedeptargetns",
 			SemverRange: "~0.1.0",
+			ChartName:   "myawesomedep",
 		}},
 		nil, pkg.Unknown, pkg.Present)
 
@@ -93,6 +94,7 @@ func ExampleSolver() {
 	//     - releasename: myawesomedep
 	//       namespace: myawesomedeptargetns
 	//       semverrange: ~0.1.0
+	//       chartname: myawesomedep
 	//     dependsoptionalrel: []
 	//     repository: ourrepo
 	//     currentstate: 0

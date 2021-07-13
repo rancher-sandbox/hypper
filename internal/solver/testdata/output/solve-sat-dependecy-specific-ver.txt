@@ -9,6 +9,7 @@ toinstall:
     - releasename: myawesomedep
       namespace: myawesomedeptargetns
       semverrange: 0.1.103
+      chartname: myawesomedep
     dependsoptionalrel: []
     repository: ourrepo
     currentstate: 0
