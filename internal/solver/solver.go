@@ -222,7 +222,7 @@ func (s *Solver) recBuildTree(p *pkg.Pkg, visited map[string]bool) *PkgTree {
 
 	// recursively create trees with dependencies of p:
 	for _, depRel := range p.DependsRel {
-		depBFP := pkg.CreateBaseFingerPrint(depRel.ReleaseName, depRel.Namespace)
+		depBFP := pkg.CreateBaseFingerPrint(depRel.ReleaseName, depRel.Namespace, depRel.ChartName)
 		// see if dependency is in the model:
 		for modelFP, pkgResult := range s.model {
 			modelP := s.PkgDB.GetPackageByFingerprint(modelFP)
@@ -428,7 +428,7 @@ func (s *Solver) buildConstraintRelations(p *pkg.Pkg) (constr []maxsat.Constr) {
 	// build constraints for 'Depends' relations
 	for _, deprel := range p.DependsRel {
 		// obtain all IDs for the packages that only differ in version
-		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(pkg.CreateBaseFingerPrint(deprel.ReleaseName, deprel.Namespace))
+		mapOfVersions := s.PkgDB.GetMapOfVersionsByBaseFingerPrint(pkg.CreateBaseFingerPrint(deprel.ReleaseName, deprel.Namespace, deprel.ChartName))
 		satisfyingVersions := []string{} // slice of fingerprints
 		for depVersion, depFingerprint := range mapOfVersions {
 			// build list of packages that differ only in version and that satisfy semver

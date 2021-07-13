@@ -19,8 +19,8 @@ Solver provides operations on packages: install, remove, upgrade,
 check integrity and others.
 
 A package is an object comprised of a unique key (tentative release name,
-version, and namespace), and digested information about the chart that it
-relates to (dependency relations, chart and repo URL, current and desired
+version, namespace, chart name), and digested information about the chart that
+it relates to (dependency relations, chart and repo URL, current and desired
 state..).
 
 To perform a package operation, for example, "install packageA", we:
@@ -31,7 +31,7 @@ To perform a package operation, for example, "install packageA", we:
  - Requested changes to packages (to install, to remove, to upgrade).
 
  The gophersat/solver MAXSAT/Pseudo-Boolean solver operates over unique strings:
- in our case, the package unique key comprised of releaseName-version-NS.
+ in our case, the package string fingerprint, created from its unique key.
 
  The database contains information on a package current state (unknown,
  installed, removed) and desired state (unknown, installed, removed).

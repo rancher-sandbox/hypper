@@ -39,8 +39,8 @@ type Pkg struct {
 	ReleaseName string // Release name, or default chart release-name
 	Version     string // sem ver (without a range)
 	Namespace   string // Installed ns, or default chart namespace
+	ChartName   string // chart name
 
-	ChartName          string    // chart name
 	DependsRel         []*PkgRel // list of dependencies' fingerprints
 	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
 	Repository         string    // repository where to find ChartName
@@ -55,6 +55,7 @@ type PkgRel struct {
 	ReleaseName string
 	Namespace   string
 	SemverRange string // e.g: 1.0.0, ~1.0.0, ^1.0.0
+	ChartName   string
 }
 
 // NewPkg creates a new Pkg struct. It does not give value to DependsRel,
@@ -103,24 +104,24 @@ func (p *Pkg) JSON() ([]byte, error) {
 
 // GetFingerPrint returns a unique id of the package.
 func (p *Pkg) GetFingerPrint() string {
-	return fmt.Sprintf("%s-%s-%s", p.ReleaseName, p.Version, p.Namespace)
+	return fmt.Sprintf("%s_%s_%s_%s", p.ReleaseName, p.Version, p.Namespace, p.ChartName)
 }
 
 // CreateFingerPrint creates a fingerprint from the specific strings.
-func CreateFingerPrint(releaseName, version, ns string) string {
-	return fmt.Sprintf("%s-%s-%s", releaseName, version, ns)
+func CreateFingerPrint(releaseName, version, ns, chartName string) string {
+	return fmt.Sprintf("%s_%s_%s_%s", releaseName, version, ns, chartName)
 }
 
 // GetBaseFingerPrint returns a unique id of the package minus version.
 // This helps when filtering packages to find those that are similar and differ
 // only in the version.
 func (p *Pkg) GetBaseFingerPrint() string {
-	return fmt.Sprintf("%s-%s", p.ReleaseName, p.Namespace)
+	return fmt.Sprintf("%s_%s_%s", p.ReleaseName, p.Namespace, p.ChartName)
 }
 
-// CreateBaseFingerPrint returns a base fingerprint (name-ns)
-func CreateBaseFingerPrint(name, ns string) string {
-	return fmt.Sprintf("%s-%s", name, ns)
+// CreateBaseFingerPrint returns a base fingerprint
+func CreateBaseFingerPrint(releaseName, ns, chartName string) string {
+	return fmt.Sprintf("%s_%s_%s", releaseName, ns, chartName)
 }
 
 // Encode encodes the package to string in a JSON.

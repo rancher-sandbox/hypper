@@ -99,7 +99,7 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 
 	// add releases to db
 	for _, r := range releases {
-		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace)
+		fp := pkg.CreateFingerPrint(r.Name, r.Chart.Metadata.Version, r.Namespace, r.Chart.Metadata.Name)
 		p := pkgdb.GetPackageByFingerprint(fp)
 		if p != nil {
 			// release is in repos, hence it was added to db. Modify directly:
@@ -188,12 +188,14 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 					ReleaseName: depRelName,
 					Namespace:   depNS,
 					SemverRange: dep.Version,
+					ChartName:   dep.Name,
 				})
 			case "hypper.cattle.io/optional-dependencies":
 				p.DependsOptionalRel = append(p.DependsOptionalRel, &pkg.PkgRel{
 					ReleaseName: depRelName,
 					Namespace:   depNS,
 					SemverRange: dep.Version,
+					ChartName:   dep.Name,
 				})
 			}
 		}
