@@ -1,4 +1,5 @@
+🛳  Installing dependencies of chart "empty":
+⏭    Skipping dependency "testdata/testcharts/shared-dep", flag `no-shared-deps` has been set
+⏭    Skipping dependency "testdata/testcharts/vanilla-helm", flag `no-shared-deps` has been set
 🛳  Installing chart "empty" as "my-hypper-name" in namespace "hypper"…
-Skipping dependency testdata/testcharts/shared-dep, flag `no-shared-deps` has been set
-Skipping dependency testdata/testcharts/vanilla-helm, flag `no-shared-deps` has been set
 👏 Done!

@@ -1,2 +1,3 @@
-🛳  Installing chart "hello" as "test-install-release" in namespace "luke-skywalker"…
+🛳  Installing dependencies of chart "hello":
 🛳    Installing chart "empty" as "empty" in namespace "default"…
+🛳  Installing chart "hello" as "test-install-release" in namespace "luke-skywalker"…
