@@ -177,7 +177,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	s.Solve(wantedPkgInDB)
 
 	if s.IsSAT() {
-		installedRels, err := i.recursiveInstall(s.PkgResultSet.ToInstall, wantedPkgInDB, wantedChrt, vals, 0, settings, logger)
+		installedRels, err := i.postOrderInstall(s.PkgResultSet.ToInstall, wantedPkgInDB, wantedChrt, vals, 0, settings, logger)
 		if err != nil {
 			return installedRels, err
 		}
@@ -192,14 +192,34 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	}
 }
 
-func (i *Install) recursiveInstall(tr *solver.PkgTree,
+// postOrderInstall traverses the dependency tree in post-order, and calls for
+// installation of packages. This will install the dependencies of a chart
+// before the chart itself.
+func (i *Install) postOrderInstall(tr *solver.PkgTree,
 	wantedPkg *pkg.Pkg, wantedChrt *helmChart.Chart, vals map[string]interface{}, lvl int,
 	settings *cli.EnvSettings, logger log.Logger) (installedRels []*release.Release, err error) {
 
+	// recursively install dependencies of node:
+	for idx, depTR := range tr.Relations {
+		// if first dep and we have dep, print info:
+		if idx == 0 {
+			logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing dependencies of chart \"%s\":",
+				tr.Node.ChartName))
+		}
+		// for all deps, call recursively:
+		installedDeps, err := i.postOrderInstall(depTR, wantedPkg, wantedChrt, vals, 1, settings, logger)
+		if err != nil {
+			return installedDeps, err
+		}
+		installedRels = append(installedRels, installedDeps...)
+	}
+
+	// install node:
 	if i.NoSharedDeps && tr.Node.GetFingerPrint() != wantedPkg.GetFingerPrint() {
-		logger.Infof("Skipping dependency %s, flag `no-shared-deps` has been set", tr.Node.ChartName)
+		// skip if node is a dependency and not wantedPkg:
+		logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":next_track_button: %sSkipping dependency \"%s\", flag `no-shared-deps` has been set",
+			strings.Repeat("  ", lvl), tr.Node.ChartName))
 	} else {
-		// install node:
 		rel, err := i.InstallPkg(tr.Node, wantedPkg, wantedChrt, vals, lvl, settings, logger)
 		if err != nil {
 			return installedRels, err
@@ -207,15 +227,6 @@ func (i *Install) recursiveInstall(tr *solver.PkgTree,
 		installedRels = append(installedRels, rel)
 	}
 
-	// install dependencies of node:
-	for _, depTR := range tr.Relations {
-		// for all deps, call recursively:
-		installedDeps, err := i.recursiveInstall(depTR, wantedPkg, wantedChrt, vals, lvl+1, settings, logger)
-		if err != nil {
-			return installedDeps, err
-		}
-		installedRels = append(installedRels, installedDeps...)
-	}
 	return installedRels, err
 }
 
