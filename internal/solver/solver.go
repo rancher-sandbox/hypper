@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/Masterminds/log-go"
 	"github.com/Masterminds/semver/v3"
@@ -147,10 +148,22 @@ func (s *Solver) BuildConstraints(p *pkg.Pkg) (constrs []maxsat.Constr) {
 func (s *Solver) Solve(wantedPkg *pkg.Pkg) {
 	// generate constraints for all packages
 	s.logger.Debug("Building constraints…")
-	constrs := []maxsat.Constr{}
+	var (
+		mu      = &sync.Mutex{}
+		constrs = make([]maxsat.Constr, 0)
+	)
+	var waitgroup sync.WaitGroup
 	for _, p := range s.PkgDB.mapFingerprintToPkg {
-		constrs = append(constrs, s.BuildConstraints(p)...)
+		waitgroup.Add(1)
+		go func(p *pkg.Pkg) {
+			defer waitgroup.Done()
+			tmpConstrs := s.BuildConstraints(p)
+			mu.Lock()
+			constrs = append(constrs, tmpConstrs...)
+			mu.Unlock()
+		}(p)
 	}
+	waitgroup.Wait()
 
 	// s.logger.Debug("Constraints:")
 	// for _, c := range constrs {
