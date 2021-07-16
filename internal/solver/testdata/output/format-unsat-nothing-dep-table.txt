@@ -1,0 +1,10 @@
+Status: UNSAT
+Packages to be installed:
+
+Packages to be removed:
+
+Releases already in the system:
+
+Inconsistencies:
+	Chart "wantedbaz" depends on "depfoo" in namespace "targetns", semver "^1.0.0", but nothing satisfies it
+

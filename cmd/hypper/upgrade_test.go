@@ -18,12 +18,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/rancher-sandbox/hypper/internal/test/ensure"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rancher-sandbox/hypper/internal/test/ensure"
 
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -88,93 +89,98 @@ func TestUpgradeCmd(t *testing.T) {
 		return release.Mock(&release.MockReleaseOptions{Name: n, Version: v, Chart: ch})
 	}
 
+	repoFile := "testdata/hypperhome/hypper/repositories.yaml"
+	repoCache := "testdata/hypperhome/hypper/repository"
+
+	repoSetup := fmt.Sprintf("--repository-config %s --repository-cache %s", repoFile, repoCache)
+
 	tests := []cmdTestCase{
 		{
 			name:   "upgrade a release",
-			cmd:    fmt.Sprintf("upgrade '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 2, ch)},
 		},
 		{
 			name:   "upgrade a release with timeout",
-			cmd:    fmt.Sprintf("upgrade --timeout 120s '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --timeout 120s '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-timeout.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 3, ch2)},
 		},
 		{
 			name:   "upgrade a release with --reset-values",
-			cmd:    fmt.Sprintf("upgrade --reset-values '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --reset-values '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-reset-values.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 4, ch2)},
 		},
 		{
 			name:   "upgrade a release with --reuse-values",
-			cmd:    fmt.Sprintf("upgrade --reuse-values '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --reuse-values '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-reset-values2.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 5, ch2)},
 		},
 		{
 			name:   "install a release with 'upgrade --install'",
-			cmd:    fmt.Sprintf("upgrade -i '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade -i '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-install.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 1, ch)},
 		},
 		{
 			name:   "install a release with 'upgrade --install' and timeout",
-			cmd:    fmt.Sprintf("upgrade -i --timeout 120s '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade -i --timeout 120s '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-install-timeout.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 1, ch)},
 		},
 		{
 			name:   "install a release with 'upgrade --install ' and release-name",
-			cmd:    fmt.Sprintf("upgrade -i --release-name jojo '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade -i --release-name jojo '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-install-release-name.txt",
 		},
 		{
 			name:   "upgrade a release with --release-name",
-			cmd:    fmt.Sprintf("upgrade --release-name jojo '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --release-name jojo '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-release-name.txt",
 			rels:   []*release.Release{relMock("jojo", 2, ch)},
 		},
 		{
 			name:   "upgrade a release with wait",
-			cmd:    fmt.Sprintf("upgrade --wait '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --wait '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-wait.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 2, ch2)},
 		},
 		{
 			name:   "upgrade a release with wait-for-jobs",
-			cmd:    fmt.Sprintf("upgrade --wait --wait-for-jobs '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade --wait --wait-for-jobs '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade-with-wait-for-jobs.txt",
 			rels:   []*release.Release{relMock("funny-bunny", 2, ch2)},
 		},
 		{
 			name:      "upgrade a release with missing dependencies",
-			cmd:       fmt.Sprintf("upgrade %s", missingDepsPath),
+			cmd:       fmt.Sprintf("upgrade %s %s", missingDepsPath, repoSetup),
 			golden:    "output/upgrade-with-missing-dependencies.txt",
 			wantError: true,
 		},
 		{
 			name:      "upgrade a release with bad dependencies",
-			cmd:       fmt.Sprintf("upgrade '%s'", badDepsPath),
+			cmd:       fmt.Sprintf("upgrade '%s' %s", badDepsPath, repoSetup),
 			golden:    "output/upgrade-with-bad-dependencies.txt",
 			wantError: true,
 		},
 		{
 			name:      "upgrade a non-existent release",
-			cmd:       fmt.Sprintf("upgrade '%s'", chartPath),
+			cmd:       fmt.Sprintf("upgrade '%s' %s", chartPath, repoSetup),
 			golden:    "output/upgrade-with-bad-or-missing-existing-release.txt",
 			wantError: true,
 		},
 		{
 			name:   "upgrade a failed release",
-			cmd:    fmt.Sprintf("upgrade '%s'", chartPath),
+			cmd:    fmt.Sprintf("upgrade '%s' %s", chartPath, repoSetup),
 			golden: "output/upgrade.txt",
 			rels:   []*release.Release{relWithStatusMock("funny-bunny", 2, ch, release.StatusFailed)},
 		},
 		{
 			name:      "upgrade a pending install release",
-			cmd:       fmt.Sprintf("upgrade '%s'", chartPath),
+			cmd:       fmt.Sprintf("upgrade '%s' %s", chartPath, repoSetup),
 			golden:    "output/upgrade-with-pending-install.txt",
 			wantError: true,
 			rels:      []*release.Release{relWithStatusMock("funny-bunny", 2, ch, release.StatusPendingInstall)},
@@ -299,6 +305,11 @@ func TestUpgradeWithValuesFile(t *testing.T) {
 
 func TestUpgradeWithValuesFromStdin(t *testing.T) {
 
+	repoFile := "testdata/hypperhome/hypper/repositories.yaml"
+	repoCache := "testdata/hypperhome/hypper/repository"
+
+	repoSetup := fmt.Sprintf("--repository-config %s --repository-cache %s", repoFile, repoCache)
+
 	releaseName := "funny-bunny-v5"
 	relMock, ch, chartPath := prepareMockRelease(releaseName, t)
 
@@ -313,7 +324,7 @@ func TestUpgradeWithValuesFromStdin(t *testing.T) {
 		t.Errorf("unexpected error, got '%v'", err)
 	}
 
-	cmd := fmt.Sprintf("upgrade --values - '%s'", chartPath)
+	cmd := fmt.Sprintf("upgrade --values - '%s' %s", chartPath, repoSetup)
 	_, _, err = executeActionCommandStdinC(store, in, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)
@@ -331,6 +342,11 @@ func TestUpgradeWithValuesFromStdin(t *testing.T) {
 
 func TestUpgradeInstallWithValuesFromStdin(t *testing.T) {
 
+	repoFile := "testdata/hypperhome/hypper/repositories.yaml"
+	repoCache := "testdata/hypperhome/hypper/repository"
+
+	repoSetup := fmt.Sprintf("--repository-config %s --repository-cache %s", repoFile, repoCache)
+
 	releaseName := "funny-bunny-v6"
 	_, _, chartPath := prepareMockRelease(releaseName, t)
 
@@ -343,7 +359,7 @@ func TestUpgradeInstallWithValuesFromStdin(t *testing.T) {
 		t.Errorf("unexpected error, got '%v'", err)
 	}
 
-	cmd := fmt.Sprintf("upgrade -f - --install '%s'", chartPath)
+	cmd := fmt.Sprintf("upgrade -f - --install '%s' %s", chartPath, repoSetup)
 	_, _, err = executeActionCommandStdinC(store, in, cmd)
 	if err != nil {
 		t.Errorf("unexpected error, got '%v'", err)

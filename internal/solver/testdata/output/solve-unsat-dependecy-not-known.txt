@@ -1,0 +1,7 @@
+presentunchanged: []
+toinstall: null
+toremove: []
+status: UNSAT
+inconsistencies:
+- Chart "wantedbaz" depends on "myawesomedep" in namespace "myawesomedeptargetns",
+  semver "^1.0.0", but nothing satisfies it

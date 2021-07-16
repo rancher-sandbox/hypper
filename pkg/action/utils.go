@@ -101,14 +101,34 @@ func GetName(chart *chart.Chart, nameTemplate string, args ...string) (string, e
 	return chart.Name(), nil
 }
 
+// GetNameFromAnnot returns the release name that should be used based of
+// annotations, or the passed default name
+func GetNameFromAnnot(annot map[string]string, defaultName string) string {
+	if annot != nil {
+		if val, ok := annot["hypper.cattle.io/release-name"]; ok {
+			return val
+		}
+		if val, ok := annot["catalog.cattle.io/release-name"]; ok {
+			return val
+		}
+	}
+	return defaultName
+}
+
 // GetNamespace returns the namespace that should be used based of annotations, or the passed
 // default namespace
 func GetNamespace(chart *chart.Chart, defaultNS string) string {
-	if chart.Metadata.Annotations != nil {
-		if val, ok := chart.Metadata.Annotations["hypper.cattle.io/namespace"]; ok {
+	return GetNamespaceFromAnnot(chart.Metadata.Annotations, defaultNS)
+}
+
+// GetNamespaceFromAnnot returns the namespace that should be used based of
+// annotations, or the passed default namespace
+func GetNamespaceFromAnnot(annot map[string]string, defaultNS string) string {
+	if annot != nil {
+		if val, ok := annot["hypper.cattle.io/namespace"]; ok {
 			return val
 		}
-		if val, ok := chart.Metadata.Annotations["catalog.cattle.io/namespace"]; ok {
+		if val, ok := annot["catalog.cattle.io/namespace"]; ok {
 			return val
 		}
 	}

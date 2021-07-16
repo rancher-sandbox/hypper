@@ -1,2 +1,1 @@
-🛳  Installing shared dependencies for chart "hello":
-ℹ️  - Shared dependency chart "testdata/charts/shared-dep" already installed, skipping
+🛳  Installing chart "hello" as "test-install-release" in namespace "hypper"…

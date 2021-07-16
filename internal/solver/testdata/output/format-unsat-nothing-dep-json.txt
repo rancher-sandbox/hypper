@@ -1,0 +1,1 @@
+{"PresentUnchanged":null,"ToInstall":null,"ToRemove":null,"Status":"UNSAT","Inconsistencies":["Chart \"wantedbaz\" depends on \"depfoo\" in namespace \"targetns\", semver \"^1.0.0\", but nothing satisfies it"]}
