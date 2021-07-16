@@ -177,7 +177,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	s.Solve(wantedPkgInDB)
 
 	if s.IsSAT() {
-		installedRels, err := i.postOrderInstall(s.PkgResultSet.ToInstall, wantedPkgInDB, wantedChrt, vals, 0, settings, logger)
+		installedRels, err := i.postOrderInstall(s.PkgResultSet.ToInstall, wantedPkgInDB, wantedChrt, vals, settings, logger)
 		if err != nil {
 			return installedRels, err
 		}
@@ -196,18 +196,14 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 // installation of packages. This will install the dependencies of a chart
 // before the chart itself.
 func (i *Install) postOrderInstall(tr *solver.PkgTree,
-	wantedPkg *pkg.Pkg, wantedChrt *helmChart.Chart, vals map[string]interface{}, lvl int,
+	wantedPkg *pkg.Pkg, wantedChrt *helmChart.Chart, vals map[string]interface{},
 	settings *cli.EnvSettings, logger log.Logger) (installedRels []*release.Release, err error) {
 
 	// recursively install dependencies of node:
-	for idx, depTR := range tr.Relations {
+	for _, depTR := range tr.Relations {
 		// if first dep and we have dep, print info:
-		if idx == 0 {
-			logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: Installing dependencies of chart \"%s\":",
-				tr.Node.ChartName))
-		}
 		// for all deps, call recursively:
-		installedDeps, err := i.postOrderInstall(depTR, wantedPkg, wantedChrt, vals, 1, settings, logger)
+		installedDeps, err := i.postOrderInstall(depTR, wantedPkg, wantedChrt, vals, settings, logger)
 		if err != nil {
 			return installedDeps, err
 		}
@@ -220,7 +216,7 @@ func (i *Install) postOrderInstall(tr *solver.PkgTree,
 		logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":next_track_button: %sSkipping dependency \"%s\", flag `no-shared-deps` has been set",
 			strings.Repeat("  ", lvl), tr.Node.ChartName))
 	} else {
-		rel, err := i.InstallPkg(tr.Node, wantedPkg, wantedChrt, vals, lvl, settings, logger)
+		rel, err := i.InstallPkg(tr.Node, wantedPkg, wantedChrt, vals, 0, settings, logger)
 		if err != nil {
 			return installedRels, err
 		}
