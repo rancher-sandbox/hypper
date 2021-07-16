@@ -141,7 +141,7 @@ func (p *Pkg) String() (retString string) {
 	retString = retString +
 		fmt.Sprintf("fp: %s Currentstate: %v DesiredState: %v PinnedVersion: %v ChartName: %s\n",
 			p.GetFingerPrint(),
-			p.CurrentState, p.DesiredState, p.Version,
+			p.CurrentState, p.DesiredState, p.PinnedVer,
 			p.ChartName,
 		)
 	for _, rel := range p.DependsRel {

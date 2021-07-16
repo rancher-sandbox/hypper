@@ -145,7 +145,7 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 		return nil, err
 	}
 
-	// s.PkgDB.DebugPrintDB(logger)
+	s.PkgDB.DebugPrintDB(logger)
 
 	// Promote optional deps to normal deps, depending on the strategy selected:
 	// TODO use wantedPkg instead of wantedPkgInDB once wantedPkg from local chart gets depRel correctly built
@@ -213,8 +213,8 @@ func (i *Install) postOrderInstall(tr *solver.PkgTree,
 	// install node:
 	if i.NoSharedDeps && tr.Node.GetFingerPrint() != wantedPkg.GetFingerPrint() {
 		// skip if node is a dependency and not wantedPkg:
-		logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":next_track_button: %sSkipping dependency \"%s\", flag `no-shared-deps` has been set",
-			strings.Repeat("  ", lvl), tr.Node.ChartName))
+		logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":next_track_button: Skipping dependency \"%s\", flag `no-shared-deps` has been set",
+			tr.Node.ChartName))
 	} else {
 		rel, err := i.InstallPkg(tr.Node, wantedPkg, wantedChrt, vals, 0, settings, logger)
 		if err != nil {

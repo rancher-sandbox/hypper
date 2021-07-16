@@ -109,7 +109,8 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 			// we don't know the repo where the release has originally been
 			// installed from, so we add it as stale package with an empty repo
 			// string
-			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace, pkg.Present, pkg.Unknown, pkg.Present, "")
+			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace,
+				pkg.Present, pkg.Unknown, pkg.Present, "")
 			// fill dep relations:
 			if err := i.CreateDepRelsFromAnnot(p, r.Chart.Metadata.Annotations, repoEntries,
 				pkgdb, settings, logger); err != nil {

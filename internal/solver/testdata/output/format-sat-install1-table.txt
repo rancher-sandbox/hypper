@@ -1,8 +1,10 @@
 Status: SAT
 Packages to be installed:
-bar	1.0.0
+bar  1.0.0
 
 Packages to be removed:
 
 Releases already in the system:
+
 Inconsistencies:
+

@@ -165,10 +165,10 @@ func (s *Solver) Solve(wantedPkg *pkg.Pkg) {
 	}
 	waitgroup.Wait()
 
-	// s.logger.Debug("Constraints:")
-	// for _, c := range constrs {
-	// 	s.logger.Debugf("    %v\n", c)
-	// }
+	s.logger.Debug("Constraints:")
+	for _, c := range constrs {
+		s.logger.Debugf("    %v\n", c)
+	}
 
 	s.logger.Debug("Solving…")
 
@@ -181,6 +181,7 @@ func (s *Solver) Solve(wantedPkg *pkg.Pkg) {
 		s.GeneratePkgSets(wantedPkg)
 		s.PkgResultSet.Status = "SAT"
 		s.logger.Debug("Result: SAT\n")
+		s.logger.Debug(s.FormatOutput(Table))
 	} else {
 		s.PkgResultSet.Status = "UNSAT"
 		s.logger.Debug("Result: UNSAT\n")
@@ -276,9 +277,9 @@ func PrintPkgTree(tr *PkgTree, lvl int) (output string) {
 	if tr == nil {
 		return ""
 	}
-	sb.WriteString(fmt.Sprintf("%s\t%s\n", tr.Node.ReleaseName, tr.Node.Version))
+	sb.WriteString(fmt.Sprintf("%s%s  %s\n", strings.Repeat("  ", lvl), tr.Node.ReleaseName, tr.Node.Version))
 	for _, rel := range tr.Relations {
-		sb.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat("\t", lvl), PrintPkgTree(rel, lvl+1)))
+		sb.WriteString(fmt.Sprintf("%s%s", strings.Repeat("  ", lvl), PrintPkgTree(rel, lvl+1)))
 	}
 	return sb.String()
 }
@@ -301,10 +302,12 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 		for _, p := range s.PkgResultSet.PresentUnchanged {
 			sb.WriteString(fmt.Sprintf("%s\t%s\n", p.ReleaseName, p.Version))
 		}
+		sb.WriteString("\n")
 		sb.WriteString("Inconsistencies:\n")
 		for _, incos := range s.PkgResultSet.Inconsistencies {
 			sb.WriteString(fmt.Sprintf("\t%s\n", incos))
 		}
+		sb.WriteString("\n")
 	case YAML:
 		o, _ := yaml.Marshal(s.PkgResultSet)
 		sb.WriteString(string(o))
