@@ -25,6 +25,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/Masterminds/semver/v3"
 	"github.com/jinzhu/copier"
 
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
@@ -32,6 +33,7 @@ import (
 	"github.com/rancher-sandbox/hypper/pkg/cli"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 
+	"github.com/rancher-sandbox/hypper/internal/third-party/helm/resolver"
 	"github.com/rancher-sandbox/hypper/pkg/repo"
 	"helm.sh/helm/v3/pkg/action"
 	helmChart "helm.sh/helm/v3/pkg/chart"
@@ -283,6 +285,39 @@ func (i *Install) GetReleases() (releases []*release.Release, err error) {
 
 func (i *Install) LoadChart(chartName, repo, version string,
 	settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
+
+	if strings.HasPrefix(repo, "file://") {
+		logger.Debugf("Repository from local path: %s\n", repo)
+
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		localPath, err := resolver.GetLocalPath(repo, wd)
+		if err != nil {
+			return nil, err
+		}
+		chartRequested, err := loader.LoadDir(localPath)
+		if err != nil {
+			return nil, err
+		}
+
+		constraint, err := semver.NewConstraint(version)
+		if err != nil {
+			return nil, errors.Wrapf(err, "dependency \"%s\" has an invalid version/constraint format", chartName)
+		}
+
+		v, err := semver.NewVersion(chartRequested.Metadata.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		if constraint.Check(v) {
+			return chartRequested, err
+		}
+
+		return nil, errors.Errorf("can't get a valid version for dependency %s", chartName)
+	}
 
 	i.ChartPathOptions.RepoURL = repo
 	i.ChartPathOptions.Version = version
