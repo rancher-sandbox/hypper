@@ -17,6 +17,7 @@ endif
 
 # go option
 PKG        := ./...
+PKGTESTS   := $$(go list ./... | grep -v /third-party/)
 TAGS       :=
 TESTS      := .
 TESTFLAGS  :=
@@ -52,12 +53,12 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	@echo "==> Running unit tests <=="
-	go test $(GOFLAGS) -run $(TESTS) $(PKG) $(TESTFLAGS)
+	go test $(GOFLAGS) -run $(TESTS) $(PKGTESTS) $(TESTFLAGS)
 
 # Generate golden files used in unit tests
 .PHONY: gen-test-golden
 gen-test-golden:
-gen-test-golden: PKG = ./cmd/hypper ./pkg/action ./pkg/chart ./internal/solver
+gen-test-golden: PKGTESTS = ./cmd/hypper ./pkg/action ./pkg/chart ./internal/solver
 gen-test-golden: TESTFLAGS = -update
 gen-test-golden: test-unit
 
@@ -69,7 +70,7 @@ test-style:
 .PHONY: coverage
 coverage:
 	@echo "==> Running coverage tests <=="
-	go test $(GOFLAGS) -run $(TESTS) $(PKG) -coverprofile=coverage.out --covermode=atomic
+	go test $(GOFLAGS) -run $(TESTS) $(PKGTESTS) -coverprofile=coverage.out --covermode=atomic
 
 .PHONY: lint
 lint: fmt vet
