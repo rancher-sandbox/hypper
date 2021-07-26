@@ -132,10 +132,13 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace,
 		pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
 
-	// get all repo entries
-	rf, err := repo.LoadFile(settings.RepositoryConfig)
+	// get all repo entries, continue if there's none:
+	rf, err := repo.LoadFile(settings.EnvSettings.RegistryConfig)
 	if err != nil {
-		return nil, err
+		if !os.IsNotExist(errors.Cause(err)) {
+			return nil, err
+		}
+		logger.Debug("No repository present, continuing…")
 	}
 
 	s := solver.New(strategy, logger)
