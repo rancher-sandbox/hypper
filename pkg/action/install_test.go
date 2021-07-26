@@ -61,7 +61,15 @@ func TestInstallRun(t *testing.T) {
 		numReturnedRels       int
 		wantDryRun            bool
 		skipActionReleaseName bool
+		NoRepo                bool
 	}{
+		{
+			name:            "non existent cache and repo.yaml, chart with no deps",
+			chart:           buildChart(withHypperAnnotations()),
+			golden:          "output/install-no-shared-deps.txt",
+			numReturnedRels: 1,
+			NoRepo:          true,
+		},
 		{
 			name:            "chart has no shared-deps",
 			chart:           buildChart(withHypperAnnotations()),
@@ -151,8 +159,13 @@ func TestInstallRun(t *testing.T) {
 			} else {
 				settings = cli.New()
 			}
-			settings.RepositoryCache = "testdata/hypperhome/hypper/repository"
-			settings.RepositoryConfig = "testdata/hypperhome/hypper/repositories.yaml"
+			if tcase.NoRepo {
+				settings.RepositoryCache = "non-existent-dir"
+				settings.RepositoryConfig = "non-existent-dir/repositories.yaml"
+			} else {
+				settings.RepositoryCache = "testdata/hypperhome/hypper/repository"
+				settings.RepositoryConfig = "testdata/hypperhome/hypper/repositories.yaml"
+			}
 			settings.Debug = tcase.wantDebug
 
 			// create our own Logger that satisfies impl/cli.Logger, but with a buffer for tests
