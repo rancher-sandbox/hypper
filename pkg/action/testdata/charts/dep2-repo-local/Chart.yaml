@@ -7,10 +7,10 @@ sources:
 version: 0.1.0
 annotations:
   hypper.cattle.io/namespace: hypper
-  hypper.cattle.io/release-name: my-hypper-name
+  hypper.cattle.io/release-name: my-hypper-name2
   catalog.cattle.io/namespace: fleet-system
   catalog.cattle.io/release-name: fleet
   hypper.cattle.io/shared-dependencies: |
     - name: "local-dep-empty"
       version: "0.1.0"
-      repository: "file://testdata/charts/dep-repo-local"
+      repository: "file://../dep-repo-local"

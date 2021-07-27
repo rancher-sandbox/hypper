@@ -13,4 +13,4 @@ annotations:
   hypper.cattle.io/shared-dependencies: |
     - name: "local-dep2-empty"
       version: "0.1.0"
-      repository: "file://testdata/charts/dep2-repo-local"
+      repository: "file://../dep2-repo-local"
