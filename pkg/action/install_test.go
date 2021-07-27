@@ -123,7 +123,7 @@ func TestInstallRun(t *testing.T) {
 			name:            "looped dependencies with repo file:// correctly installed",
 			chart:           buildChart(withHypperAnnotations(), withSharedDepsLoopedFileRepo()),
 			golden:          "output/install-correctly-shared-deps-looped-repo-file.txt",
-			numReturnedRels: 2,
+			numReturnedRels: 3,
 		},
 		{
 			name:            "dependencies are already installed",

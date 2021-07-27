@@ -141,20 +141,12 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 //
 // For local local charts (repository starts with `file://`), it will finish
 // without doing anything if they are already present in the DB (have been
-// processed), or recursively call itselft to create deps from annot and add
+// processed), or recursively call itself to create deps from annot and add
 // those charts to the DB.
 func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 	chartAnnot map[string]string, repoEntries map[string]chrtEntry,
 	pkgdb *solver.PkgDB,
 	settings *cli.EnvSettings, logger log.Logger) (err error) {
-
-	if pInDB := pkgdb.GetPackageByFingerprint(p.GetFingerPrint()); pInDB != nil &&
-		strings.HasPrefix(p.Repository, "file://") /* p local */ {
-		// p is a local chart, and has already been added to the DB.
-		// Hence, it has already been processed. Exit and break
-		// the recursive loop.
-		return nil
-	}
 
 	// unmarshal dependencies:
 	cases := []string{"hypper.cattle.io/shared-dependencies", "hypper.cattle.io/optional-dependencies"}
@@ -185,20 +177,30 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 				depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, settings.Namespace())
 				depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, depChart.Name())
 
-				// Add dep to DB
 				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
 					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository, p.ParentChartPath)
-				pkgdb.Add(depP)
 
-				if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB != nil &&
-					strings.HasPrefix(dep.Repository, "file://") /* depP local */ {
-					// depP is local, and has not been processed yet.
-					// Create depP dependency relations, and recursively add any
-					// deps depP may have.
-					if err := i.CreateDepRelsFromAnnot(depP, depChart.Metadata.Annotations, repoEntries,
-						pkgdb, settings, logger); err != nil {
-						return err
+				if strings.HasPrefix(dep.Repository, "file://") /* depP local */ {
+					// if depP is local, it can depend on local charts too: check recursively,
+					// but break loops by not recurse into charts already processed.
+
+					if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB == nil {
+						// first time we process depP
+
+						// Add dep to DB, marking it as processed
+						pkgdb.Add(depP)
+
+						// Create depP dependency relations, and recursively add any
+						// deps depP may have.
+						if err := i.CreateDepRelsFromAnnot(depP, depChart.Metadata.Annotations, repoEntries,
+							pkgdb, settings, logger); err != nil {
+							return err
+						}
 					}
+				} else {
+					// depP is not a local chart
+					// Add dep to DB
+					pkgdb.Add(depP)
 				}
 
 			} else {
