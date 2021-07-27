@@ -18,6 +18,7 @@ package action
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/Masterminds/log-go"
 	"gopkg.in/yaml.v2"
@@ -81,8 +82,8 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 		for _, chrtVer := range chrtVersions.chartVersions {
 
 			// create pkg:
-			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settingsNS)            //TODO figure out the default ns for bare helm charts, and honour kubectl ns and flag
-			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name) // TODO default name for helm repos
+			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settingsNS)
+			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name)
 			repo := chrtVersions.url
 			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
 
@@ -136,10 +137,23 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 // CreateDepRelsFromAnnot fills the p.DepRel and p.DepOptionalRel of a package,
 // by unmarshalling and checking the Metadata.Annotations of the chart that
 // corresponds to that package.
+//
+// For local local charts (repository starts with `file://`), it will finish
+// without doing anything if they are already present in the DB (have been
+// processed), or recursively call itselft to create deps from annot and add
+// those charts to the DB.
 func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 	chartAnnot map[string]string, repoEntries map[string]chrtEntry,
 	pkgdb *solver.PkgDB,
 	settings *cli.EnvSettings, logger log.Logger) (err error) {
+
+	if pInDB := pkgdb.GetPackageByFingerprint(p.GetFingerPrint()); pInDB != nil &&
+		strings.HasPrefix(p.Repository, "file://") /* p local */ {
+		// p is a local chart, and has already been added to the DB.
+		// Hence, it has already been processed. Exit and break
+		// the recursive loop.
+		return nil
+	}
 
 	// unmarshal dependencies:
 	cases := []string{"hypper.cattle.io/shared-dependencies", "hypper.cattle.io/optional-dependencies"}
@@ -158,8 +172,8 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 		for _, dep := range sharedDeps {
 			var depNS, depRelName string
 			// find dependency:
-			depChrtVer, ok := repoEntries[dep.Name]
-			if !ok { // dep not in repo
+			depChrtVer, depInRepo := repoEntries[dep.Name]
+			if !depInRepo {
 				// pull chart to obtain default ns
 				log.Debugf("Dependency \"%s\" not found in repos, loading chart", dep.Name)
 				depChart, err := i.LoadChart(dep.Name, dep.Repository, dep.Version, settings, logger)
@@ -174,6 +188,18 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
 					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository)
 				pkgdb.Add(depP)
+
+				if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB != nil &&
+					strings.HasPrefix(dep.Repository, "file://") /* depP local */ {
+					// depP is local, and has not been processed yet.
+					// Create depP dependency relations, and recursively add any
+					// deps depP may have.
+					if err := i.CreateDepRelsFromAnnot(depP, depChart.Metadata.Annotations, repoEntries,
+						pkgdb, settings, logger); err != nil {
+						return err
+					}
+				}
+
 			} else {
 				// obtain default ns and release name of dep:
 				depNS = GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, settings.Namespace())
