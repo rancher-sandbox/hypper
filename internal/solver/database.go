@@ -146,9 +146,9 @@ func mergePkgs(old pkg.Pkg, new pkg.Pkg) (result *pkg.Pkg) {
 	return result
 }
 
-// Add adds a package to the database and returns it's ID. If a package was
-// already present in the database, it makes sure to update it, in a way that
-// only unknown info to that package is added.
+// Add adds a package to the database, and if a package was already present in
+// the database, it makes sure to update it, in a way that only unknown info to
+// that package is added.
 func (pkgdb *PkgDB) Add(p *pkg.Pkg) {
 	pkgdb.Lock()
 	defer pkgdb.Unlock()
