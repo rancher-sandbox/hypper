@@ -1,0 +1,2 @@
+🛳  Installing chart "local-dep-empty" as "my-hypper-name" in namespace "hypper"…
+🛳  Installing chart "hello" as "test-install-release" in namespace "hypper"…

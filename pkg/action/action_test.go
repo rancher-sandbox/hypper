@@ -175,6 +175,17 @@ func withSharedDepsFileRepo() chartOption {
 	}
 }
 
+func withSharedDepsLoopedFileRepo() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"local-dep-empty\"" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"file://testdata/charts/dep-repo-local\"" + "\n"
+	}
+}
+
 func withTypeApplication() chartOption {
 	return func(opts *chartOptions) {
 		opts.Chart.Metadata.Type = "application"
