@@ -1,0 +1,31 @@
+presentunchanged:
+- releasename: bar
+  version: 1.0.0
+  namespace: targetns
+  chartname: bar
+  dependsrel: []
+  dependsoptionalrel: []
+  repository: ourrepo
+  parentchartpath: ""
+  currentstate: 1
+  desiredstate: 1
+  pinnedver: 0
+toinstall:
+  node:
+    releasename: bar
+    version: 1.0.0
+    namespace: targetns
+    chartname: bar
+    dependsrel: []
+    dependsoptionalrel: []
+    repository: ourrepo
+    parentchartpath: ""
+    currentstate: 1
+    desiredstate: 1
+    pinnedver: 0
+  relations: []
+toremove: []
+status: SAT
+inconsistencies:
+- |
+  Package bar_1.0.0_targetns_bar is scheduled for upgrade, did you mean "hypper upgrade" instead of "hypper install"

@@ -1,0 +1,16 @@
+apiVersion: v1
+description: Empty testing chart
+home: https://helm.sh/helm
+name: local-dep2-empty
+sources:
+  - https://github.com/helm/helm
+version: 0.1.0
+annotations:
+  hypper.cattle.io/namespace: hypper
+  hypper.cattle.io/release-name: my-hypper-name2
+  catalog.cattle.io/namespace: fleet-system
+  catalog.cattle.io/release-name: fleet
+  hypper.cattle.io/shared-dependencies: |
+    - name: "local-dep-empty"
+      version: "0.1.0"
+      repository: "file://../dep-repo-local"

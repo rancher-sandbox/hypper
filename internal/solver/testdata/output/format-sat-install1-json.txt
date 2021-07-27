@@ -1,0 +1,1 @@
+{"PresentUnchanged":[],"ToInstall":{"Node":{"ReleaseName":"bar","Version":"1.0.0","Namespace":"targetns","ChartName":"bar","DependsRel":null,"DependsOptionalRel":null,"Repository":"ourrepo","ParentChartPath":"","CurrentState":2,"DesiredState":1,"PinnedVer":0},"Relations":[]},"ToRemove":[],"Status":"SAT","Inconsistencies":[]}

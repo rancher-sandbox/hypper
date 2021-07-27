@@ -164,6 +164,28 @@ func withSharedDepsWithoutAnnotations() chartOption {
 	}
 }
 
+func withSharedDepsFileRepo() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"shared-dep-empty\"" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"file://../shared-dep\"" + "\n"
+	}
+}
+
+func withSharedDepsLoopedFileRepo() chartOption {
+	return func(opts *chartOptions) {
+		if opts.Chart.Metadata.Annotations == nil {
+			opts.Chart.Metadata.Annotations = make(map[string]string)
+		}
+		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"local-dep-empty\"" + "\n" +
+			"    version: \"0.1.0\"" + "\n" +
+			"    repository: \"file://../dep-repo-local\"" + "\n"
+	}
+}
+
 func withTypeApplication() chartOption {
 	return func(opts *chartOptions) {
 		opts.Chart.Metadata.Type = "application"

@@ -1,2 +1,4 @@
+⏭  Skipping dependency "testdata/testcharts/shared-dep", flag `no-shared-deps` has been set
+⏭  Skipping dependency "testdata/testcharts/vanilla-helm", flag `no-shared-deps` has been set
 🛳  Installing chart "empty" as "zeppelin" in namespace "led"…
 👏 Done!

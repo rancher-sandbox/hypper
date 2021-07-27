@@ -1,0 +1,7 @@
+presentunchanged: []
+toinstall: null
+toremove: []
+status: UNSAT
+inconsistencies:
+- Chart "wantedbaz" depends on "depfoo" in namespace "targetns", semver "^1.0.0",
+  but nothing satisfies it

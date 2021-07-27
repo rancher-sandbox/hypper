@@ -1,2 +1,1 @@
-ERROR: Chart.yaml metadata is malformed for chart "hello"
-🛳  Installing shared dependencies for chart "hello":
+ERROR: Chart.yaml metadata is malformed for repo entry "hello", "0.1.0"

@@ -1,1 +1,1 @@
-🛳  Installing shared dependencies for chart "hello":
+🛳  Installing chart "hello" as "test-install-release" in namespace "luke-skywalker"…

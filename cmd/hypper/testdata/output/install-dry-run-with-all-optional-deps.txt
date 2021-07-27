@@ -1,5 +1,4 @@
-🛳  Installing shared dependencies for chart "empty":
-🛳  - Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…
-🛳  - Installing chart "empty" as "empty" in namespace "hypper"…
+🛳  Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…
+🛳  Installing chart "empty" as "empty" in namespace "default"…
 🛳  Installing chart "empty" as "my-hypper-name" in namespace "hypper"…
 👏 Done!

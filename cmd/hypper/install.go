@@ -30,6 +30,7 @@ import (
 
 	"github.com/Masterminds/log-go"
 	logio "github.com/Masterminds/log-go/io"
+	"github.com/rancher-sandbox/hypper/internal/solver"
 	"github.com/rancher-sandbox/hypper/pkg/action"
 	"github.com/rancher-sandbox/hypper/pkg/eyecandy"
 	"github.com/thediveo/enumflag"
@@ -80,8 +81,9 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 		Args:  require.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			// TODO decide how to use returned rel:
-			_, err := runInstall(args, client, valueOpts, logger)
+			_, err := runInstall(solver.InstallOne, args, client, valueOpts, logger)
 			if err != nil {
+				err = errors.New(eyecandy.ESPrintf(settings.NoEmojis, ":x: %s", err))
 				return err
 			}
 			logger.Info(eyecandy.ESPrint(settings.NoEmojis, ":clapping_hands:Done!"))
@@ -104,7 +106,7 @@ func addInstallFlags(cmd *cobra.Command, f *pflag.FlagSet, client *action.Instal
 	f.BoolVar(&client.DryRun, "dry-run", false, "simulate an install")
 }
 
-func runInstall(args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) (*release.Release, error) {
+func runInstall(strategy solver.SolverStrategy, args []string, client *action.Install, valueOpts *values.Options, logger log.Logger) ([]*release.Release, error) {
 
 	// Get an io.Writer compliant logger instance at the info level.
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
@@ -128,17 +130,17 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	// map hypper's NoCreateNamespace to Helm's CreateNamespace
 	client.CreateNamespace = !client.NoCreateNamespace
 
-	chart, err := client.Chart(args)
+	chartName, err := client.Chart(args)
 	if err != nil {
 		return nil, err
 	}
 
-	cp, err := client.ChartPathOptions.LocateChart(chart, settings.EnvSettings)
+	chartPath, err := client.ChartPathOptions.LocateChart(chartName, settings.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Debugf("CHART PATH: %s\n", cp)
+	logger.Debugf("CHART PATH: %s\n", chartPath)
 
 	p := getter.All(settings.EnvSettings)
 	vals, err := valueOpts.MergeValues(p)
@@ -147,7 +149,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	}
 
 	// Check chart dependencies to make sure all are present in /charts
-	chartRequested, err := loader.Load(cp)
+	chartRequested, err := loader.Load(chartPath)
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +158,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 	action.SetNamespace(client, chartRequested, settings.Namespace(), settings.NamespaceFromFlag)
 
 	if client.ReleaseName == "" {
+		// calculate releaseName either from args, metadata, or chart name:
 		client.ReleaseName, err = action.GetName(chartRequested, client.NameTemplate, args...)
 		if err != nil {
 			return nil, err
@@ -178,7 +181,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 			if client.DependencyUpdate {
 				man := &downloader.Manager{
 					Out:              wInfo,
-					ChartPath:        cp,
+					ChartPath:        chartPath,
 					Keyring:          client.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
 					Getters:          p,
@@ -190,7 +193,7 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 					return nil, err
 				}
 				// Reload the chart with the updated Chart.lock file.
-				if chartRequested, err = loader.Load(cp); err != nil {
+				if chartRequested, err = loader.Load(chartPath); err != nil {
 					return nil, errors.Wrap(err, "failed reloading chart after repo update")
 				}
 			} else {
@@ -199,5 +202,5 @@ func runInstall(args []string, client *action.Install, valueOpts *values.Options
 		}
 	}
 
-	return client.Run(chartRequested, vals, settings, logger, 0)
+	return client.Run(solver.InstallOne, chartRequested, chartPath, vals, settings, logger)
 }

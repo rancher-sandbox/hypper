@@ -1,0 +1,18 @@
+presentunchanged: []
+toinstall:
+  node:
+    releasename: bar
+    version: 1.0.0
+    namespace: targetns
+    chartname: bar
+    dependsrel: []
+    dependsoptionalrel: []
+    repository: ourrepo
+    parentchartpath: ""
+    currentstate: 2
+    desiredstate: 1
+    pinnedver: 0
+  relations: []
+toremove: []
+status: SAT
+inconsistencies: []

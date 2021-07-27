@@ -149,6 +149,9 @@ func executeActionCommandStdinC(store *storage.Storage, in *os.File, cmd string)
 	if mem, ok := store.Driver.(*driver.Memory); ok {
 		mem.SetNamespace(settings.Namespace())
 	}
+	settings.RepositoryCache = "testdata/hypperhome/hypper/repository"
+	settings.RepositoryConfig = "testdata/hypperhome/hypper/repositories.yaml"
+
 	c, err := root.ExecuteC()
 	if err != nil {
 		logger.Error(err)
