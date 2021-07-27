@@ -92,7 +92,12 @@ func CheckDependencies(ch *helmChart.Chart, reqs []*helmChart.Dependency) error 
 // desired ones. Then, it will solve with the SAT solver, and if relevant,
 // install the wanted chart and its dependencies. If dependencies are already
 // satisfied, they will be silently skipped.
-func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Chart, vals map[string]interface{},
+//
+// wantedChartAbsPath argument is needed for correctly evaluating `file://`
+// repositories in shared dependency annotations. Like in Helm, these
+// repositories can be relative to the parent chart path.
+func (i *Install) Run(strategy solver.SolverStrategy,
+	wantedChrt *helmChart.Chart, wantedChrtAbsPath string, vals map[string]interface{},
 	settings *cli.EnvSettings, logger log.Logger) ([]*release.Release, error) {
 
 	// TODO obtain lock
@@ -127,12 +132,13 @@ func (i *Install) Run(strategy solver.SolverStrategy, wantedChrt *helmChart.Char
 	if i.Version == "" {
 		// no pinned ver, take the chart as a filler for fp:
 		version = wantedChrt.Metadata.Version
+		i.ChartPathOptions.Version = version
 	} else {
 		pinnedVer = pkg.Present
 	}
 
 	wantedPkg := pkg.NewPkg(i.ReleaseName, wantedChrt.Metadata.Name, version, i.Namespace,
-		pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL)
+		pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL, wantedChrtAbsPath)
 
 	// get all repo entries, continue if there's none:
 	rf, err := repo.LoadFile(settings.EnvSettings.RegistryConfig)
@@ -283,17 +289,13 @@ func (i *Install) GetReleases() (releases []*release.Release, err error) {
 	return releases, nil
 }
 
-func (i *Install) LoadChart(chartName, repo, version string,
+func (i *Install) LoadChart(chartName, parentChartPath, repo, version string,
 	settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
 
 	if strings.HasPrefix(repo, "file://") {
 		logger.Debugf("Repository from local path: %s\n", repo)
 
-		wd, err := os.Getwd()
-		if err != nil {
-			return nil, err
-		}
-		localPath, err := resolver.GetLocalPath(repo, wd)
+		localPath, err := resolver.GetLocalPath(repo, parentChartPath)
 		if err != nil {
 			return nil, err
 		}
@@ -361,7 +363,8 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 	} else { // dependency
 		// we don't have a chart, load it
 		var err error
-		chartRequested, err = clientInstall.LoadChart(p.ChartName, p.Repository, p.Version,
+		chartRequested, err = clientInstall.LoadChart(p.ChartName, p.ParentChartPath,
+			p.Repository, p.Version,
 			settings, logger)
 		if err != nil {
 			return nil, err
@@ -393,7 +396,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 
 	wInfo := logio.NewWriter(logger, log.InfoLevel)
 
-	// Check chart dependencies to make sure all are present in /charts
+	// Check chart local dependencies to make sure all are present in /charts
 	if req := chartRequested.Metadata.Dependencies; req != nil {
 		// If CheckDependencies returns an error, we have unfulfilled dependencies.
 		// As of Helm 2.4.0, this is treated as a stopping condition:
@@ -427,7 +430,7 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 	logger.Infof(eyecandy.ESPrintf(settings.NoEmojis, ":cruise_ship: %sInstalling chart \"%s\" as \"%s\" in namespace \"%s\"…",
 		strings.Repeat("  ", lvl), chartRequested.Name(), clientInstall.ReleaseName, clientInstall.Namespace))
 
-	// perform instal:
+	// perform install:
 	helmInstall := clientInstall.Install
 	i.Config.SetNamespace(clientInstall.Namespace)
 	rel, err := helmInstall.Run(chartRequested, vals) // wrap Helm's i.Run for now

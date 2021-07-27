@@ -8,6 +8,7 @@ toinstall:
     dependsrel: []
     dependsoptionalrel: []
     repository: ourrepo
+    parentchartpath: ""
     currentstate: 2
     desiredstate: 1
     pinnedver: 0

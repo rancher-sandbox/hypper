@@ -12,6 +12,7 @@ toinstall:
       chartname: myawesomedep
     dependsoptionalrel: []
     repository: ourrepo
+    parentchartpath: ""
     currentstate: 0
     desiredstate: 1
     pinnedver: 0
@@ -24,6 +25,7 @@ toinstall:
       dependsrel: []
       dependsoptionalrel: []
       repository: ourrepo
+      parentchartpath: ""
       currentstate: 0
       desiredstate: 0
       pinnedver: 0

@@ -130,17 +130,17 @@ func runInstall(strategy solver.SolverStrategy, args []string, client *action.In
 	// map hypper's NoCreateNamespace to Helm's CreateNamespace
 	client.CreateNamespace = !client.NoCreateNamespace
 
-	chart, err := client.Chart(args)
+	chartName, err := client.Chart(args)
 	if err != nil {
 		return nil, err
 	}
 
-	cp, err := client.ChartPathOptions.LocateChart(chart, settings.EnvSettings)
+	chartPath, err := client.ChartPathOptions.LocateChart(chartName, settings.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Debugf("CHART PATH: %s\n", cp)
+	logger.Debugf("CHART PATH: %s\n", chartPath)
 
 	p := getter.All(settings.EnvSettings)
 	vals, err := valueOpts.MergeValues(p)
@@ -149,7 +149,7 @@ func runInstall(strategy solver.SolverStrategy, args []string, client *action.In
 	}
 
 	// Check chart dependencies to make sure all are present in /charts
-	chartRequested, err := loader.Load(cp)
+	chartRequested, err := loader.Load(chartPath)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func runInstall(strategy solver.SolverStrategy, args []string, client *action.In
 			if client.DependencyUpdate {
 				man := &downloader.Manager{
 					Out:              wInfo,
-					ChartPath:        cp,
+					ChartPath:        chartPath,
 					Keyring:          client.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
 					Getters:          p,
@@ -193,7 +193,7 @@ func runInstall(strategy solver.SolverStrategy, args []string, client *action.In
 					return nil, err
 				}
 				// Reload the chart with the updated Chart.lock file.
-				if chartRequested, err = loader.Load(cp); err != nil {
+				if chartRequested, err = loader.Load(chartPath); err != nil {
 					return nil, errors.Wrap(err, "failed reloading chart after repo update")
 				}
 			} else {
@@ -202,5 +202,5 @@ func runInstall(strategy solver.SolverStrategy, args []string, client *action.In
 		}
 	}
 
-	return client.Run(solver.InstallOne, chartRequested, vals, settings, logger)
+	return client.Run(solver.InstallOne, chartRequested, chartPath, vals, settings, logger)
 }

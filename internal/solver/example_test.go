@@ -81,6 +81,7 @@ func ExampleSolver() {
 	//   dependsrel: []
 	//   dependsoptionalrel: []
 	//   repository: ourrepo
+	//   parentchartpath: ""
 	//   currentstate: 1
 	//   desiredstate: 0
 	//   pinnedver: 0
@@ -97,6 +98,7 @@ func ExampleSolver() {
 	//       chartname: myawesomedep
 	//     dependsoptionalrel: []
 	//     repository: ourrepo
+	//     parentchartpath: ""
 	//     currentstate: 0
 	//     desiredstate: 1
 	//     pinnedver: 0
@@ -109,6 +111,7 @@ func ExampleSolver() {
 	//       dependsrel: []
 	//       dependsoptionalrel: []
 	//       repository: ourrepo
+	//       parentchartpath: ""
 	//       currentstate: 0
 	//       desiredstate: 0
 	//       pinnedver: 0

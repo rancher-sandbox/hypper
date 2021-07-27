@@ -85,7 +85,8 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 			ns := GetNamespaceFromAnnot(chrtVer.Annotations, settingsNS)
 			relName := GetNameFromAnnot(chrtVer.Annotations, chrtVer.Metadata.Name)
 			repo := chrtVersions.url
-			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns, pkg.Unknown, pkg.Unknown, pkg.Unknown, repo)
+			p := pkg.NewPkg(relName, chrtName, chrtVer.Version, ns,
+				pkg.Unknown, pkg.Unknown, pkg.Unknown, repo, "")
 
 			// fill dep relations
 			if err := i.CreateDepRelsFromAnnot(p, chrtVer.Annotations, repoEntries,
@@ -111,7 +112,7 @@ func (i *Install) BuildWorld(pkgdb *solver.PkgDB, repositories []*helmRepo.Entry
 			// installed from, so we add it as stale package with an empty repo
 			// string
 			p := pkg.NewPkg(r.Name, r.Chart.Name(), r.Chart.Metadata.Version, r.Namespace,
-				pkg.Present, pkg.Unknown, pkg.Present, "")
+				pkg.Present, pkg.Unknown, pkg.Present, "", "")
 			// fill dep relations:
 			if err := i.CreateDepRelsFromAnnot(p, r.Chart.Metadata.Annotations, repoEntries,
 				pkgdb, settings, logger); err != nil {
@@ -176,7 +177,7 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 			if !depInRepo {
 				// pull chart to obtain default ns
 				log.Debugf("Dependency \"%s\" not found in repos, loading chart", dep.Name)
-				depChart, err := i.LoadChart(dep.Name, dep.Repository, dep.Version, settings, logger)
+				depChart, err := i.LoadChart(dep.Name, p.ParentChartPath, dep.Repository, dep.Version, settings, logger)
 				if err != nil {
 					return err
 				}
@@ -186,7 +187,7 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 
 				// Add dep to DB
 				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
-					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository)
+					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository, p.ParentChartPath)
 				pkgdb.Add(depP)
 
 				if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB != nil &&

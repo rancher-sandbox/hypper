@@ -6,6 +6,7 @@ presentunchanged:
   dependsrel: []
   dependsoptionalrel: []
   repository: ourrepo
+  parentchartpath: ""
   currentstate: 1
   desiredstate: 1
   pinnedver: 0
@@ -18,6 +19,7 @@ toinstall:
     dependsrel: []
     dependsoptionalrel: []
     repository: ourrepo
+    parentchartpath: ""
     currentstate: 1
     desiredstate: 1
     pinnedver: 0

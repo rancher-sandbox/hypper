@@ -171,7 +171,7 @@ func withSharedDepsFileRepo() chartOption {
 		}
 		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"shared-dep-empty\"" + "\n" +
 			"    version: \"0.1.0\"" + "\n" +
-			"    repository: \"file://testdata/charts/shared-dep\"" + "\n"
+			"    repository: \"file://../shared-dep\"" + "\n"
 	}
 }
 
@@ -182,7 +182,7 @@ func withSharedDepsLoopedFileRepo() chartOption {
 		}
 		opts.Chart.Metadata.Annotations["hypper.cattle.io/shared-dependencies"] = "  - name: \"local-dep-empty\"" + "\n" +
 			"    version: \"0.1.0\"" + "\n" +
-			"    repository: \"file://testdata/charts/dep-repo-local\"" + "\n"
+			"    repository: \"file://../dep-repo-local\"" + "\n"
 	}
 }
 

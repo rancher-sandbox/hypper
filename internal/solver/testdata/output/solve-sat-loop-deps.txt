@@ -12,6 +12,7 @@ toinstall:
       chartname: wantedbar
     dependsoptionalrel: []
     repository: ourrepo
+    parentchartpath: ""
     currentstate: 2
     desiredstate: 1
     pinnedver: 0
@@ -28,6 +29,7 @@ toinstall:
         chartname: wantedbaz
       dependsoptionalrel: []
       repository: ourrepo
+      parentchartpath: ""
       currentstate: 2
       desiredstate: 0
       pinnedver: 0
@@ -44,6 +46,7 @@ toinstall:
           chartname: wantedfoo
         dependsoptionalrel: []
         repository: ourrepo
+        parentchartpath: ""
         currentstate: 2
         desiredstate: 0
         pinnedver: 0

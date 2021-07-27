@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -220,9 +221,17 @@ func TestInstallRun(t *testing.T) {
 					t.Fatalf("Failed creating rel stub: %s", err)
 				}
 			}
-			is := assert.New(t)
 
-			rels, err := instAction.Run(solver.InstallOne, tcase.chart, map[string]interface{}{}, settings, log.Current)
+			cwd, err := os.Getwd()
+			if err != nil {
+				t.Fatalf("Failed obtaining current wd: %s", err)
+			}
+			wantedChartAbsPath := cwd + "/testdata/charts/unexistent-chart"
+
+			rels, err := instAction.Run(solver.InstallOne,
+				tcase.chart, wantedChartAbsPath, map[string]interface{}{}, settings, log.Current)
+
+			is := assert.New(t)
 			is.Equal(tcase.numReturnedRels, len(rels))
 
 			if (err != nil) && !tcase.wantError {

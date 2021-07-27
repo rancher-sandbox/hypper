@@ -44,6 +44,7 @@ type Pkg struct {
 	DependsRel         []*PkgRel // list of dependencies' fingerprints
 	DependsOptionalRel []*PkgRel // list of optional dependencies' fingerprints
 	Repository         string    // repository where to find ChartName
+	ParentChartPath    string    // Absolute path of parent chart, if existing
 	CurrentState       tristate  // current state of the package
 	DesiredState       tristate  // desired state of the package
 	PinnedVer          tristate  // if we have a pinnedVer or not in pkg.Version
@@ -61,7 +62,8 @@ type PkgRel struct {
 // NewPkg creates a new Pkg struct. It does not give value to DependsRel,
 // DependsOptionalRel.
 func NewPkg(relName, chartName, version, namespace string,
-	currentState, desiredState, pinnedVer tristate, repo string) *Pkg {
+	currentState, desiredState, pinnedVer tristate,
+	repo, parentChartPath string) *Pkg {
 
 	p := &Pkg{
 		ReleaseName:        relName,
@@ -71,6 +73,7 @@ func NewPkg(relName, chartName, version, namespace string,
 		DependsRel:         []*PkgRel{},
 		DependsOptionalRel: []*PkgRel{},
 		Repository:         repo,
+		ParentChartPath:    parentChartPath,
 		CurrentState:       currentState,
 		DesiredState:       desiredState,
 		PinnedVer:          pinnedVer,
@@ -85,7 +88,8 @@ func NewPkgMock(name, version, namespace string,
 	depends, dependsOptional []*PkgRel,
 	currentState, desiredState tristate) *Pkg {
 
-	p := NewPkg(name, name, version, namespace, currentState, desiredState, Unknown, "ourrepo")
+	p := NewPkg(name, name, version, namespace,
+		currentState, desiredState, Unknown, "ourrepo", "")
 
 	p.DependsRel = depends
 	p.DependsOptionalRel = dependsOptional
