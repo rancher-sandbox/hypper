@@ -335,15 +335,6 @@ func (i *Install) LoadChart(chartName, repo, version string,
 	return chartRequested, nil
 }
 
-// LoadChartFromPkg loads the chart for the desired package, using the already
-// set repository and version in the action.Install.
-func (i *Install) LoadChartFromPkg(p *pkg.Pkg,
-	settings *cli.EnvSettings, logger log.Logger) (*helmChart.Chart, error) {
-
-	return i.LoadChart(p.ChartName, p.Repository, p.Version,
-		settings, logger)
-}
-
 // InstallPkg installs the passed package by pulling its related chart. It takes
 // care of using the desired namespace for it.
 func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmChart.Chart,
@@ -370,7 +361,8 @@ func (i *Install) InstallPkg(p *pkg.Pkg, wantedPkg *pkg.Pkg, wantedChart *helmCh
 	} else { // dependency
 		// we don't have a chart, load it
 		var err error
-		chartRequested, err = clientInstall.LoadChartFromPkg(p, settings, logger)
+		chartRequested, err = clientInstall.LoadChart(p.ChartName, p.Repository, p.Version,
+			settings, logger)
 		if err != nil {
 			return nil, err
 		}
