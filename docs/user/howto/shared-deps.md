@@ -41,6 +41,7 @@ annotations:
 Shared dependencies are just normal Helm
 [Dependencies](https://helm.sh/docs/topics/charts/#chart-dependencies). As
 such, they are defined with:
+
 - The name field is the name of the chart you want.
 - The version field is the version of the chart you want.
 - The repository field is the full URL to the chart repository. Note that you
@@ -116,8 +117,8 @@ Now we install `fleet`:
 
 ```console
 $ hypper install hypper-charts/fleet -n fleet-system
-Installing chart "fleet" as "fleet" in namespace "fleet-system"…
-Done! 👏
+🛳  Installing chart "fleet" as "fleet" in namespace "fleet-system"…
+👏 Done!
 ```
 
 That satisfies one shared dependency of `our-app`:
@@ -135,16 +136,21 @@ install it or not:
 
 ```console
 $ hypper install ./our-app
-🛳  Installing shared dependencies for chart "our-app":
-ℹ️  - Shared dependency chart "fleet" already installed, skipping
-❓ Install optional shared dependency "rancher-tracing" ? [Y/n]:
+❓ Install optional shared dependency "rancher-tracing" of chart "demo"? [Y/n]:
 y
-🛳  - Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
+The following charts are going to be installed:
+our-app v0.1.0
+ ├─ fleet v0.3.500
+ └─ rancher-tracing v1.20.002
+
+🛳  Installing chart "fleet" as "fleet" in namespace "fleet-system"…
+🛳  Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
 🛳  Installing chart "our-app" as "our-app-name" in namespace "hypper"…
 👏 Done!
 ```
 
 What has happened?
+
 1. Hypper has made sure that all declared shared dependencies of `our-app` are
    satisfied, installing those that are missing, and skipping those present.
    Since the chart of the shared dependency didn't have annotations for default
@@ -152,7 +158,7 @@ What has happened?
 2. Since we haven't specified the release name or namespace in the command,
    Hypper has installed `our-app` in the default release-name (`our-app-name`)
    and namespace (`hypper`) we specified in the Hypper annotations.
-   
+
 Let's see:
 
 ```console

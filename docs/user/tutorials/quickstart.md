@@ -71,11 +71,15 @@ The commands are the same as you have already used:
 
 ```console
 $ hypper install hypper-charts/our-app
-🛳  Installing shared dependencies for chart "our-app":
-🛳  - Installing chart "fleet" as "fleet" in namespace "fleet-system"…
-❓ Install optional shared dependency "rancher-tracing" ? [Y/n]:
+❓ Install optional shared dependency "rancher-tracing" of chart "demo"? [Y/n]:
 y
-🛳  - Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
+The following charts are going to be installed:
+our-app v0.1.0
+ ├─ fleet v0.3.500
+ └─ rancher-tracing v1.20.002
+
+🛳  Installing chart "fleet" as "fleet" in namespace "fleet-system"…
+🛳  Installing chart "rancher-tracing" as "rancher-tracing" in namespace "istio-system"…
 🛳  Installing chart "our-app" as "our-app-name" in namespace "hypper"…
 👏 Done!
 ```

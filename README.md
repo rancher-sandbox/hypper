@@ -45,7 +45,7 @@ Notice that the value is a multi-line string (noted by the `|` after the `:`). H
 
 - [x] Install charts to a chart specified release name and namespace (via chart annotations)
 - [x] Install share dependencies (those that more than one application may rely on)
-- [ ] Install optional/suggests dependencies
+- [x] Install optional/suggests dependencies
 - [ ] List outdated dependencies
 - [ ] Ensure all versions resolve correctly across dependencies
 
