@@ -188,6 +188,10 @@ func (i *Install) Run(strategy solver.SolverStrategy,
 	s.Solve(wantedPkgInDB)
 
 	if s.IsSAT() {
+		if len(s.PkgResultSet.ToInstall.Relations) != 0 {
+			logger.Info("The following charts are going to be installed:")
+			logger.Infof("%s\n", solver.PrintPkgTree(s.PkgResultSet.ToInstall))
+		}
 		installedRels, err := i.postOrderInstall(s.PkgResultSet.ToInstall, wantedPkgInDB, wantedChrt, vals, settings, logger)
 		if err != nil {
 			return installedRels, err
