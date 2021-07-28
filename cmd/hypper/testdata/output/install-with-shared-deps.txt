@@ -1,3 +1,7 @@
+The following charts are going to be installed:
+empty v0.1.0
+ └─ testdata/testcharts/shared-dep v0.1.0
+
 🛳  Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…
 🛳  Installing chart "empty" as "my-hypper-name" in namespace "hypper"…
 👏 Done!

@@ -1,3 +1,8 @@
+The following charts are going to be installed:
+empty v0.1.0
+ ├─ testdata/testcharts/shared-dep v0.1.0
+ └─ testdata/testcharts/vanilla-helm v0.1.0
+
 ⏭  Skipping dependency "testdata/testcharts/shared-dep", flag `no-shared-deps` has been set
 ⏭  Skipping dependency "testdata/testcharts/vanilla-helm", flag `no-shared-deps` has been set
 🛳  Installing chart "empty" as "my-hypper-name" in namespace "hypper"…

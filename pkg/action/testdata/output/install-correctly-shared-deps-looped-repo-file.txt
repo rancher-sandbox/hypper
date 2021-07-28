@@ -1,3 +1,8 @@
+The following charts are going to be installed:
+hello v0.1.0
+ └─ local-dep-empty v0.1.0
+    └─ local-dep2-empty v0.1.0
+
 🛳  Installing chart "local-dep2-empty" as "my-hypper-name2" in namespace "hypper"…
 🛳  Installing chart "local-dep-empty" as "my-hypper-name" in namespace "hypper"…
 🛳  Installing chart "hello" as "test-install-release" in namespace "hypper"…
