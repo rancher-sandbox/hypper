@@ -1,2 +1,6 @@
+The following charts are going to be installed:
+hello v0.1.0
+ └─ testdata/charts/shared-dep v0.1.0
+
 🛳  Installing chart "shared-dep-empty" as "my-shared-dep" in namespace "my-shared-dep-ns"…
 🛳  Installing chart "hello" as "test-install-release" in namespace "ns-from-flag"…

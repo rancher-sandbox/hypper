@@ -272,15 +272,47 @@ func (s *Solver) SortPkgSets() {
 	})
 }
 
-func PrintPkgTree(tr *PkgTree, lvl int) (output string) {
-	var sb strings.Builder
+// PrintPkgTree returns an ascii tree of the corresponding tree, taking care of
+// printing the correct pipe delimiters and tabulation.
+func PrintPkgTree(tr *PkgTree) (output string) {
 	if tr == nil {
 		return ""
 	}
-	sb.WriteString(fmt.Sprintf("%s%s  %s\n", strings.Repeat("  ", lvl), tr.Node.ReleaseName, tr.Node.Version))
-	for _, rel := range tr.Relations {
-		sb.WriteString(fmt.Sprintf("%s%s", strings.Repeat("  ", lvl), PrintPkgTree(rel, lvl+1)))
+	return printTreeNode(tr, " ")
+}
+
+// printTreeNode prints the current node of the tree. Then, calculates the
+// indent of the children, and if the children is the last or not (to print the
+// finishing corner or not). Then prints the children by calling
+// printTreeChildNode.
+func printTreeNode(tr *PkgTree, indent string) (output string) {
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("%s v%s\n", tr.Node.ChartName, tr.Node.Version))
+	for i, rel := range tr.Relations {
+		isLast := (i == len(tr.Relations)-1)
+		sb.WriteString(printTreeChildNode(rel, indent, isLast))
 	}
+	return sb.String()
+}
+
+// printTreeChildNode calculates the correct indent, dependending if that node
+// is the last of the children at that level, and then recursively calls
+// printTreeNode().
+func printTreeChildNode(tr *PkgTree, indent string, isLast bool) (output string) {
+
+	var sb strings.Builder
+	sb.WriteString(indent)
+
+	if isLast {
+		sb.WriteString("└─ ")
+		indent += "   "
+	} else {
+		sb.WriteString("├─ ")
+		indent += "│  "
+	}
+
+	sb.WriteString(printTreeNode(tr, indent))
 	return sb.String()
 }
 
@@ -291,7 +323,7 @@ func (s *Solver) FormatOutput(t OutputMode) (output string) {
 		// TODO: Refurbish this to create some fancy emoji/table output
 		sb.WriteString(fmt.Sprintf("Status: %s\n", s.PkgResultSet.Status))
 		sb.WriteString("Packages to be installed:\n")
-		sb.WriteString(PrintPkgTree(s.PkgResultSet.ToInstall, 0))
+		sb.WriteString(PrintPkgTree(s.PkgResultSet.ToInstall))
 		sb.WriteString("\n")
 		sb.WriteString("Packages to be removed:\n")
 		for _, p := range s.PkgResultSet.ToRemove {

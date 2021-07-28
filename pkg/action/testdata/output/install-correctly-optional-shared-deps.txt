@@ -1,2 +1,6 @@
+The following charts are going to be installed:
+hello v0.1.0
+ └─ testdata/charts/vanilla-helm v0.1.0
+
 🛳  Installing chart "empty" as "empty" in namespace "default"…
 🛳  Installing chart "hello" as "test-install-release" in namespace "luke-skywalker"…
