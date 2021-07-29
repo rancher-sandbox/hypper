@@ -27,7 +27,7 @@ operating in different environments.
 
 Hypper will move will make some assumptions that move it more towards the
 environment management. This is in a different way from Helmfile or the Flux
-Helm Operator but further than Helm will go.
+Helm Operator, but further than Helm nevertheless.
 
 ## Directory Structure
 

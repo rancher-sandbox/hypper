@@ -26,20 +26,20 @@ like Helmfile (a push model like Ansible) and the Flux Helm Operator (a pull
 model like Chef). Helm expects higher level tools will use Helm and charts for
 operating in different environments.
 
-Hypper will move will make some assumptions that move it more towards the
-environment management. This is in a different way from Helmfile or the Flux
-Helm Operator but further than Helm will go.
+Hypper makes some assumptions that move it more towards the environment
+management. This is in a different way from Helmfile or the Flux Helm Operator,
+but further than Helm nevertheless.
 
 ### Hypper Features Not In Helm
 
-#### Installing With Release Name and Namespace Repeatedly
+#### Repeatable Install with defined Release Name and Namespace
 
 When dealing with system level charts you may want to have them be installed in
 the same namespace or with the same release name everywhere. For example, when
 you install a cluster wide logging service. With Hypper, you can capture this
 information as an annotation and only specify a different one if you want to
 override the default. Then when you tell Hypper to install your service it will
-be repeatedly installed to the same location.
+be installed to the same location, in a repeatable manner.
 
 #### Shared Dependencies
 
@@ -48,7 +48,8 @@ to have just a single Prometheus or Istio in a cluster. When you install an
 application that depends on this shared dependency you want to install it if not
 present and leverage the existing one if present.
 
-The additional metadata will be stored as Helm chart annotations.
+The additional metadata to signify these relationships will be stored as Helm
+chart annotations.
 
 #### Optional Shared Dependencies
 
