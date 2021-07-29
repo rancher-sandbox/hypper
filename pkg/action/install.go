@@ -141,7 +141,8 @@ func (i *Install) Run(strategy solver.SolverStrategy,
 		pkg.Unknown, pkg.Present, pinnedVer, i.ChartPathOptions.RepoURL, wantedChrtAbsPath)
 
 	// get all repo entries, continue if there's none:
-	rf, err := repo.LoadFile(settings.EnvSettings.RegistryConfig)
+	rf, err := repo.LoadFile(settings.EnvSettings.RepositoryConfig)
+
 	if err != nil {
 		if !os.IsNotExist(errors.Cause(err)) {
 			return nil, err
