@@ -17,6 +17,7 @@ limitations under the License.
 package action
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -167,22 +168,24 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 			// find dependency:
 			depChrtVer, depInRepo := repoEntries[dep.Name]
 			if !depInRepo {
-				// pull chart to obtain default ns
-				log.Debugf("Dependency \"%s\" not found in repos, loading chart", dep.Name)
-				depChart, err := i.LoadChart(dep.Name, p.ParentChartPath, dep.Repository, dep.Version, settings, logger)
-				if err != nil {
-					return err
-				}
-				// obtain default ns and release name of dep:
-				depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, settings.Namespace())
-				depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, depChart.Name())
 
-				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
-					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository, p.ParentChartPath)
+				// If the dependency is not in a known repo we should fail to
+				// load it. LoadChart will pull down a chart from the Internet.
+				// If the repo is not one the user has opted-in by adding the
+				// repo to we should not load the chart for security reasons.
+				if strings.HasPrefix(dep.Repository, "file://") {
+					// Load chart to get ns and other info
+					log.Debugf("Dependency \"%s\" not found in repos, attempting to load local chart", dep.Name)
+					depChart, err := i.LoadChart(dep.Name, p.ParentChartPath, dep.Repository, dep.Version, settings, logger)
+					if err != nil {
+						return err
+					}
+					// obtain default ns and release name of dep:
+					depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, settings.Namespace())
+					depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, depChart.Name())
 
-				if strings.HasPrefix(dep.Repository, "file://") /* depP local */ {
-					// if depP is local, it can depend on local charts too: check recursively,
-					// but break loops by not recurse into charts already processed.
+					depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
+						pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository, p.ParentChartPath)
 
 					if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB == nil {
 						// first time we process depP
@@ -198,11 +201,8 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 						}
 					}
 				} else {
-					// depP is not a local chart
-					// Add dep to DB
-					pkgdb.Add(depP)
+					return fmt.Errorf("unable to load dependency %q from repository %q", dep.Name, dep.Repository)
 				}
-
 			} else {
 				// obtain default ns and release name of dep:
 				depNS = GetNamespaceFromAnnot(depChrtVer.chartVersions[0].Annotations, settings.Namespace())
