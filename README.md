@@ -47,7 +47,7 @@ Notice that the value is a multi-line string (noted by the `|` after the `:`). H
 - [x] Install share dependencies (those that more than one application may rely on)
 - [x] Install optional/suggests dependencies
 - [ ] List outdated dependencies
-- [ ] Ensure all versions resolve correctly across dependencies
+- [x] Ensure all versions resolve correctly across dependencies
 
 ## License
 
