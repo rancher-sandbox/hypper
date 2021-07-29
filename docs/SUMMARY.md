@@ -1,6 +1,6 @@
 # Summary
 
-- [Hypper Design](./design.md)
+- [Introduction](./README.md)
 - [Installing](./user/tutorials/installing.md)
 - [Quick Start](./user/tutorials/quickstart.md)
 - [How tos](./user/howto/README.md)
