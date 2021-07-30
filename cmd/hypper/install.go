@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -83,6 +85,12 @@ func newInstallCmd(actionConfig *action.Configuration, logger log.Logger) *cobra
 			// TODO decide how to use returned rel:
 			_, err := runInstall(solver.InstallOne, args, client, valueOpts, logger)
 			if err != nil {
+				// Capturing a specific error message, when a chart in a repo
+				// was called for but the repo was never added. Adding more
+				// context for the user.
+				if strings.HasPrefix(err.Error(), "unable to load dependency") {
+					logger.Info("Please add any missing repositories, if necessary")
+				}
 				err = errors.New(eyecandy.ESPrintf(settings.NoEmojis, ":x: %s", err))
 				return err
 			}

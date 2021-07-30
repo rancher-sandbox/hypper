@@ -17,10 +17,14 @@ limitations under the License.
 package action
 
 import (
+	"fmt"
+	"net/url"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/Masterminds/log-go"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
 	pkg "github.com/rancher-sandbox/hypper/internal/package"
@@ -167,40 +171,62 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 			// find dependency:
 			depChrtVer, depInRepo := repoEntries[dep.Name]
 			if !depInRepo {
-				// pull chart to obtain default ns
-				log.Debugf("Dependency \"%s\" not found in repos, loading chart", dep.Name)
-				depChart, err := i.LoadChart(dep.Name, p.ParentChartPath, dep.Repository, dep.Version, settings, logger)
+				u, err := url.Parse(dep.Repository)
+				var isWindowsPath bool
 				if err != nil {
-					return err
+					// check if the path is a windows local path like c:\foo\bar
+					// Is there a better way to check for this? There must be
+					if runtime.GOOS == "windows" && strings.Contains(err.Error(), "invalid control character in URL") {
+						isWindowsPath = true
+					} else {
+						// we have an invalid repository
+						return errors.Wrap(err, fmt.Sprintf("unable to parse repository %q", dep.Repository))
+					}
 				}
-				// obtain default ns and release name of dep:
-				depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, settings.Namespace())
-				depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, depChart.Name())
+				// Local charts (where there is no scheme) and those specified
+				// with the file scheme can be processed. They are local. No
+				// dependencies will be pulled from repos not added to Hypper.
+				// Adding a repo enables a user to opt-in for security purposes.
+				// This is what linux system package managers do and it has been
+				// a recommendation from security reviews for Helm.
+				if u.Scheme == "" || u.Scheme == "file" || isWindowsPath {
+					// pull chart to obtain default ns
+					log.Debugf("Dependency \"%s\" not found in repos, loading chart", dep.Name)
+					depChart, err := i.LoadChart(dep.Name, p.ParentChartPath, dep.Repository, dep.Version, settings, logger)
+					if err != nil {
+						return err
+					}
+					// obtain default ns and release name of dep:
+					depNS = GetNamespaceFromAnnot(depChart.Metadata.Annotations, settings.Namespace())
+					depRelName = GetNameFromAnnot(depChart.Metadata.Annotations, depChart.Name())
 
-				depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
-					pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository, p.ParentChartPath)
+					depP := pkg.NewPkg(depRelName, dep.Name, depChart.Metadata.Version, depNS,
+						pkg.Unknown, pkg.Unknown, pkg.Unknown, dep.Repository, p.ParentChartPath)
 
-				if strings.HasPrefix(dep.Repository, "file://") /* depP local */ {
-					// if depP is local, it can depend on local charts too: check recursively,
-					// but break loops by not recurse into charts already processed.
+					if strings.HasPrefix(dep.Repository, "file://") /* depP local */ {
+						// if depP is local, it can depend on local charts too: check recursively,
+						// but break loops by not recurse into charts already processed.
 
-					if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB == nil {
-						// first time we process depP
+						if depPinDB := pkgdb.GetPackageByFingerprint(depP.GetFingerPrint()); depPinDB == nil {
+							// first time we process depP
 
-						// Add dep to DB, marking it as processed
-						pkgdb.Add(depP)
+							// Add dep to DB, marking it as processed
+							pkgdb.Add(depP)
 
-						// Create depP dependency relations, and recursively add any
-						// deps depP may have.
-						if err := i.CreateDepRelsFromAnnot(depP, depChart.Metadata.Annotations, repoEntries,
-							pkgdb, settings, logger); err != nil {
-							return err
+							// Create depP dependency relations, and recursively add any
+							// deps depP may have.
+							if err := i.CreateDepRelsFromAnnot(depP, depChart.Metadata.Annotations, repoEntries,
+								pkgdb, settings, logger); err != nil {
+								return err
+							}
 						}
+					} else {
+						// depP is not a local chart
+						// Add dep to DB
+						pkgdb.Add(depP)
 					}
 				} else {
-					// depP is not a local chart
-					// Add dep to DB
-					pkgdb.Add(depP)
+					return fmt.Errorf("unable to load dependency %q from repository %q", dep.Name, dep.Repository)
 				}
 
 			} else {
