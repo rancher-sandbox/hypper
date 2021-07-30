@@ -184,8 +184,8 @@ func (i *Install) CreateDepRelsFromAnnot(p *pkg.Pkg,
 					}
 				}
 				// Local charts (where there is no scheme) and those specified
-				// with the file scheme can be processed. They are local. Any
-				// chart that is in a repository should be from an added repo.
+				// with the file scheme can be processed. They are local. No
+				// dependencies will be pulled from repos not added to Hypper.
 				// Adding a repo enables a user to opt-in for security purposes.
 				// This is what linux system package managers do and it has been
 				// a recommendation from security reviews for Helm.
