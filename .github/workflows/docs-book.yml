@@ -30,8 +30,9 @@ jobs:
         run: |
           echo $(pwd)/mdbook >> $GITHUB_PATH
       - run: mdbook build
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./book/html
+          path: ./book
+      - name: Deploy to gh-pages
+        uses: actions/deploy-pages@v4
